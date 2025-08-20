@@ -1,10 +1,16 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-    name: "Tuzuru",
+    name: "tuzuru",
+    platforms: [
+        .macOS(.v15),
+    ],
+    products: [
+        .executable(name: "tuzuru", targets: ["Command"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
     ],
@@ -12,10 +18,15 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .executableTarget(
-            name: "Tuzuru",
+            name: "Command",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                "TuzuruLib",
+            ],
+            swiftSettings: [
+                .defaultIsolation(MainActor.self),
             ]
         ),
+        .target(name: "TuzuruLib")
     ]
 )
