@@ -1,25 +1,30 @@
 import Foundation
-import SystemPackage
 import Subprocess
+
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
 public struct GitWrapper {
     public init() {}
     
-    public func logs(for filePath: FilePath) -> [GitLog] {
+    public func logs(for filePath: FilePath) async -> [GitLog] {
         do {
-            let result = try Subprocess.run(
-                executable: .at(FilePath("/usr/bin/git")),
+            let result = try await Subprocess.run(
+                .path(FilePath("/usr/bin/git")),
                 arguments: [
                     "log",
                     "--pretty=format:%H%n%s%n%an%n%ae%n%ci",
                     "--",
                     filePath.string
                 ],
-                output: .collect,
-                error: .discard
+                output: .string(limit: .max),
+                error: .discarded
             )
             
-            let output = String(data: result.standardOutput, encoding: .utf8) ?? ""
+            let output = result.standardOutput ?? ""
             return parseGitLogs(from: output)
         } catch {
             return []
