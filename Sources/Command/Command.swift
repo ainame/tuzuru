@@ -1,4 +1,7 @@
 import ArgumentParser
+import Foundation
+import SystemPackage
+import TuzuruLib
 
 @main
 struct MainCommand: AsyncParsableCommand {
@@ -23,7 +26,6 @@ struct AddCommand: AsyncParsableCommand {
     var title: String
 
     mutating func run() async throws {
-        print(title)
     }
 }
 
@@ -46,7 +48,13 @@ struct GenerateCommand: AsyncParsableCommand {
     )
 
     mutating func run() async throws {
-        print("generating...")
+        let gitWrapper = GitWrapper()
+        let currentPath = FilePath(FileManager.default.currentDirectoryPath)
+        let logs = gitWrapper.logs(for: currentPath)
+        
+        for log in logs {
+            print("\(log.commitHash) - \(log.commitMessage) by \(log.author)")
+        }
     }
 }
 
