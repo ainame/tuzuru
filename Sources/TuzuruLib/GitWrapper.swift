@@ -6,24 +6,20 @@ public struct GitWrapper {
     public init() {}
     
     public func logs(for filePath: FilePath) -> [GitLog] {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
-        process.arguments = [
-            "log",
-            "--pretty=format:%H%n%s%n%an%n%ae%n%ci",
-            "--",
-            filePath.string
-        ]
-        
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        
         do {
-            try process.run()
-            process.waitUntilExit()
+            let result = try Subprocess.run(
+                executable: .at(FilePath("/usr/bin/git")),
+                arguments: [
+                    "log",
+                    "--pretty=format:%H%n%s%n%an%n%ae%n%ci",
+                    "--",
+                    filePath.string
+                ],
+                output: .collect,
+                error: .discard
+            )
             
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8) ?? ""
+            let output = String(data: result.standardOutput, encoding: .utf8) ?? ""
             return parseGitLogs(from: output)
         } catch {
             return []
