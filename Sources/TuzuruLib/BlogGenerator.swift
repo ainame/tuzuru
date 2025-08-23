@@ -7,16 +7,15 @@ struct BlogGenerator {
     private let fileManager: FileManager
     private let configuration: BlogConfiguration
     private let pathGenerator: PathGenerator
-    private let formatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        return formatter
-    }()
+    private let formatter: DateFormatter
 
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) throws {
         self.fileManager = fileManager
         self.configuration = configuration
         pathGenerator = PathGenerator(configuration: configuration.outputOptions)
+        formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.locale = configuration.metadata.locale
     }
 
     func generate(_ source: Source) throws -> FilePath {

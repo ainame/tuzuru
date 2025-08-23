@@ -52,6 +52,7 @@ struct InitCommand: AsyncParsableCommand {
             metadata: BlogMetadata(
                 blogName: "My Blog",
                 copyright: "2025 My Blog",
+                locale: Locale(identifier: "en_GB"),
             ),
         )
 
