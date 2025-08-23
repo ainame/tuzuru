@@ -103,8 +103,15 @@ struct BlogGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write to file
-        let fileName = configuration.output.generateFileName(for: article.path)
+        let fileName = configuration.output.generateOutputPath(for: article.path)
         let outputPath = siteRoot.appending(fileName)
+        
+        // Create subdirectory if needed (for subdirectory style)
+        let outputDirectory = outputPath.removingLastComponent()
+        if outputDirectory != siteRoot {
+            try fileManager.createDirectory(atPath: outputDirectory.string, withIntermediateDirectories: true)
+        }
+        
         try finalHTML.write(to: URL(fileURLWithPath: outputPath.string), atomically: true, encoding: .utf8)
     }
     
@@ -116,7 +123,7 @@ struct BlogGenerator {
     ) throws {
         // Prepare articles data for list template
         let articlesData = pages.map { article -> [String: Any] in
-            let articleURL = configuration.output.generateFileName(for: article.path)
+            let articleURL = configuration.output.generateOutputPath(for: article.path)
             
             return [
                 "title": article.title,

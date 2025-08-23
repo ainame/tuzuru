@@ -54,14 +54,14 @@ struct GenerateCommand: AsyncParsableCommand {
         // Create configuration with default values
         let blogConfig = BlogConfiguration(
             templates: TemplateConfiguration(
-                layoutFile: "layout.mustache",
-                articleFile: "article.html",
-                listFile: "list.html",
+                layoutFile: "layout.html.mustache",
+                articleFile: "article.html.mustache",
+                listFile: "list.html.mustache",
             ),
             output: OutputConfiguration(
                 directory: "blog",
                 indexFileName: "index.html",
-                pageExtension: ".html",
+                style: .subdirectory
             ),
             metadata: BlogMetadata(
                 blogTitle: "My Blog",
@@ -99,7 +99,7 @@ struct GenerateCommand: AsyncParsableCommand {
         print("📄 Generated:")
         print("  - \(blogConfig.output.indexFileName) (list page)")
         for article in source.pages {
-            let articleName = blogConfig.output.generateFileName(for: article.path)
+            let articleName = blogConfig.output.generateOutputPath(for: article.path)
             print("  - \(articleName)")
         }
     }
