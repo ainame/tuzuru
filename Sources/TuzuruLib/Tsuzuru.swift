@@ -7,11 +7,6 @@ import SystemPackage
 import Markdown
 import Mustache
 
-public enum TuzuruError: Error {
-    case templateNotFound(String)
-    case directoryCreationFailed(String)
-}
-
 public struct Tuzuru {
     private let fileManager: FileManager
 
@@ -218,59 +213,5 @@ public struct Tuzuru {
             return String(truncated[..<lastSpace]) + "..."
         }
         return truncated + "..."
-    }
-}
-
-public struct SourceLayout {
-    public let layoutFile: FilePath
-    public let contents: FilePath
-    public let assets: FilePath
-
-    public init(layoutFile: FilePath, contents: FilePath, assets: FilePath) {
-        self.layoutFile = layoutFile
-        self.contents = contents
-        self.assets = assets
-    }
-}
-
-public struct SiteLayout {
-    public let root: FilePath
-    public let contents: FilePath
-    public let assets: FilePath
-
-    public init(root: FilePath, contents: FilePath, assets: FilePath) {
-        self.root = root
-        self.contents = contents
-        self.assets = assets
-    }
-}
-
-public struct Source: Equatable {
-    public var title: String
-    public var layoutFile: FilePath
-    public var pages: [Page]
-
-    public init(title: String, layoutFile: FilePath, pages: [Page]) {
-        self.title = title
-        self.layoutFile = layoutFile
-        self.pages = pages
-    }
-}
-
-public struct Page: Hashable {
-    public let path: FilePath
-    public var title: String
-    public var author: String
-    public var publishedAt: Date
-    public var content: String
-    public var htmlContent: String
-
-    public init(path: FilePath, title: String, author: String, publishedAt: Date, content: String = "", htmlContent: String = "") {
-        self.path = path
-        self.title = title
-        self.author = author
-        self.publishedAt = publishedAt
-        self.content = content
-        self.htmlContent = htmlContent
     }
 }

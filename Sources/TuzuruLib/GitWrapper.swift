@@ -1,11 +1,6 @@
 import Foundation
 import Subprocess
-
-#if canImport(System)
 import System
-#else
-import SystemPackage
-#endif
 
 public struct GitWrapper {
     public init() {}
@@ -65,12 +60,4 @@ public struct GitWrapper {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
         return formatter.date(from: dateString)
     }
-}
-
-public struct GitLog {
-    public let commitHash: String
-    public let commitMessage: String
-    public let author: String
-    public let email: String
-    public let date: Date
 }
