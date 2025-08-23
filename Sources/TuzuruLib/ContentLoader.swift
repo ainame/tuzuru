@@ -1,15 +1,14 @@
 import Foundation
+import Markdown
 import System
 
 /// Handles loading and processing source content from markdown files
 struct ContentLoader {
     private let fileManager: FileManager
-    private let markdownProcessor: MarkdownProcessor
     private let gitWrapper: GitWrapper
     
     init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
-        self.markdownProcessor = MarkdownProcessor()
         self.gitWrapper = GitWrapper()
     }
     
@@ -17,10 +16,11 @@ struct ContentLoader {
         var source = Source(title: "", layoutFile: sourceLayout.layoutFile, pages: [])
         
         let markdownFiles = try findMarkdownFiles(in: sourceLayout.contents)
-        
+
         for markdownPath in markdownFiles {
-            let article = try await processMarkdownFile(markdownPath)
-            source.pages.append(article)
+            if let article = try await processMarkdownFile(markdownPath) {
+                source.pages.append(article)
+            }
         }
         
         // Sort pages by publish date (newest first)
@@ -44,7 +44,7 @@ struct ContentLoader {
         return markdownFiles
     }
     
-    private func processMarkdownFile(_ markdownPath: FilePath) async throws -> Article {
+    private func processMarkdownFile(_ markdownPath: FilePath) async throws -> Article? {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
         
         // Get the first commit (initial commit) for publish date and author
@@ -57,20 +57,34 @@ struct ContentLoader {
               let markdownContent = String(data: markdownData, encoding: .utf8) else {
             throw TuzuruError.fileNotFound(markdownPath.string)
         }
-        
+
+        let document = Document(parsing: markdownContent)
+
         // Extract title from markdown file (first # header or filename)
-        let title = try markdownProcessor.extractTitle(from: markdownPath, content: markdownContent)
-        
+        var destructor = MarkdownDestructor()
+        let newDocument = destructor.visit(document)
+        let title = destructor.title
+
+        guard let newDocument, let title else {
+            print("title is missing in \(markdownPath.string) ")
+            return nil
+        }
+
         // Convert markdown to HTML
-        let htmlContent = markdownProcessor.convertToHTML(markdownContent)
-        
+        var htmlFormatter = HTMLFormatter()
+        htmlFormatter.visit(newDocument)
+
+        var walker = MarkdownExcerptWalker(maxLength: 150)
+        walker.visit(newDocument)
+
         return Article(
             path: markdownPath,
             title: title,
             author: author,
             publishedAt: publishedAt,
+            excerpt: walker.result,
             content: markdownContent,
-            htmlContent: htmlContent
+            htmlContent: htmlFormatter.result,
         )
     }
 }

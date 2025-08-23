@@ -2,10 +2,14 @@ import Foundation
 import Subprocess
 import System
 
-public struct GitWrapper {
-    public init() {}
-    
-    public func logs(for filePath: FilePath) async -> [GitLog] {
+struct GitWrapper {
+    private let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        return formatter
+    }()
+
+    func logs(for filePath: FilePath) async -> [GitLog] {
         do {
             let result = try await Subprocess.run(
                 .path(FilePath("/usr/bin/git")),
@@ -56,8 +60,6 @@ public struct GitWrapper {
     }
     
     private func parseGitDate(_ dateString: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-        return formatter.date(from: dateString)
+        formatter.date(from: dateString)
     }
 }

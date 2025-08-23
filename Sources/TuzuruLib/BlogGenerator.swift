@@ -5,12 +5,10 @@ import Mustache
 /// Handles template processing and site generation
 struct BlogGenerator {
     private let fileManager: FileManager
-    private let markdownProcessor: MarkdownConverter
     private let configuration: BlogConfiguration
 
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) {
         self.fileManager = fileManager
-        self.markdownProcessor = MarkdownConverter()
         self.configuration = configuration
     }
     
@@ -125,7 +123,7 @@ struct BlogGenerator {
                 "author": article.author,
                 "publishedAt": formatDate(article.publishedAt),
                 "url": articleURL,
-                "excerpt": markdownProcessor.extractExcerpt(from: article.content)
+                "excerpt": article.excerpt,
             ]
         }
         

@@ -42,6 +42,12 @@ let package = Package(
                 //.product(name: "SystemPackage", package: "swift-system"),
             ]
         ),
-        .testTarget(name: "TuzuruLibTests"),
+        .testTarget(
+            name: "TuzuruLibTests",
+            dependencies: [
+                "TuzuruLib",
+                .product(name: "Markdown", package: "swift-markdown"),
+            ]
+        ),
     ]
 )
