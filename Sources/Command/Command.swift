@@ -51,15 +51,18 @@ struct GenerateCommand: AsyncParsableCommand {
     mutating func run() async throws {
         let currentPath = FilePath(FileManager.default.currentDirectoryPath)
         
-        // Set up source layout
+        // Create configuration with default values
+        let siteConfig = SiteConfiguration()
+        
+        // Set up source layout using configuration
         let sourceLayout = SourceLayout(
-            layoutFile: currentPath.appending("layout.mustache"),
-            contents: currentPath.appending("contents"),
-            assets: currentPath.appending("assets")
+            layoutFile: currentPath.appending(siteConfig.templates.layoutFile),
+            contents: currentPath.appending("contents"), // Could be configurable too
+            assets: currentPath.appending("assets")       // Could be configurable too
         )
         
-        // Initialize Tuzuru
-        let tuzuru = Tuzuru()
+        // Initialize Tuzuru with configuration
+        let tuzuru = Tuzuru(configuration: siteConfig)
         
         print("🔍 Scanning for markdown files in contents/...")
         
@@ -78,9 +81,9 @@ struct GenerateCommand: AsyncParsableCommand {
         
         print("✅ Site generated successfully in \(siteLayout.root.string)/")
         print("📄 Generated:")
-        print("  - index.html (list page)")
+        print("  - \(siteConfig.output.indexFileName) (list page)")
         for page in source.pages {
-            let articleName = "\(page.path.lastComponent?.stem ?? "untitled").html"
+            let articleName = siteConfig.output.generateFileName(for: page.path)
             print("  - \(articleName)")
         }
     }

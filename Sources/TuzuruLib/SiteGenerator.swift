@@ -6,14 +6,16 @@ import Mustache
 struct SiteGenerator {
     private let fileManager: FileManager
     private let markdownProcessor: MarkdownProcessor
+    private let configuration: SiteConfiguration
     
-    init(fileManager: FileManager = .default) {
+    init(fileManager: FileManager = .default, configuration: SiteConfiguration = SiteConfiguration()) {
         self.fileManager = fileManager
         self.markdownProcessor = MarkdownProcessor()
+        self.configuration = configuration
     }
     
     func generate(_ source: Source) throws -> SiteLayout {
-        let siteRoot = FilePath("site")
+        let siteRoot = FilePath(configuration.output.directory)
         
         // Create site directory if it doesn't exist
         try fileManager.createDirectory(atPath: siteRoot.string, withIntermediateDirectories: true)
@@ -60,14 +62,14 @@ struct SiteGenerator {
             throw TuzuruError.templateNotFound(source.layoutFile.string)
         }
         
-        guard let articleData = fileManager.contents(atPath: "article.html"),
+        guard let articleData = fileManager.contents(atPath: configuration.templates.articleFile),
               let articleTemplate = String(data: articleData, encoding: .utf8) else {
-            throw TuzuruError.templateNotFound("article.html")
+            throw TuzuruError.templateNotFound(configuration.templates.articleFile)
         }
         
-        guard let listData = fileManager.contents(atPath: "list.html"),
+        guard let listData = fileManager.contents(atPath: configuration.templates.listFile),
               let listTemplate = String(data: listData, encoding: .utf8) else {
-            throw TuzuruError.templateNotFound("list.html")
+            throw TuzuruError.templateNotFound(configuration.templates.listFile)
         }
         
         return Templates(
@@ -98,7 +100,7 @@ struct SiteGenerator {
         // Prepare data for layout template
         let layoutData: [String: Any] = [
             "title": page.title,
-            "blog_title": "My Blog",
+            "blog_title": configuration.metadata.blogTitle,
             "content": renderedArticle
         ]
         
@@ -107,7 +109,7 @@ struct SiteGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write to file
-        let fileName = "\(page.path.lastComponent?.stem ?? "untitled").html"
+        let fileName = configuration.output.generateFileName(for: page.path)
         let outputPath = siteRoot.appending(fileName)
         try finalHTML.write(to: URL(fileURLWithPath: outputPath.string), atomically: true, encoding: .utf8)
     }
@@ -120,7 +122,7 @@ struct SiteGenerator {
     ) throws {
         // Prepare articles data for list template
         let articlesData = pages.map { page -> [String: Any] in
-            let articleURL = "\(page.path.lastComponent?.stem ?? "untitled").html"
+            let articleURL = configuration.output.generateFileName(for: page.path)
             
             return [
                 "title": page.title,
@@ -141,8 +143,8 @@ struct SiteGenerator {
         
         // Prepare data for layout template
         let layoutData: [String: Any] = [
-            "title": "Blog",
-            "blog_title": "My Blog",
+            "title": configuration.metadata.listPageTitle,
+            "blog_title": configuration.metadata.blogTitle,
             "content": renderedList
         ]
         
@@ -151,7 +153,7 @@ struct SiteGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write index.html
-        let indexPath = siteRoot.appending("index.html")
+        let indexPath = siteRoot.appending(configuration.output.indexFileName)
         try finalHTML.write(to: URL(fileURLWithPath: indexPath.string), atomically: true, encoding: .utf8)
     }
     
