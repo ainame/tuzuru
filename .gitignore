@@ -8,6 +8,6 @@ DerivedData/
 .netrc
 .swiftpm/xcode
 
-tmp
+tmp*
 .serena
 .vscode
