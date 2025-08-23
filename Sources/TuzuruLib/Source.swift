@@ -1,9 +1,5 @@
 import Foundation
-#if canImport(System)
 import System
-#else
-import SystemPackage
-#endif
 
 public struct Source: Equatable {
     public var title: String

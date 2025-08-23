@@ -2,11 +2,7 @@ import ArgumentParser
 import Foundation
 import TuzuruLib
 
-#if canImport(System)
 import System
-#else
-import SystemPackage
-#endif
 
 @main
 struct MainCommand: AsyncParsableCommand {
