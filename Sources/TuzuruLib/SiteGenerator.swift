@@ -14,7 +14,7 @@ struct SiteGenerator {
         self.configuration = configuration
     }
     
-    func generate(_ source: Source) throws -> SiteLayout {
+    func generate(_ source: Source) throws -> FilePath {
         let siteRoot = FilePath(configuration.output.directory)
         
         // Create site directory if it doesn't exist
@@ -41,11 +41,7 @@ struct SiteGenerator {
             siteRoot: siteRoot
         )
         
-        return SiteLayout(
-            root: siteRoot,
-            contents: siteRoot,
-            assets: siteRoot
-        )
+        return siteRoot
     }
     
     // MARK: - Private Methods

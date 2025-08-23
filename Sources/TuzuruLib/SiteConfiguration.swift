@@ -2,7 +2,7 @@ import Foundation
 import System
 
 /// Configuration for site generation, eliminating hardcoded assumptions
-public struct SiteConfiguration {
+public struct SiteConfiguration: Sendable {
     /// Template file paths
     public let templates: TemplateConfiguration
     
@@ -24,7 +24,7 @@ public struct SiteConfiguration {
 }
 
 /// Template file configuration
-public struct TemplateConfiguration {
+public struct TemplateConfiguration: Sendable {
     /// Layout template file path (e.g., "layout.mustache")
     public let layoutFile: String
     
@@ -46,7 +46,7 @@ public struct TemplateConfiguration {
 }
 
 /// Output file and directory configuration
-public struct OutputConfiguration {
+public struct OutputConfiguration: Sendable {
     /// Output directory name (e.g., "site", "build", "dist")
     public let directory: String
     
@@ -74,7 +74,7 @@ public struct OutputConfiguration {
 }
 
 /// Site metadata configuration
-public struct SiteMetadata {
+public struct SiteMetadata: Sendable {
     /// Blog title displayed in layouts
     public let blogTitle: String
     

@@ -76,10 +76,10 @@ struct GenerateCommand: AsyncParsableCommand {
         
         print("🚀 Generating site...")
         
-        // Generate the site
-        let siteLayout = try tuzuru.generate(source)
+        // Generate the site - now returns simple FilePath
+        let outputDirectory = try tuzuru.generate(source)
         
-        print("✅ Site generated successfully in \(siteLayout.root.string)/")
+        print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(siteConfig.output.indexFileName) (list page)")
         for page in source.pages {

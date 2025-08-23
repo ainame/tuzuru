@@ -16,7 +16,7 @@ public struct Tuzuru {
         return try await contentLoader.loadSources(sourceLayout)
     }
 
-    public func generate(_ source: Source) throws -> SiteLayout {
+    public func generate(_ source: Source) throws -> FilePath {
         return try siteGenerator.generate(source)
     }
 }
