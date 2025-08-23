@@ -7,10 +7,10 @@ import System
 struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
     private let gitWrapper: GitWrapper
-    
+
     init(configuration: BlogConfiguration) {
         self.configuration = configuration
-        self.gitWrapper = GitWrapper()
+        gitWrapper = GitWrapper()
     }
 
     @concurrent
@@ -39,36 +39,37 @@ struct SourceLoader: Sendable {
 
         // Sort pages by publish date (newest first)
         source.articles.sort { $0.publishedAt > $1.publishedAt }
-        
+
         return source
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
-        
+
         let enumerator = fileManager.enumerator(atPath: directory.string)
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
                 markdownFiles.append(directory.appending(file))
             }
         }
-        
+
         return markdownFiles
     }
-    
+
     private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath) async throws -> Article? {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
-        
+
         // Get the first commit (initial commit) for publish date and author
         let firstCommit = gitLogs.last // logs are in reverse chronological order
         let author = firstCommit?.author ?? "Unknown"
         let publishedAt = firstCommit?.date ?? Date()
-        
+
         // Read and process markdown content
         guard let markdownData = fileManager.contents(atPath: markdownPath.string),
-              let markdownContent = String(data: markdownData, encoding: .utf8) else {
+              let markdownContent = String(data: markdownData, encoding: .utf8)
+        else {
             throw TuzuruError.fileNotFound(markdownPath.string)
         }
 
@@ -105,17 +106,20 @@ struct SourceLoader: Sendable {
     private func loadTemplates(templates: Templates) throws -> LoadedTemplates {
         let fileManager = FileManager()
         guard let layoutData = fileManager.contents(atPath: templates.layoutFile.string),
-              let layoutTemplate = String(data: layoutData, encoding: .utf8) else {
+              let layoutTemplate = String(data: layoutData, encoding: .utf8)
+        else {
             throw TuzuruError.templateNotFound(templates.layoutFile.string)
         }
 
         guard let articleData = fileManager.contents(atPath: templates.articleFile.string),
-              let articleTemplate = String(data: articleData, encoding: .utf8) else {
+              let articleTemplate = String(data: articleData, encoding: .utf8)
+        else {
             throw TuzuruError.templateNotFound(templates.articleFile.string)
         }
 
         guard let listData = fileManager.contents(atPath: templates.listFile.string),
-              let listTemplate = String(data: listData, encoding: .utf8) else {
+              let listTemplate = String(data: listData, encoding: .utf8)
+        else {
             throw TuzuruError.templateNotFound(templates.listFile.string)
         }
         return try LoadedTemplates(

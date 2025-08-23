@@ -6,9 +6,9 @@ public struct OutputOptions: Sendable, Codable {
     /// Output style for generated HTML files
     public enum OutputStyle: String, Sendable, CaseIterable, Codable {
         /// Direct HTML files (e.g., "about.html")
-        case direct = "direct"
+        case direct
         /// Subdirectory with index.html (e.g., "about/index.html" for clean URLs)
-        case subdirectory = "subdirectory"
+        case subdirectory
     }
 
     /// Output directory name (e.g., "blog", "site", "build", "dist")
@@ -21,9 +21,9 @@ public struct OutputOptions: Sendable, Codable {
         self.directory = directory
         self.style = style
     }
-    
+
     /// Index page filename is always "index.html"
     public var indexFileName: String {
-        return "index.html"
+        "index.html"
     }
 }

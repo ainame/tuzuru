@@ -1,6 +1,6 @@
 import Foundation
-import System
 import Mustache
+import System
 
 /// Handles template processing and site generation
 struct BlogGenerator {
@@ -16,7 +16,7 @@ struct BlogGenerator {
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) throws {
         self.fileManager = fileManager
         self.configuration = configuration
-        self.pathGenerator = PathGenerator(configuration: configuration.outputOptions)
+        pathGenerator = PathGenerator(configuration: configuration.outputOptions)
     }
 
     func generate(_ source: Source) throws -> FilePath {
@@ -93,7 +93,7 @@ struct BlogGenerator {
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
-            content: renderedList
+            content: renderedList,
         )
 
         // Render final page

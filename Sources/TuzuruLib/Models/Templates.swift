@@ -12,19 +12,19 @@ public struct Templates: Sendable, Equatable, Codable {
         self.articleFile = articleFile
         self.listFile = listFile
     }
-    
+
     // Custom Codable implementation for FilePath
     private enum CodingKeys: String, CodingKey {
         case layoutFile, articleFile, listFile
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.layoutFile = FilePath(try container.decode(String.self, forKey: .layoutFile))
-        self.articleFile = FilePath(try container.decode(String.self, forKey: .articleFile))
-        self.listFile = FilePath(try container.decode(String.self, forKey: .listFile))
+        layoutFile = try FilePath(container.decode(String.self, forKey: .layoutFile))
+        articleFile = try FilePath(container.decode(String.self, forKey: .articleFile))
+        listFile = try FilePath(container.decode(String.self, forKey: .listFile))
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(layoutFile.string, forKey: .layoutFile)

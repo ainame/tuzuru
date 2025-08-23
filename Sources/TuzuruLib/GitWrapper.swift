@@ -17,23 +17,23 @@ struct GitWrapper {
                     "log",
                     "--pretty=format:%H%n%s%n%an%n%ae%n%ci",
                     "--",
-                    filePath.string
+                    filePath.string,
                 ],
                 output: .string(limit: .max),
-                error: .discarded
+                error: .discarded,
             )
-            
+
             let output = result.standardOutput ?? ""
             return parseGitLogs(from: output)
         } catch {
             return []
         }
     }
-    
+
     private func parseGitLogs(from output: String) -> [GitLog] {
         let lines = output.components(separatedBy: .newlines).filter { !$0.isEmpty }
         var logs: [GitLog] = []
-        
+
         var i = 0
         while i + 4 < lines.count {
             let commitHash = lines[i]
@@ -41,24 +41,24 @@ struct GitWrapper {
             let author = lines[i + 2]
             let email = lines[i + 3]
             let dateString = lines[i + 4]
-            
+
             if let date = parseGitDate(dateString) {
                 let log = GitLog(
                     commitHash: commitHash,
                     commitMessage: commitMessage,
                     author: author,
                     email: email,
-                    date: date
+                    date: date,
                 )
                 logs.append(log)
             }
-            
+
             i += 5
         }
-        
+
         return logs
     }
-    
+
     private func parseGitDate(_ dateString: String) -> Date? {
         formatter.date(from: dateString)
     }

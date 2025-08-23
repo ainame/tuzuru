@@ -17,7 +17,7 @@ public struct Article: Sendable, Hashable {
         publishedAt: Date,
         excerpt: String,
         content: String,
-        htmlContent: String
+        htmlContent: String,
     ) {
         self.path = path
         self.title = title

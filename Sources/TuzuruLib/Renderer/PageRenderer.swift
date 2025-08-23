@@ -19,7 +19,7 @@ struct PageRenderer {
 
     func render(_ data: [ListItemData]) throws -> String {
         templates.list.render([
-            "articles": data.map { $0.render() }
+            "articles": data.map { $0.render() },
         ])
     }
 

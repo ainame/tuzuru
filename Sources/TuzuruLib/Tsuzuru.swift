@@ -1,7 +1,7 @@
 import Foundation
-import System
 import Markdown
 import Mustache
+import System
 
 public struct Tuzuru {
     private let sourceLoader: SourceLoader
@@ -10,10 +10,10 @@ public struct Tuzuru {
 
     public init(
         fileManager: FileManager = .default,
-        configuration: BlogConfiguration
+        configuration: BlogConfiguration,
     ) throws {
-        self.sourceLoader = SourceLoader(configuration: configuration)
-        self.siteGenerator = try BlogGenerator(fileManager: fileManager, configuration: configuration)
+        sourceLoader = SourceLoader(configuration: configuration)
+        siteGenerator = try BlogGenerator(fileManager: fileManager, configuration: configuration)
         self.configuration = configuration
     }
 
@@ -23,7 +23,7 @@ public struct Tuzuru {
         return outputPath
     }
 
-    public func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
+    public func loadSources(_: SourceLayout) async throws -> Source {
         try await sourceLoader.loadSources()
     }
 
