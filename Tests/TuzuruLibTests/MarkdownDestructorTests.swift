@@ -4,7 +4,7 @@ import Markdown
 @testable import TuzuruLib
 
 @Suite
-struct MarkdownDesctructorTests {
+struct MarkdownDestructorTests {
     @Test
     func `Remove children node up to the first heading`() async throws {
         let rawMarkdown = """
