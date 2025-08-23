@@ -18,31 +18,6 @@ struct MainCommand: AsyncParsableCommand {
     )
 }
 
-struct AddCommand: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(
-        commandName: "add"
-    )
-
-    @Argument
-    var title: String
-
-    mutating func run() async throws {
-    }
-}
-
-struct PreviewCommand: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(
-        commandName: "preview"
-    )
-
-    @Option(name: .shortAndLong)
-    var port: Int = 8080
-
-    mutating func run() async throws {
-        print(port)
-    }
-}
-
 struct GenerateCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "generate"
@@ -50,7 +25,7 @@ struct GenerateCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         let currentPath = FilePath(FileManager.default.currentDirectoryPath)
-        
+
         // Create configuration with default values
         let blogConfig = BlogConfiguration(
             sourceLayout: SourceLayout(
@@ -72,12 +47,12 @@ struct GenerateCommand: AsyncParsableCommand {
                 copyright: "2025 My Blog",
             )
         )
-        
+
         // Initialize Tuzuru with configuration
         let tuzuru = try Tuzuru(configuration: blogConfig)
 
         print("🔍 Scanning for markdown files in contents/...")
-        
+
         // Load sources (scan markdown files and get git info)
         let source = try await tuzuru.loadSources(blogConfig.sourceLayout)
 
@@ -85,12 +60,12 @@ struct GenerateCommand: AsyncParsableCommand {
         for article in source.articles {
             print("  - \(article.title) by \(article.author)")
         }
-        
+
         print("🚀 Generating site...")
-        
+
         // Generate the site - now returns simple FilePath
         let outputDirectory = try await tuzuru.generate(source)
-        
+
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(blogConfig.outputOptions.indexFileName) (list page)")
@@ -102,11 +77,38 @@ struct GenerateCommand: AsyncParsableCommand {
     }
 }
 
+struct AddCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "add"
+    )
+
+    @Argument
+    var title: String
+
+    mutating func run() async throws {
+        fatalError("To be implemented")
+    }
+}
+
+struct PreviewCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "preview"
+    )
+
+    @Option(name: .shortAndLong)
+    var port: Int = 8080
+
+    mutating func run() async throws {
+        fatalError("To be implemented")
+    }
+}
+
 struct WatchCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "watch"
     )
 
     mutating func run() async throws {
+        fatalError("To be implemented")
     }
 }
