@@ -19,6 +19,9 @@
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
+        .site-title {
+            margin: 0;
+        }
         h1 {
             margin: 0;
             color: #8b4513;
@@ -36,7 +39,9 @@
 </head>
 <body>
     <header>
-        <h1><a href="{{home_url}}" style="color: #8b4513; text-decoration: none;">{{blog_title}}</a></h1>
+        <div class="site-title">
+            <a href="{{home_url}}" style="color: #8b4513; text-decoration: none; font-size: 2em; font-weight: bold;">{{blog_title}}</a>
+        </div>
     </header>
     
     <main>
