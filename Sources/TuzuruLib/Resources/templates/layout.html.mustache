@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{pageTitle}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,6 +36,22 @@
             text-align: center;
             color: #666;
         }
+        /* Code block styling */
+        pre code {
+            border-radius: 6px;
+        }
+        code {
+            background-color: #f6f8fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -43,15 +60,15 @@
             <a href="{{homeUrl}}" style="color: #8b4513; text-decoration: none; font-size: 2em; font-weight: bold;">{{blogName}}</a>
         </div>
     </header>
-    
+
     <main>
         <div class="article-content">
             {{{content}}}
         </div>
     </main>
-    
+
     <footer>
         <p>&copy; 2025 {{blogName}}</p>
     </footer>
-</body>
+    </body>
 </html>
