@@ -26,7 +26,7 @@ public struct OutputConfiguration: Sendable {
         self.style = style
     }
     
-    /// Generate output path for a page based on its source path and style
+    /// Generate output file path for a page based on its source path and style
     public func generateOutputPath(for pagePath: FilePath) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
         
@@ -35,6 +35,18 @@ public struct OutputConfiguration: Sendable {
             return "\(stem).html"
         case .subdirectory:
             return "\(stem)/index.html"
+        }
+    }
+    
+    /// Generate clean URL for linking to a page (used in templates)
+    public func generateURL(for pagePath: FilePath) -> String {
+        let stem = pagePath.lastComponent?.stem ?? "untitled"
+        
+        switch style {
+        case .direct:
+            return "\(stem).html"
+        case .subdirectory:
+            return "\(stem)/"
         }
     }
 }

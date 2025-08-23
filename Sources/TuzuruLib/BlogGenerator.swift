@@ -123,7 +123,7 @@ struct BlogGenerator {
     ) throws {
         // Prepare articles data for list template
         let articlesData = pages.map { article -> [String: Any] in
-            let articleURL = configuration.output.generateOutputPath(for: article.path)
+            let articleURL = configuration.output.generateURL(for: article.path)
             
             return [
                 "title": article.title,
