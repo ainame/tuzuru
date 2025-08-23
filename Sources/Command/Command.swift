@@ -58,7 +58,7 @@ struct GenerateCommand: AsyncParsableCommand {
         let logs = await gitWrapper.logs(for: currentPath)
         
         for log in logs {
-            print("\(log.commitHash) - \(log.commitMessage) by \(log.author)")
+            print("\(log)")
         }
     }
 }
