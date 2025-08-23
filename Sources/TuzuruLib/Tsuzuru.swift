@@ -7,7 +7,7 @@ public struct Tuzuru {
     private let contentLoader: ContentLoader
     private let siteGenerator: BlogGenerator
 
-    public init(fileManager: FileManager = .default, configuration: BlogConfiguration = BlogConfiguration()) {
+    public init(fileManager: FileManager = .default, configuration: BlogConfiguration) {
         self.contentLoader = ContentLoader(fileManager: fileManager)
         self.siteGenerator = BlogGenerator(fileManager: fileManager, configuration: configuration)
     }

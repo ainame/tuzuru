@@ -12,9 +12,9 @@ public struct BlogMetadata: Sendable {
     public let listPageTitle: String
     
     public init(
-        blogTitle: String = "My Blog",
-        copyright: String = "2025 My Blog",
-        listPageTitle: String = "Blog"
+        blogTitle: String,
+        copyright: String,
+        listPageTitle: String,
     ) {
         self.blogTitle = blogTitle
         self.copyright = copyright

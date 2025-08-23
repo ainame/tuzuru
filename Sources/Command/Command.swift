@@ -52,17 +52,33 @@ struct GenerateCommand: AsyncParsableCommand {
         let currentPath = FilePath(FileManager.default.currentDirectoryPath)
         
         // Create configuration with default values
-        let siteConfig = BlogConfiguration()
+        let blogConfig = BlogConfiguration(
+            templates: TemplateConfiguration(
+                layoutFile: "layout.mustache",
+                articleFile: "article.html",
+                listFile: "list.html",
+            ),
+            output: OutputConfiguration(
+                directory: "blog",
+                indexFileName: "index.html",
+                pageExtension: ".html",
+            ),
+            metadata: BlogMetadata(
+                blogTitle: "My Blog",
+                copyright: "2025 My Blog",
+                listPageTitle: "Blog",
+            )
+        )
         
         // Set up source layout using configuration
         let sourceLayout = SourceLayout(
-            layoutFile: currentPath.appending(siteConfig.templates.layoutFile),
+            layoutFile: currentPath.appending(blogConfig.templates.layoutFile),
             contents: currentPath.appending("contents"), // Could be configurable too
             assets: currentPath.appending("assets")       // Could be configurable too
         )
         
         // Initialize Tuzuru with configuration
-        let tuzuru = Tuzuru(configuration: siteConfig)
+        let tuzuru = Tuzuru(configuration: blogConfig)
         
         print("🔍 Scanning for markdown files in contents/...")
         
@@ -81,9 +97,9 @@ struct GenerateCommand: AsyncParsableCommand {
         
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
-        print("  - \(siteConfig.output.indexFileName) (list page)")
+        print("  - \(blogConfig.output.indexFileName) (list page)")
         for article in source.pages {
-            let articleName = siteConfig.output.generateFileName(for: article.path)
+            let articleName = blogConfig.output.generateFileName(for: article.path)
             print("  - \(articleName)")
         }
     }

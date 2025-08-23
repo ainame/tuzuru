@@ -13,9 +13,9 @@ public struct BlogConfiguration: Sendable {
     public let metadata: BlogMetadata
     
     public init(
-        templates: TemplateConfiguration = TemplateConfiguration(),
-        output: OutputConfiguration = OutputConfiguration(),
-        metadata: BlogMetadata = BlogMetadata()
+        templates: TemplateConfiguration,
+        output: OutputConfiguration,
+        metadata: BlogMetadata,
     ) {
         self.templates = templates
         self.output = output

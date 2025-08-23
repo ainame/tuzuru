@@ -12,11 +12,7 @@ public struct TemplateConfiguration: Sendable {
     /// List template file path (e.g., "list.html")
     public let listFile: String
     
-    public init(
-        layoutFile: String = "layout.mustache",
-        articleFile: String = "article.html",
-        listFile: String = "list.html"
-    ) {
+    public init(layoutFile: String, articleFile: String, listFile: String) {
         self.layoutFile = layoutFile
         self.articleFile = articleFile
         self.listFile = listFile

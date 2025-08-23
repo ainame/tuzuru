@@ -5,12 +5,12 @@ import Mustache
 /// Handles template processing and site generation
 struct BlogGenerator {
     private let fileManager: FileManager
-    private let markdownProcessor: MarkdownProcessor
+    private let markdownProcessor: MarkdownConverter
     private let configuration: BlogConfiguration
 
-    init(fileManager: FileManager = .default, configuration: BlogConfiguration = BlogConfiguration()) {
+    init(fileManager: FileManager = .default, configuration: BlogConfiguration) {
         self.fileManager = fileManager
-        self.markdownProcessor = MarkdownProcessor()
+        self.markdownProcessor = MarkdownConverter()
         self.configuration = configuration
     }
     

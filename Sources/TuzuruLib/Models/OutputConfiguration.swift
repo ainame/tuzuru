@@ -12,11 +12,7 @@ public struct OutputConfiguration: Sendable {
     /// File extension for generated pages (e.g., ".html")
     public let pageExtension: String
     
-    public init(
-        directory: String = "blog",
-        indexFileName: String = "index.html",
-        pageExtension: String = ".html"
-    ) {
+    public init(directory: String, indexFileName: String, pageExtension: String) {
         self.directory = directory
         self.indexFileName = indexFileName
         self.pageExtension = pageExtension
