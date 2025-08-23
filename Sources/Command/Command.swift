@@ -53,12 +53,39 @@ struct GenerateCommand: AsyncParsableCommand {
     )
 
     mutating func run() async throws {
-        let gitWrapper = GitWrapper()
         let currentPath = FilePath(FileManager.default.currentDirectoryPath)
-        let logs = await gitWrapper.logs(for: currentPath)
         
-        for log in logs {
-            print("\(log)")
+        // Set up source layout
+        let sourceLayout = SourceLayout(
+            layoutFile: currentPath.appending("layout.mustache"),
+            contents: currentPath.appending("contents"),
+            assets: currentPath.appending("assets")
+        )
+        
+        // Initialize Tuzuru
+        let tuzuru = Tuzuru()
+        
+        print("🔍 Scanning for markdown files in contents/...")
+        
+        // Load sources (scan markdown files and get git info)
+        let source = try await tuzuru.loadSources(sourceLayout)
+        
+        print("📝 Found \(source.pages.count) articles")
+        for page in source.pages {
+            print("  - \(page.title) by \(page.author)")
+        }
+        
+        print("🚀 Generating site...")
+        
+        // Generate the site
+        let siteLayout = try tuzuru.generate(source)
+        
+        print("✅ Site generated successfully in \(siteLayout.root.string)/")
+        print("📄 Generated:")
+        print("  - index.html (list page)")
+        for page in source.pages {
+            let articleName = "\(page.path.lastComponent?.stem ?? "untitled").html"
+            print("  - \(articleName)")
         }
     }
 }
