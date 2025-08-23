@@ -4,15 +4,15 @@ import Foundation
 public struct BlogMetadata: Sendable {
     /// Blog title displayed in layouts
     public let blogName: String
-    
+
     /// Copyright notice
     public let copyright: String
 
     public init(
-        blogTitle: String,
+        blogName: String,
         copyright: String,
     ) {
-        self.blogName = blogTitle
+        self.blogName = blogName
         self.copyright = copyright
     }
 }

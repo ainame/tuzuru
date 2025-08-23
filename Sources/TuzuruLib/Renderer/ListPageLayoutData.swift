@@ -3,6 +3,7 @@ import Foundation
 struct ListPageLayoutData {
     let pageTitle: String
     let blogName: String
+    let copyright: String
     let homeUrl: String
     let content: String
 

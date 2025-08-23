@@ -91,6 +91,7 @@ struct BlogGenerator {
         let layoutData = ListPageLayoutData(
             pageTitle: configuration.metadata.blogName,
             blogName: configuration.metadata.blogName,
+            copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
             content: renderedList
         )

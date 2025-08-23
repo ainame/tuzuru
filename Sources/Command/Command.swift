@@ -43,7 +43,7 @@ struct GenerateCommand: AsyncParsableCommand {
                 style: .subdirectory
             ),
             metadata: BlogMetadata(
-                blogTitle: "My Blog",
+                blogName: "My Blog",
                 copyright: "2025 My Blog",
             )
         )
