@@ -77,6 +77,17 @@ struct GenerateCommand: AsyncParsableCommand {
     }
 }
 
+struct InitCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "init"
+    )
+
+    mutating func run() async throws {
+        // generate tuzuru.json
+    }
+}
+
+
 struct AddCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "add"
