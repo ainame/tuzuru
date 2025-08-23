@@ -22,7 +22,7 @@ public struct PathGenerator: Sendable {
     }
     
     /// Generate clean URL for linking to a page (used in templates)
-    public func generateURL(for pagePath: FilePath) -> String {
+    public func generateUrl(for pagePath: FilePath) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
         
         switch configuration.style {
@@ -34,7 +34,7 @@ public struct PathGenerator: Sendable {
     }
     
     /// Generate home page URL for blog title link (context-aware)
-    public func generateHomeURL(from pagePath: FilePath? = nil) -> String {
+    public func generateHomeUrl(from pagePath: FilePath? = nil) -> String {
         switch configuration.style {
         case .direct:
             return configuration.indexFileName

@@ -3,7 +3,7 @@ import Foundation
 /// Site metadata configuration
 public struct BlogMetadata: Sendable {
     /// Blog title displayed in layouts
-    public let blogTitle: String
+    public let blogName: String
     
     /// Copyright notice
     public let copyright: String
@@ -12,7 +12,7 @@ public struct BlogMetadata: Sendable {
         blogTitle: String,
         copyright: String,
     ) {
-        self.blogTitle = blogTitle
+        self.blogName = blogTitle
         self.copyright = copyright
     }
 }

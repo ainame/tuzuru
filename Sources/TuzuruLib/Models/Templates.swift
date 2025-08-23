@@ -2,14 +2,14 @@ import Foundation
 import System
 
 /// Template file configuration
-struct Templates: Sendable {
-    /// Layout template file path (e.g., "layout.mustache")
+struct Templates: Sendable, Equatable {
+    /// Layout template file path (e.g., "layout.html.mustache")
     let layoutFile: String
     
-    /// Article template file path (e.g., "article.html")
+    /// Article template file path (e.g., "article.html.mustache")
     let articleFile: String
     
-    /// List template file path (e.g., "list.html")
+    /// List template file path (e.g., "list.html.mustache")
     let listFile: String
     
     init(layoutFile: String, articleFile: String, listFile: String) {

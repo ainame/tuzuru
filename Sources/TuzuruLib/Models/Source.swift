@@ -3,12 +3,12 @@ import System
 
 struct Source: Sendable, Equatable {
     var title: String
-    var layoutFile: FilePath
+    var templates: Templates
     var pages: [Article]
 
-    init(title: String, templates: FilePath, pages: [Article]) {
+    init(title: String, templates: Templates, pages: [Article]) {
         self.title = title
-        self.layoutFile = templates
+        self.templates = templates
         self.pages = pages
     }
 }
