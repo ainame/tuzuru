@@ -11,23 +11,23 @@ public struct Tuzuru {
     public init(
         fileManager: FileManager = .default,
         configuration: BlogConfiguration
-    ) {
-        self.contentLoader = ContentLoader()
-        self.siteGenerator = BlogGenerator(fileManager: fileManager, configuration: configuration)
+    ) throws {
+        self.contentLoader = ContentLoader(configuration: configuration)
+        self.siteGenerator = try BlogGenerator(fileManager: fileManager, configuration: configuration)
         self.blogConfiguration = configuration
     }
 
     public func run() async throws -> FilePath {
         let source: Source = try await loadSources(blogConfiguration.sourceLayout)
-        let outputPath: FilePath = try generate(source)
+        let outputPath: FilePath = try await generate(source)
         return outputPath
     }
 
-    func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
-        return try await contentLoader.loadSources(sourceLayout)
+    public func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
+        try await contentLoader.loadSources(blogConfiguration.sourceLayout)
     }
 
-    func generate(_ source: Source) throws -> FilePath {
-        return try siteGenerator.generate(source)
+    public func generate(_ source: Source) async throws -> FilePath {
+        try siteGenerator.generate(source)
     }
 }

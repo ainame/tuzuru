@@ -1,12 +1,12 @@
 import Foundation
 import System
 
-struct SourceLayout: Sendable {
-    let templates: FilePath
-    let contents: FilePath
-    let assets: FilePath
+public struct SourceLayout: Sendable {
+    public let templates: Templates
+    public let contents: FilePath
+    public let assets: FilePath
 
-    init(templates: FilePath, contents: FilePath, assets: FilePath) {
+    public init(templates: Templates, contents: FilePath, assets: FilePath) {
         self.templates = templates
         self.contents = contents
         self.assets = assets

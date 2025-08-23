@@ -1,12 +1,12 @@
 import Foundation
 import System
 
-struct Source: Sendable, Equatable {
-    var title: String
-    var templates: Templates
-    var pages: [Article]
+public struct Source: Sendable {
+    public var title: String
+    var templates: LoadedTemplates
+    public var pages: [Article]
 
-    init(title: String, templates: Templates, pages: [Article]) {
+    init(title: String, templates: LoadedTemplates, pages: [Article]) {
         self.title = title
         self.templates = templates
         self.pages = pages

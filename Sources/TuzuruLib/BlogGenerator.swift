@@ -7,7 +7,6 @@ struct BlogGenerator {
     private let fileManager: FileManager
     private let configuration: BlogConfiguration
     private let pathGenerator: PathGenerator
-    private let pageRenderer: PageRenderer
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
@@ -18,27 +17,27 @@ struct BlogGenerator {
         self.fileManager = fileManager
         self.configuration = configuration
         self.pathGenerator = PathGenerator(configuration: configuration.outputOptions)
-        self.pageRenderer = try PageRenderer(templates: configuration.templates)
     }
 
     func generate(_ source: Source) throws -> FilePath {
         let blogRoot = FilePath(configuration.outputOptions.directory)
+        let pageRenderer = PageRenderer(templates: source.templates)
 
         // Create site directory if it doesn't exist
         try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
 
         // Generate individual article pages
         for article in source.pages {
-            try generateArticlePage(article: article, blogRoot: blogRoot)
+            try generateArticlePage(pageRenderer: pageRenderer, article: article, blogRoot: blogRoot)
         }
 
         // Generate list page (index.html)
-        try generateListPage(pages: source.pages, blogRoot: blogRoot)
+        try generateListPage(pageRenderer: pageRenderer, pages: source.pages, blogRoot: blogRoot)
 
         return blogRoot
     }
 
-    private func generateArticlePage(article: Article, blogRoot: FilePath) throws {
+    private func generateArticlePage(pageRenderer: PageRenderer, article: Article, blogRoot: FilePath) throws {
         // Prepare data for article template
         let articleData = ArticleData(
             title: article.title,
@@ -73,7 +72,7 @@ struct BlogGenerator {
         fileManager.createFile(atPath: outputPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateListPage(pages: [Article], blogRoot: FilePath) throws {
+    private func generateListPage(pageRenderer: PageRenderer, pages: [Article], blogRoot: FilePath) throws {
         // Prepare articles data for list template
         let listItems = pages.map { article in
             ListItemData(

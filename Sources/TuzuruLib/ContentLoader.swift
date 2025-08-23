@@ -1,18 +1,22 @@
 import Foundation
 import Markdown
+import Mustache
 import System
 
 /// Handles loading and processing source content from markdown files
 struct ContentLoader: Sendable {
+    private let configuration: BlogConfiguration
     private let gitWrapper: GitWrapper
     
-    init() {
+    init(configuration: BlogConfiguration) {
+        self.configuration = configuration
         self.gitWrapper = GitWrapper()
     }
 
     @concurrent
     func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
-        var source = Source(title: "", templates: sourceLayout.templates, pages: [])
+        let templates = try loadTemplates(templates: sourceLayout.templates)
+        var source = Source(title: "", templates: templates, pages: [])
 
         let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: sourceLayout.contents)
 
@@ -93,6 +97,29 @@ struct ContentLoader: Sendable {
             excerpt: walker.result,
             content: markdownContent,
             htmlContent: htmlFormatter.result,
+        )
+    }
+
+    private func loadTemplates(templates: Templates) throws -> LoadedTemplates {
+        let fileManager = FileManager()
+        guard let layoutData = fileManager.contents(atPath: templates.layoutFile.string),
+              let layoutTemplate = String(data: layoutData, encoding: .utf8) else {
+            throw TuzuruError.templateNotFound(templates.layoutFile.string)
+        }
+
+        guard let articleData = fileManager.contents(atPath: templates.articleFile.string),
+              let articleTemplate = String(data: articleData, encoding: .utf8) else {
+            throw TuzuruError.templateNotFound(templates.articleFile.string)
+        }
+
+        guard let listData = fileManager.contents(atPath: templates.listFile.string),
+              let listTemplate = String(data: listData, encoding: .utf8) else {
+            throw TuzuruError.templateNotFound(templates.listFile.string)
+        }
+        return try LoadedTemplates(
+            layout: MustacheTemplate(string: layoutTemplate),
+            article: MustacheTemplate(string: articleTemplate),
+            list: MustacheTemplate(string: listTemplate),
         )
     }
 }

@@ -54,14 +54,13 @@ struct GenerateCommand: AsyncParsableCommand {
         // Create configuration with default values
         let blogConfig = BlogConfiguration(
             sourceLayout: SourceLayout(
-                templates: currentPath.appending("templates"),
+                templates: Templates(
+                    layoutFile: currentPath.appending("templates").appending("layout.html.mustache"),
+                    articleFile: currentPath.appending("templates").appending("article.html.mustache"),
+                    listFile: currentPath.appending("templates").appending("list.html.mustache"),
+                ),
                 contents: currentPath.appending("contents"),
                 assets: currentPath.appending("assets"),
-            ),
-            templates: Templates(
-                layoutFile: "layout.html.mustache",
-                articleFile: "article.html.mustache",
-                listFile: "list.html.mustache",
             ),
             output: OutputOptions(
                 directory: "blog",
@@ -75,13 +74,13 @@ struct GenerateCommand: AsyncParsableCommand {
         )
         
         // Initialize Tuzuru with configuration
-        let tuzuru = Tuzuru(configuration: blogConfig)
-        
+        let tuzuru = try Tuzuru(configuration: blogConfig)
+
         print("🔍 Scanning for markdown files in contents/...")
         
         // Load sources (scan markdown files and get git info)
         let source = try await tuzuru.loadSources(blogConfig.sourceLayout)
-        
+
         print("📝 Found \(source.pages.count) articles")
         for article in source.pages {
             print("  - \(article.title) by \(article.author)")
@@ -90,7 +89,7 @@ struct GenerateCommand: AsyncParsableCommand {
         print("🚀 Generating site...")
         
         // Generate the site - now returns simple FilePath
-        let outputDirectory = try tuzuru.generate(source)
+        let outputDirectory = try await tuzuru.generate(source)
         
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
