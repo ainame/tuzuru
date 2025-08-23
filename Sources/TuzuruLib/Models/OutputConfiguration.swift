@@ -26,13 +26,6 @@ public struct OutputConfiguration: Sendable {
         self.style = style
     }
     
-    /// Convenience initializer for backward compatibility
-    public init(directory: String, indexFileName: String, pageExtension: String) {
-        self.directory = directory
-        self.indexFileName = indexFileName
-        self.style = .direct
-    }
-    
     /// Generate output path for a page based on its source path and style
     public func generateOutputPath(for pagePath: FilePath) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
@@ -43,10 +36,5 @@ public struct OutputConfiguration: Sendable {
         case .subdirectory:
             return "\(stem)/index.html"
         }
-    }
-    
-    /// Generate filename for a page based on its path (deprecated, use generateOutputPath)
-    public func generateFileName(for pagePath: FilePath) -> String {
-        return generateOutputPath(for: pagePath)
     }
 }
