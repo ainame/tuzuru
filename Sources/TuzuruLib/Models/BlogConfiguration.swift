@@ -2,7 +2,7 @@ import Foundation
 import System
 
 /// Configuration for blog generation, eliminating hardcoded assumptions
-public struct BlogConfiguration: Sendable {
+public struct BlogConfiguration: Sendable, Codable {
     /// Source file directory paths
     public let sourceLayout: SourceLayout
 

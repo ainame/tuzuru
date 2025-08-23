@@ -1,7 +1,7 @@
 import Foundation
 
 /// Site metadata configuration
-public struct BlogMetadata: Sendable {
+public struct BlogMetadata: Sendable, Codable {
     /// Blog title displayed in layouts
     public let blogName: String
 
