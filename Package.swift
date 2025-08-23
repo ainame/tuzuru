@@ -40,7 +40,10 @@ let package = Package(
                 .product(name: "Mustache", package: "swift-mustache"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
                 //.product(name: "SystemPackage", package: "swift-system"),
-            ]
+            ],
+            resources: [
+                .process("Resources"),
+            ],
         ),
         .testTarget(
             name: "TuzuruLibTests",
