@@ -24,6 +24,6 @@ struct PageRenderer {
     }
 
     func render(_ data: ListPageLayoutData) throws -> String {
-        templates.list.render(data.render())
+        templates.layout.render(data.render())
     }
 }

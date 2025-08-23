@@ -27,12 +27,12 @@ struct BlogGenerator {
         try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
 
         // Generate individual article pages
-        for article in source.pages {
+        for article in source.articles {
             try generateArticlePage(pageRenderer: pageRenderer, article: article, blogRoot: blogRoot)
         }
 
         // Generate list page (index.html)
-        try generateListPage(pageRenderer: pageRenderer, pages: source.pages, blogRoot: blogRoot)
+        try generateListPage(pageRenderer: pageRenderer, articles: source.articles, blogRoot: blogRoot)
 
         return blogRoot
     }
@@ -50,7 +50,7 @@ struct BlogGenerator {
 
         // Prepare data for layout template
         let layoutData = ArticlePageLayoutData(
-            pageTitle: article.title,
+            pageTitle: "\(article.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
             homeUrl: pathGenerator.generateHomeUrl(from: article.path),
             content: renderedArticle,
@@ -72,9 +72,9 @@ struct BlogGenerator {
         fileManager.createFile(atPath: outputPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateListPage(pageRenderer: PageRenderer, pages: [Article], blogRoot: FilePath) throws {
+    private func generateListPage(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
         // Prepare articles data for list template
-        let listItems = pages.map { article in
+        let listItems = articles.map { article in
             ListItemData(
                 title: article.title,
                 author: article.author,

@@ -4,7 +4,7 @@ import Mustache
 import System
 
 /// Handles loading and processing source content from markdown files
-struct ContentLoader: Sendable {
+struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
     private let gitWrapper: GitWrapper
     
@@ -14,29 +14,31 @@ struct ContentLoader: Sendable {
     }
 
     @concurrent
-    func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
-        let templates = try loadTemplates(templates: sourceLayout.templates)
-        var source = Source(title: "", templates: templates, pages: [])
+    func loadSources() async throws -> Source {
+        let templates = try loadTemplates(templates: configuration.sourceLayout.templates)
+        var source = Source(metadata: configuration.metadata, templates: templates, articles: [])
 
-        let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: sourceLayout.contents)
+        let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents)
 
-        let articles = try await withThrowingTaskGroup { group in
+        source.articles = try await withThrowingTaskGroup(of: Article?.self) { group in
             for markdownPath in markdownFiles {
                 group.addTask {
                     let fileManager = FileManager()
                     return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath)
                 }
             }
+
             var articles = [Article]()
-            while let result = try await group.next(),
-                  let result {
-                articles.append(result)
+            for try await result in group {
+                if let result {
+                    articles.append(result)
+                }
             }
             return articles
         }
 
         // Sort pages by publish date (newest first)
-        source.pages.sort { $0.publishedAt > $1.publishedAt }
+        source.articles.sort { $0.publishedAt > $1.publishedAt }
         
         return source
     }

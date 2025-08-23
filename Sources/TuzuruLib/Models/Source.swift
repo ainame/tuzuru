@@ -2,13 +2,13 @@ import Foundation
 import System
 
 public struct Source: Sendable {
-    public var title: String
+    public var metadata: BlogMetadata
     var templates: LoadedTemplates
-    public var pages: [Article]
+    public var articles: [Article]
 
-    init(title: String, templates: LoadedTemplates, pages: [Article]) {
-        self.title = title
+    init(metadata: BlogMetadata, templates: LoadedTemplates, articles: [Article]) {
+        self.metadata = metadata
         self.templates = templates
-        self.pages = pages
+        self.articles = articles
     }
 }
