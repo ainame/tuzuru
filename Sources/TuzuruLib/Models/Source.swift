@@ -1,14 +1,14 @@
 import Foundation
 import System
 
-public struct Source: Equatable {
-    public var title: String
-    public var layoutFile: FilePath
-    public var pages: [Article]
+struct Source: Sendable, Equatable {
+    var title: String
+    var layoutFile: FilePath
+    var pages: [Article]
 
-    public init(title: String, layoutFile: FilePath, pages: [Article]) {
+    init(title: String, templates: FilePath, pages: [Article]) {
         self.title = title
-        self.layoutFile = layoutFile
+        self.layoutFile = templates
         self.pages = pages
     }
 }

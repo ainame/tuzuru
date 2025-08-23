@@ -3,26 +3,34 @@ import Markdown
 import System
 
 /// Handles loading and processing source content from markdown files
-struct ContentLoader {
-    private let fileManager: FileManager
+struct ContentLoader: Sendable {
     private let gitWrapper: GitWrapper
     
-    init(fileManager: FileManager = .default) {
-        self.fileManager = fileManager
+    init() {
         self.gitWrapper = GitWrapper()
     }
-    
-    func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
-        var source = Source(title: "", layoutFile: sourceLayout.layoutFile, pages: [])
-        
-        let markdownFiles = try findMarkdownFiles(in: sourceLayout.contents)
 
-        for markdownPath in markdownFiles {
-            if let article = try await processMarkdownFile(markdownPath) {
-                source.pages.append(article)
+    @concurrent
+    func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {
+        var source = Source(title: "", templates: sourceLayout.templates, pages: [])
+
+        let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: sourceLayout.contents)
+
+        let articles = try await withThrowingTaskGroup { group in
+            for markdownPath in markdownFiles {
+                group.addTask {
+                    let fileManager = FileManager()
+                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath)
+                }
             }
+            var articles = [Article]()
+            while let result = try await group.next(),
+                  let result {
+                articles.append(result)
+            }
+            return articles
         }
-        
+
         // Sort pages by publish date (newest first)
         source.pages.sort { $0.publishedAt > $1.publishedAt }
         
@@ -31,7 +39,7 @@ struct ContentLoader {
     
     // MARK: - Private Methods
     
-    private func findMarkdownFiles(in directory: FilePath) throws -> [FilePath] {
+    private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
         
         let enumerator = fileManager.enumerator(atPath: directory.string)
@@ -44,7 +52,7 @@ struct ContentLoader {
         return markdownFiles
     }
     
-    private func processMarkdownFile(_ markdownPath: FilePath) async throws -> Article? {
+    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath) async throws -> Article? {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
         
         // Get the first commit (initial commit) for publish date and author

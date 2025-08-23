@@ -1,9 +1,9 @@
 import Foundation
 
-public struct GitLog {
-    public let commitHash: String
-    public let commitMessage: String
-    public let author: String
-    public let email: String
-    public let date: Date
+struct GitLog {
+    let commitHash: String
+    let commitMessage: String
+    let author: String
+    let email: String
+    let date: Date
 }

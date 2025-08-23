@@ -11,11 +11,11 @@ struct BlogGenerator {
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) {
         self.fileManager = fileManager
         self.configuration = configuration
-        self.pathGenerator = PathGenerator(configuration: configuration.output)
+        self.pathGenerator = PathGenerator(configuration: configuration.outputOptions)
     }
     
     func generate(_ source: Source) throws -> FilePath {
-        let blogRoot = FilePath(configuration.output.directory)
+        let blogRoot = FilePath(configuration.outputOptions.directory)
         
         // Create site directory if it doesn't exist
         try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
@@ -147,7 +147,6 @@ struct BlogGenerator {
         
         // Prepare data for layout template
         let layoutData: [String: Any] = [
-            "title": configuration.metadata.listPageTitle,
             "blog_title": configuration.metadata.blogTitle,
             "home_url": pathGenerator.generateHomeURL(),
             "content": renderedList
@@ -158,7 +157,7 @@ struct BlogGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write index.html
-        let indexPath = siteRoot.appending(configuration.output.indexFileName)
+        let indexPath = siteRoot.appending(configuration.outputOptions.indexFileName)
         try finalHTML.write(to: URL(fileURLWithPath: indexPath.string), atomically: true, encoding: .utf8)
     }
     

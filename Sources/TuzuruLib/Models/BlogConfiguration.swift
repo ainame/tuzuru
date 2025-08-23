@@ -3,22 +3,27 @@ import System
 
 /// Configuration for blog generation, eliminating hardcoded assumptions
 public struct BlogConfiguration: Sendable {
+    /// Source file directory paths
+    public let sourceLayout: SourceLayout
+
     /// Template file paths
-    public let templates: TemplateConfiguration
+    public let templates: Templates
     
     /// Output configuration
-    public let output: OutputConfiguration
+    public let outputOptions: OutputOptions
     
     /// Blog metadata
     public let metadata: BlogMetadata
     
     public init(
-        templates: TemplateConfiguration,
-        output: OutputConfiguration,
+        sourceLayout: SourceLayout,
+        templates: Templates,
+        output: OutputOptions,
         metadata: BlogMetadata,
     ) {
+        self.sourceLayout = sourceLayout
         self.templates = templates
-        self.output = output
+        self.outputOptions = output
         self.metadata = metadata
     }
 }

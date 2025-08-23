@@ -53,12 +53,17 @@ struct GenerateCommand: AsyncParsableCommand {
         
         // Create configuration with default values
         let blogConfig = BlogConfiguration(
-            templates: TemplateConfiguration(
+            sourceLayout: SourceLayout(
+                templates: currentPath.appending("templates"),
+                contents: currentPath.appending("contents"),
+                assets: currentPath.appending("assets"),
+            ),
+            templates: Templates(
                 layoutFile: "layout.html.mustache",
                 articleFile: "article.html.mustache",
                 listFile: "list.html.mustache",
             ),
-            output: OutputConfiguration(
+            output: OutputOptions(
                 directory: "blog",
                 indexFileName: "index.html",
                 style: .subdirectory
@@ -66,15 +71,7 @@ struct GenerateCommand: AsyncParsableCommand {
             metadata: BlogMetadata(
                 blogTitle: "My Blog",
                 copyright: "2025 My Blog",
-                listPageTitle: "Blog",
             )
-        )
-        
-        // Set up source layout using configuration
-        let sourceLayout = SourceLayout(
-            layoutFile: currentPath.appending(blogConfig.templates.layoutFile),
-            contents: currentPath.appending("contents"), // Could be configurable too
-            assets: currentPath.appending("assets")       // Could be configurable too
         )
         
         // Initialize Tuzuru with configuration
@@ -83,7 +80,7 @@ struct GenerateCommand: AsyncParsableCommand {
         print("🔍 Scanning for markdown files in contents/...")
         
         // Load sources (scan markdown files and get git info)
-        let source = try await tuzuru.loadSources(sourceLayout)
+        let source = try await tuzuru.loadSources(blogConfig.sourceLayout)
         
         print("📝 Found \(source.pages.count) articles")
         for article in source.pages {
@@ -97,8 +94,8 @@ struct GenerateCommand: AsyncParsableCommand {
         
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
-        print("  - \(blogConfig.output.indexFileName) (list page)")
-        let pathGenerator = PathGenerator(configuration: blogConfig.output)
+        print("  - \(blogConfig.outputOptions.indexFileName) (list page)")
+        let pathGenerator = PathGenerator(configuration: blogConfig.outputOptions)
         for article in source.pages {
             let articleName = pathGenerator.generateOutputPath(for: article.path)
             print("  - \(articleName)")

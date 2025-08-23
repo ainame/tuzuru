@@ -3,9 +3,9 @@ import System
 
 /// Generates paths and URLs based on output configuration
 public struct PathGenerator: Sendable {
-    private let configuration: OutputConfiguration
+    private let configuration: OutputOptions
     
-    public init(configuration: OutputConfiguration) {
+    public init(configuration: OutputOptions) {
         self.configuration = configuration
     }
     

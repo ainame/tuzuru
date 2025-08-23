@@ -7,17 +7,12 @@ public struct BlogMetadata: Sendable {
     
     /// Copyright notice
     public let copyright: String
-    
-    /// Default page title for list pages
-    public let listPageTitle: String
-    
+
     public init(
         blogTitle: String,
         copyright: String,
-        listPageTitle: String,
     ) {
         self.blogTitle = blogTitle
         self.copyright = copyright
-        self.listPageTitle = listPageTitle
     }
 }

@@ -1,16 +1,16 @@
 import Foundation
 import System
 
-/// Output file and directory configuration
-/// Output style for generated HTML files
-public enum OutputStyle: Sendable, CaseIterable {
-    /// Direct HTML files (e.g., "about.html")
-    case direct
-    /// Subdirectory with index.html (e.g., "about/index.html" for clean URLs)
-    case subdirectory
-}
+public struct OutputOptions: Sendable {
+    /// Output file and directory configuration
+    /// Output style for generated HTML files
+    public enum OutputStyle: Sendable, CaseIterable {
+        /// Direct HTML files (e.g., "about.html")
+        case direct
+        /// Subdirectory with index.html (e.g., "about/index.html" for clean URLs)
+        case subdirectory
+    }
 
-public struct OutputConfiguration: Sendable {
     /// Output directory name (e.g., "blog", "site", "build", "dist")
     public let directory: String
 

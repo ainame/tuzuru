@@ -1,16 +1,16 @@
 import Foundation
 import System
 
-public struct Article: Hashable {
-    public let path: FilePath
-    public var title: String
-    public var author: String
-    public var publishedAt: Date
-    public var excerpt: String
-    public var content: String
-    public var htmlContent: String
+struct Article: Sendable, Hashable {
+    let path: FilePath
+    var title: String
+    var author: String
+    var publishedAt: Date
+    var excerpt: String
+    var content: String
+    var htmlContent: String
 
-    public init(
+    init(
         path: FilePath,
         title: String,
         author: String,
