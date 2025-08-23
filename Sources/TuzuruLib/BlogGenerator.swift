@@ -95,6 +95,7 @@ struct BlogGenerator {
         let layoutData: [String: Any] = [
             "title": article.title,
             "blog_title": configuration.metadata.blogTitle,
+            "home_url": configuration.output.generateHomeURL(from: article.path),
             "content": renderedArticle
         ]
         
@@ -146,6 +147,7 @@ struct BlogGenerator {
         let layoutData: [String: Any] = [
             "title": configuration.metadata.listPageTitle,
             "blog_title": configuration.metadata.blogTitle,
+            "home_url": configuration.output.generateHomeURL(),
             "content": renderedList
         ]
         

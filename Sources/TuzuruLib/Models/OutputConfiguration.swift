@@ -49,4 +49,20 @@ public struct OutputConfiguration: Sendable {
             return "\(stem)/"
         }
     }
+    
+    /// Generate home page URL for blog title link (context-aware)
+    public func generateHomeURL(from pagePath: FilePath? = nil) -> String {
+        switch style {
+        case .direct:
+            return indexFileName
+        case .subdirectory:
+            // If we're generating for an article page (in a subdirectory), go up one level
+            if pagePath != nil {
+                return "../"
+            } else {
+                // For the index page itself
+                return "./"
+            }
+        }
+    }
 }
