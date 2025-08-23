@@ -18,4 +18,3 @@ public struct TemplateConfiguration: Sendable {
         self.listFile = listFile
     }
 }
-

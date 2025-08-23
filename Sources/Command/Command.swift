@@ -98,8 +98,9 @@ struct GenerateCommand: AsyncParsableCommand {
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(blogConfig.output.indexFileName) (list page)")
+        let pathGenerator = PathGenerator(configuration: blogConfig.output)
         for article in source.pages {
-            let articleName = blogConfig.output.generateOutputPath(for: article.path)
+            let articleName = pathGenerator.generateOutputPath(for: article.path)
             print("  - \(articleName)")
         }
     }

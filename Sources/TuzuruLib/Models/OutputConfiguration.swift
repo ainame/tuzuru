@@ -13,56 +13,16 @@ public enum OutputStyle: Sendable, CaseIterable {
 public struct OutputConfiguration: Sendable {
     /// Output directory name (e.g., "blog", "site", "build", "dist")
     public let directory: String
-    
+
     /// Index page filename (e.g., "index.html")
     public let indexFileName: String
-    
+
     /// Output style for generated pages
     public let style: OutputStyle
-    
+
     public init(directory: String, indexFileName: String, style: OutputStyle) {
         self.directory = directory
         self.indexFileName = indexFileName
         self.style = style
-    }
-    
-    /// Generate output file path for a page based on its source path and style
-    public func generateOutputPath(for pagePath: FilePath) -> String {
-        let stem = pagePath.lastComponent?.stem ?? "untitled"
-        
-        switch style {
-        case .direct:
-            return "\(stem).html"
-        case .subdirectory:
-            return "\(stem)/index.html"
-        }
-    }
-    
-    /// Generate clean URL for linking to a page (used in templates)
-    public func generateURL(for pagePath: FilePath) -> String {
-        let stem = pagePath.lastComponent?.stem ?? "untitled"
-        
-        switch style {
-        case .direct:
-            return "\(stem).html"
-        case .subdirectory:
-            return "\(stem)/"
-        }
-    }
-    
-    /// Generate home page URL for blog title link (context-aware)
-    public func generateHomeURL(from pagePath: FilePath? = nil) -> String {
-        switch style {
-        case .direct:
-            return indexFileName
-        case .subdirectory:
-            // If we're generating for an article page (in a subdirectory), go up one level
-            if pagePath != nil {
-                return "../"
-            } else {
-                // For the index page itself
-                return "./"
-            }
-        }
     }
 }

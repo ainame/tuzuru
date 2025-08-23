@@ -6,10 +6,12 @@ import Mustache
 struct BlogGenerator {
     private let fileManager: FileManager
     private let configuration: BlogConfiguration
+    private let pathGenerator: PathGenerator
 
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) {
         self.fileManager = fileManager
         self.configuration = configuration
+        self.pathGenerator = PathGenerator(configuration: configuration.output)
     }
     
     func generate(_ source: Source) throws -> FilePath {
@@ -95,7 +97,7 @@ struct BlogGenerator {
         let layoutData: [String: Any] = [
             "title": article.title,
             "blog_title": configuration.metadata.blogTitle,
-            "home_url": configuration.output.generateHomeURL(from: article.path),
+            "home_url": pathGenerator.generateHomeURL(from: article.path),
             "content": renderedArticle
         ]
         
@@ -104,7 +106,7 @@ struct BlogGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write to file
-        let fileName = configuration.output.generateOutputPath(for: article.path)
+        let fileName = pathGenerator.generateOutputPath(for: article.path)
         let outputPath = siteRoot.appending(fileName)
         
         // Create subdirectory if needed (for subdirectory style)
@@ -124,7 +126,7 @@ struct BlogGenerator {
     ) throws {
         // Prepare articles data for list template
         let articlesData = pages.map { article -> [String: Any] in
-            let articleURL = configuration.output.generateURL(for: article.path)
+            let articleURL = pathGenerator.generateURL(for: article.path)
             
             return [
                 "title": article.title,
@@ -147,7 +149,7 @@ struct BlogGenerator {
         let layoutData: [String: Any] = [
             "title": configuration.metadata.listPageTitle,
             "blog_title": configuration.metadata.blogTitle,
-            "home_url": configuration.output.generateHomeURL(),
+            "home_url": pathGenerator.generateHomeURL(),
             "content": renderedList
         ]
         
