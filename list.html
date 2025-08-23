@@ -1,0 +1,21 @@
+<div class="article-list">
+    <h2>Recent Articles</h2>
+    <ul style="list-style: none; padding: 0;">
+        {{#articles}}
+        <li style="margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #ddd;">
+            <h3 style="margin: 0 0 10px 0;">
+                <a href="{{url}}" style="color: #8b4513; text-decoration: none;">{{title}}</a>
+            </h3>
+            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                By {{author}} on {{publishedAt}}
+            </p>
+            {{#excerpt}}
+            <p style="margin: 10px 0; color: #555;">{{excerpt}}</p>
+            {{/excerpt}}
+        </li>
+        {{/articles}}
+    </ul>
+    {{^articles}}
+    <p style="color: #666; font-style: italic;">No articles available.</p>
+    {{/articles}}
+</div>
