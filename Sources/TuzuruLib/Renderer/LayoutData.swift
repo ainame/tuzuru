@@ -1,6 +1,6 @@
 import Foundation
 
-struct ListPageLayoutData {
+struct LayoutData {
     let pageTitle: String
     let blogName: String
     let copyright: String
@@ -11,6 +11,7 @@ struct ListPageLayoutData {
         [
             "pageTitle": pageTitle,
             "blogName": blogName,
+            "copyright": copyright,
             "homeUrl": homeUrl,
             "content": content,
         ]

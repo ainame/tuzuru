@@ -13,17 +13,13 @@ struct PageRenderer {
         templates.article.render(data.render())
     }
 
-    func render(_ data: ArticlePageLayoutData) throws -> String {
-        templates.layout.render(data.render())
-    }
-
     func render(_ data: [ListItemData]) throws -> String {
         templates.list.render([
             "articles": data.map { $0.render() },
         ])
     }
 
-    func render(_ data: ListPageLayoutData) throws -> String {
+    func render(_ data: LayoutData) throws -> String {
         templates.layout.render(data.render())
     }
 }

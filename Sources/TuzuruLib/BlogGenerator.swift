@@ -49,9 +49,10 @@ struct BlogGenerator {
         let renderedArticle = try pageRenderer.render(articleData)
 
         // Prepare data for layout template
-        let layoutData = ArticlePageLayoutData(
+        let layoutData = LayoutData(
             pageTitle: "\(article.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
+            copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(from: article.path),
             content: renderedArticle,
         )
@@ -88,7 +89,7 @@ struct BlogGenerator {
         let renderedList = try pageRenderer.render(listItems)
 
         // Prepare data for layout template
-        let layoutData = ListPageLayoutData(
+        let layoutData = LayoutData(
             pageTitle: configuration.metadata.blogName,
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
