@@ -19,8 +19,8 @@ struct ContentLoader {
         let markdownFiles = try findMarkdownFiles(in: sourceLayout.contents)
         
         for markdownPath in markdownFiles {
-            let page = try await processMarkdownFile(markdownPath)
-            source.pages.append(page)
+            let article = try await processMarkdownFile(markdownPath)
+            source.pages.append(article)
         }
         
         // Sort pages by publish date (newest first)
@@ -44,7 +44,7 @@ struct ContentLoader {
         return markdownFiles
     }
     
-    private func processMarkdownFile(_ markdownPath: FilePath) async throws -> Page {
+    private func processMarkdownFile(_ markdownPath: FilePath) async throws -> Article {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
         
         // Get the first commit (initial commit) for publish date and author
@@ -64,7 +64,7 @@ struct ContentLoader {
         // Convert markdown to HTML
         let htmlContent = markdownProcessor.convertToHTML(markdownContent)
         
-        return Page(
+        return Article(
             path: markdownPath,
             title: title,
             author: author,

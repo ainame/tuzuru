@@ -24,9 +24,9 @@ struct SiteGenerator {
         let templates = try loadTemplates(source: source)
         
         // Generate individual article pages
-        for page in source.pages {
+        for article in source.pages {
             try generateArticlePage(
-                page: page,
+                article: article,
                 layoutTemplate: templates.layout,
                 articleTemplate: templates.article,
                 siteRoot: siteRoot
@@ -76,17 +76,17 @@ struct SiteGenerator {
     }
     
     private func generateArticlePage(
-        page: Page,
+        article: Article,
         layoutTemplate: String,
         articleTemplate: String,
         siteRoot: FilePath
     ) throws {
         // Prepare data for article template
         let articleData: [String: Any] = [
-            "title": page.title,
-            "author": page.author,
-            "publishedAt": formatDate(page.publishedAt),
-            "body": page.htmlContent
+            "title": article.title,
+            "author": article.author,
+            "publishedAt": formatDate(article.publishedAt),
+            "body": article.htmlContent
         ]
         
         // Render article template
@@ -95,7 +95,7 @@ struct SiteGenerator {
         
         // Prepare data for layout template
         let layoutData: [String: Any] = [
-            "title": page.title,
+            "title": article.title,
             "blog_title": configuration.metadata.blogTitle,
             "content": renderedArticle
         ]
@@ -105,27 +105,27 @@ struct SiteGenerator {
         let finalHTML = layoutMustacheTemplate.render(layoutData)
         
         // Write to file
-        let fileName = configuration.output.generateFileName(for: page.path)
+        let fileName = configuration.output.generateFileName(for: article.path)
         let outputPath = siteRoot.appending(fileName)
         try finalHTML.write(to: URL(fileURLWithPath: outputPath.string), atomically: true, encoding: .utf8)
     }
     
     private func generateListPage(
-        pages: [Page],
+        pages: [Article],
         layoutTemplate: String,
         listTemplate: String,
         siteRoot: FilePath
     ) throws {
         // Prepare articles data for list template
-        let articlesData = pages.map { page -> [String: Any] in
-            let articleURL = configuration.output.generateFileName(for: page.path)
+        let articlesData = pages.map { article -> [String: Any] in
+            let articleURL = configuration.output.generateFileName(for: article.path)
             
             return [
-                "title": page.title,
-                "author": page.author,
-                "publishedAt": formatDate(page.publishedAt),
+                "title": article.title,
+                "author": article.author,
+                "publishedAt": formatDate(article.publishedAt),
                 "url": articleURL,
-                "excerpt": markdownProcessor.extractExcerpt(from: page.content)
+                "excerpt": markdownProcessor.extractExcerpt(from: article.content)
             ]
         }
         

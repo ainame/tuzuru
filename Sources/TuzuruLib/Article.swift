@@ -1,7 +1,7 @@
 import Foundation
 import System
 
-public struct Page: Hashable {
+public struct Article: Hashable {
     public let path: FilePath
     public var title: String
     public var author: String

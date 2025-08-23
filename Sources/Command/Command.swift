@@ -70,8 +70,8 @@ struct GenerateCommand: AsyncParsableCommand {
         let source = try await tuzuru.loadSources(sourceLayout)
         
         print("📝 Found \(source.pages.count) articles")
-        for page in source.pages {
-            print("  - \(page.title) by \(page.author)")
+        for article in source.pages {
+            print("  - \(article.title) by \(article.author)")
         }
         
         print("🚀 Generating site...")
@@ -82,8 +82,8 @@ struct GenerateCommand: AsyncParsableCommand {
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(siteConfig.output.indexFileName) (list page)")
-        for page in source.pages {
-            let articleName = siteConfig.output.generateFileName(for: page.path)
+        for article in source.pages {
+            let articleName = siteConfig.output.generateFileName(for: article.path)
             print("  - \(articleName)")
         }
     }
