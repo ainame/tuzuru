@@ -1,10 +1,10 @@
 import Foundation
 
-/// Examples of how to create custom site configurations
-public extension SiteConfiguration {
-    
+/// Examples of how to create custom Blog configurations
+public extension BlogConfiguration {
+
     /// Example configuration for a personal blog
-    static let personalBlog = SiteConfiguration(
+    static let personalBlog = BlogConfiguration(
         templates: TemplateConfiguration(
             layoutFile: "layouts/main.mustache",
             articleFile: "templates/post.html",
@@ -15,15 +15,15 @@ public extension SiteConfiguration {
             indexFileName: "index.html",
             pageExtension: ".html"
         ),
-        metadata: SiteMetadata(
+        metadata: BlogMetadata(
             blogTitle: "Jane's Tech Blog",
             copyright: "2025 Jane Doe",
             listPageTitle: "Latest Posts"
         )
     )
     
-    /// Example configuration for a documentation site
-    static let documentation = SiteConfiguration(
+    /// Example configuration for a documentation Blog
+    static let documentation = BlogConfiguration(
         templates: TemplateConfiguration(
             layoutFile: "theme/doc.mustache",
             articleFile: "theme/article.html",
@@ -34,15 +34,15 @@ public extension SiteConfiguration {
             indexFileName: "index.html",
             pageExtension: ".html"
         ),
-        metadata: SiteMetadata(
+        metadata: BlogMetadata(
             blogTitle: "API Documentation",
             copyright: "2025 Acme Corp",
             listPageTitle: "Table of Contents"
         )
     )
     
-    /// Example configuration for a portfolio site
-    static let portfolio = SiteConfiguration(
+    /// Example configuration for a portfolio Blog
+    static let portfolio = BlogConfiguration(
         templates: TemplateConfiguration(
             layoutFile: "portfolio.mustache",
             articleFile: "project.html",
@@ -53,7 +53,7 @@ public extension SiteConfiguration {
             indexFileName: "portfolio.html",
             pageExtension: ".html"
         ),
-        metadata: SiteMetadata(
+        metadata: BlogMetadata(
             blogTitle: "John's Portfolio",
             copyright: "2025 John Smith",
             listPageTitle: "My Work"
@@ -61,7 +61,7 @@ public extension SiteConfiguration {
     )
     
     /// Example configuration with different output format
-    static let xmlSite = SiteConfiguration(
+    static let xmlSite = BlogConfiguration(
         output: OutputConfiguration(
             directory: "xml-site",
             indexFileName: "sitemap.xml",

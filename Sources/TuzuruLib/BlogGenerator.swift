@@ -3,22 +3,22 @@ import System
 import Mustache
 
 /// Handles template processing and site generation
-struct SiteGenerator {
+struct BlogGenerator {
     private let fileManager: FileManager
     private let markdownProcessor: MarkdownProcessor
-    private let configuration: SiteConfiguration
-    
-    init(fileManager: FileManager = .default, configuration: SiteConfiguration = SiteConfiguration()) {
+    private let configuration: BlogConfiguration
+
+    init(fileManager: FileManager = .default, configuration: BlogConfiguration = BlogConfiguration()) {
         self.fileManager = fileManager
         self.markdownProcessor = MarkdownProcessor()
         self.configuration = configuration
     }
     
     func generate(_ source: Source) throws -> FilePath {
-        let siteRoot = FilePath(configuration.output.directory)
+        let blogRoot = FilePath(configuration.output.directory)
         
         // Create site directory if it doesn't exist
-        try fileManager.createDirectory(atPath: siteRoot.string, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
         
         // Load templates
         let templates = try loadTemplates(source: source)
@@ -29,7 +29,7 @@ struct SiteGenerator {
                 article: article,
                 layoutTemplate: templates.layout,
                 articleTemplate: templates.article,
-                siteRoot: siteRoot
+                siteRoot: blogRoot
             )
         }
         
@@ -38,10 +38,10 @@ struct SiteGenerator {
             pages: source.pages,
             layoutTemplate: templates.layout,
             listTemplate: templates.list,
-            siteRoot: siteRoot
+            siteRoot: blogRoot
         )
         
-        return siteRoot
+        return blogRoot
     }
     
     // MARK: - Private Methods

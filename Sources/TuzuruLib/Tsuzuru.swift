@@ -5,11 +5,11 @@ import Mustache
 
 public struct Tuzuru {
     private let contentLoader: ContentLoader
-    private let siteGenerator: SiteGenerator
+    private let siteGenerator: BlogGenerator
 
-    public init(fileManager: FileManager = .default, configuration: SiteConfiguration = SiteConfiguration()) {
+    public init(fileManager: FileManager = .default, configuration: BlogConfiguration = BlogConfiguration()) {
         self.contentLoader = ContentLoader(fileManager: fileManager)
-        self.siteGenerator = SiteGenerator(fileManager: fileManager, configuration: configuration)
+        self.siteGenerator = BlogGenerator(fileManager: fileManager, configuration: configuration)
     }
 
     public func loadSources(_ sourceLayout: SourceLayout) async throws -> Source {

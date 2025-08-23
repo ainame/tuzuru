@@ -52,7 +52,7 @@ struct GenerateCommand: AsyncParsableCommand {
         let currentPath = FilePath(FileManager.default.currentDirectoryPath)
         
         // Create configuration with default values
-        let siteConfig = SiteConfiguration()
+        let siteConfig = BlogConfiguration()
         
         // Set up source layout using configuration
         let sourceLayout = SourceLayout(
