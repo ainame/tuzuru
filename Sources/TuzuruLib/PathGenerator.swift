@@ -4,20 +4,34 @@ import System
 /// Generates paths and URLs based on output configuration
 public struct PathGenerator: Sendable {
     private let configuration: OutputOptions
+    private let contentsBasePath: FilePath
 
-    public init(configuration: OutputOptions) {
+    public init(configuration: OutputOptions, contentsBasePath: FilePath) {
         self.configuration = configuration
+        self.contentsBasePath = contentsBasePath
     }
 
     /// Generate output file path for a page based on its source path and style
     public func generateOutputPath(for pagePath: FilePath) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
+        // Calculate relative path from contents directory
+        let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+        let relativeDir = relativePath.removingLastComponent()
+
         switch configuration.style {
         case .direct:
-            return "\(stem).html"
+            if relativeDir.components.isEmpty {
+                return "\(stem).html"
+            } else {
+                return "\(relativeDir.string)/\(stem).html"
+            }
         case .subdirectory:
-            return "\(stem)/index.html"
+            if relativeDir.components.isEmpty {
+                return "\(stem)/index.html"
+            } else {
+                return "\(relativeDir.string)/\(stem)/index.html"
+            }
         }
     }
 
@@ -25,11 +39,23 @@ public struct PathGenerator: Sendable {
     public func generateUrl(for pagePath: FilePath) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
+        // Calculate relative path from contents directory
+        let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+        let relativeDir = relativePath.removingLastComponent()
+
         switch configuration.style {
         case .direct:
-            return "\(stem).html"
+            if relativeDir.components.isEmpty {
+                return "\(stem).html"
+            } else {
+                return "\(relativeDir.string)/\(stem).html"
+            }
         case .subdirectory:
-            return "\(stem)/"
+            if relativeDir.components.isEmpty {
+                return "\(stem)/"
+            } else {
+                return "\(relativeDir.string)/\(stem)/"
+            }
         }
     }
 
@@ -37,14 +63,24 @@ public struct PathGenerator: Sendable {
     public func generateHomeUrl(from pagePath: FilePath? = nil) -> String {
         switch configuration.style {
         case .direct:
-            configuration.indexFileName
+            if let pagePath = pagePath {
+                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let relativeDir = relativePath.removingLastComponent()
+                let depth = relativeDir.components.count
+                if depth > 0 {
+                    return String(repeating: "../", count: depth) + configuration.indexFileName
+                }
+            }
+            return configuration.indexFileName
         case .subdirectory:
-            // If we're generating for an article page (in a subdirectory), go up one level
-            if pagePath != nil {
-                "../"
+            if let pagePath = pagePath {
+                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let relativeDir = relativePath.removingLastComponent()
+                let depth = relativeDir.components.count + 1 // +1 for the article subdirectory
+                return String(repeating: "../", count: depth)
             } else {
                 // For the index page itself
-                "./"
+                return "./"
             }
         }
     }
@@ -53,15 +89,43 @@ public struct PathGenerator: Sendable {
     public func generateAssetsUrl(from pagePath: FilePath? = nil) -> String {
         switch configuration.style {
         case .direct:
-            "assets/"
+            if let pagePath = pagePath {
+                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let relativeDir = relativePath.removingLastComponent()
+                let depth = relativeDir.components.count
+                if depth > 0 {
+                    return String(repeating: "../", count: depth) + "assets/"
+                }
+            }
+            return "assets/"
         case .subdirectory:
-            // If we're generating for an article page (in a subdirectory), go up one level
-            if pagePath != nil {
-                "../assets/"
+            if let pagePath = pagePath {
+                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let relativeDir = relativePath.removingLastComponent()
+                let depth = relativeDir.components.count + 1 // +1 for the article subdirectory
+                return String(repeating: "../", count: depth) + "assets/"
             } else {
                 // For the index page itself
-                "assets/"
+                return "assets/"
             }
         }
+    }
+
+    /// Calculate relative path from base to target
+    private func getRelativePath(from base: FilePath, to target: FilePath) -> FilePath {
+        let baseComponents = base.components
+        let targetComponents = target.components
+
+        // Find the common prefix length
+        let commonLength = zip(baseComponents, targetComponents)
+            .prefix { $0 == $1 }
+            .count
+
+        // Get the remaining components from the target path
+        let relativeComponents = Array(targetComponents.dropFirst(commonLength))
+
+        // Create path string from components
+        let pathString = relativeComponents.map(\.string).joined(separator: "/")
+        return FilePath(pathString)
     }
 }

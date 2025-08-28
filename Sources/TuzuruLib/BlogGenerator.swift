@@ -12,7 +12,7 @@ struct BlogGenerator {
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) throws {
         self.fileManager = fileManager
         self.configuration = configuration
-        pathGenerator = PathGenerator(configuration: configuration.outputOptions)
+        pathGenerator = PathGenerator(configuration: configuration.outputOptions, contentsBasePath: configuration.sourceLayout.contents)
         formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.locale = configuration.metadata.locale
