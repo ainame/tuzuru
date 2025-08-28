@@ -1,11 +1,13 @@
 import Foundation
 
 struct ListData: PageRendererable {
+    let title: String
     let articles: [ListItemData]
 
     func render() -> [String : Any] {
         [
-            "articles": articles.map { $0.render() }
+            "title": title,
+            "articles": articles.map { $0.render() },
         ]
     }
 }

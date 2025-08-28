@@ -79,15 +79,18 @@ struct BlogGenerator {
 
     private func generateListPage(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
         // Prepare articles data for list template
-        let list = ListData(articles: articles.map { article in
-            ListItemData(
-                title: article.title,
-                author: article.author,
-                publishedAt: formatter.string(from: article.publishedAt),
-                excerpt: article.excerpt,
-                url: pathGenerator.generateUrl(for: article.path),
-            )
-        })
+        let list = ListData(
+            title: "Recent Posts",
+            articles: articles.map { article in
+                ListItemData(
+                    title: article.title,
+                    author: article.author,
+                    publishedAt: formatter.string(from: article.publishedAt),
+                    excerpt: article.excerpt,
+                    url: pathGenerator.generateUrl(for: article.path),
+                )
+            }
+        )
 
         // Prepare data for layout template
         let layoutData = LayoutData(
@@ -119,15 +122,18 @@ struct BlogGenerator {
             let yearArticlesSorted = yearArticles.sorted { $0.publishedAt > $1.publishedAt }
             
             // Prepare articles data for list template
-            let list = ListData(articles: yearArticlesSorted.map { article in
-                ListItemData(
-                    title: article.title,
-                    author: article.author,
-                    publishedAt: formatter.string(from: article.publishedAt),
-                    excerpt: article.excerpt,
-                    url: "../\(pathGenerator.generateUrl(for: article.path))",
-                )
-            })
+            let list = ListData(
+                title: String(describing: year),
+                articles: yearArticlesSorted.map { article in
+                    ListItemData(
+                        title: article.title,
+                        author: article.author,
+                        publishedAt: formatter.string(from: article.publishedAt),
+                        excerpt: article.excerpt,
+                        url: "../\(pathGenerator.generateUrl(for: article.path))",
+                    )
+                }
+            )
 
             // Prepare data for layout template
             let layoutData = LayoutData(
