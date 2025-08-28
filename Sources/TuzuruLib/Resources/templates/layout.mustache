@@ -5,38 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{pageTitle}}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5dc;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
+        html {
+            scrollbar-gutter: stable;
         }
+
         header {
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            margin-top: 24px;
+            margin-bottom: 24px;
         }
-        .site-title {
-            margin: 0;
+
+        header .blogName {
+            font-size: 2em;
+            font-weight: bold;
         }
+
         h1 {
             margin: 0;
-            color: #8b4513;
         }
-        .article-content {
-            margin-bottom: 40px;
+
+        ul.articles {
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
+
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 48px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 12px;
+            }
+        }
+
         footer {
             border-top: 1px solid #ddd;
-            padding-top: 20px;
+            padding-top: 24px;
+            padding-bottom: 24px;
             text-align: center;
-            color: #666;
         }
-        /* Code block styling */
+
         pre code {
             border-radius: 6px;
         }
@@ -54,15 +69,15 @@
         }
     </style>
 </head>
-<body>
+<body class="markdown-body">
     <header>
-        <div class="site-title">
-            <a href="{{homeUrl}}" style="color: #8b4513; text-decoration: none; font-size: 2em; font-weight: bold;">{{blogName}}</a>
+        <div class="blogName">
+            <a href="{{homeUrl}}">{{blogName}}</a>
         </div>
     </header>
 
     <main>
-        <div class="article-content">
+        <div>
             {{>*partialName}}
         </div>
     </main>

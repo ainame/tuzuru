@@ -1,23 +1,23 @@
 {{#content}}
-<div class="article-list">
-    <h1 style="color: #8b4513; margin-bottom: 20px;">Recent Articles</h1>
-    <ul style="list-style: none; padding: 0;">
+<div>
+    <h1>Recent Articles</h1>
+    <ul class="articles">
         {{#articles}}
-        <li style="{{itemStyle}}">
-            <h2 style="margin: 0 0 10px 0; font-size: 1.3em;">
-                <a href="{{url}}" style="color: #8b4513; text-decoration: none;">{{title}}</a>
-            </h2>
-            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+        <li>
+            <h3>
+                <a href="{{url}}">{{title}}</a>
+            </h3>
+            <p>
                 By {{author}} on {{publishedAt}}
             </p>
             {{#excerpt}}
-            <p style="margin: 10px 0; color: #555;">{{excerpt}}</p>
+            <p>{{excerpt}}</p>
             {{/excerpt}}
         </li>
         {{/articles}}
     </ul>
     {{^articles}}
-    <p style="color: #666; font-style: italic;">No articles available.</p>
+    <p>No articles available.</p>
     {{/articles}}
 </div>
 {{/content}}

@@ -14,7 +14,6 @@ struct PageRenderer {
     }
 
     func render<Content: PageRendererable>(_ data: LayoutData<Content>) throws -> String {
-        print(data.render())
-        return library.render(data.render(), withTemplate: "layout")!
+        library.render(data.render(), withTemplate: "layout")!
     }
 }
