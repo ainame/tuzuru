@@ -6,6 +6,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
     let copyright: String
     let homeUrl: String
     let assetsUrl: String
+    let years: [String]
     let content: Content
 
     func render() -> [String: Any] {
@@ -16,6 +17,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
             "copyright": copyright,
             "homeUrl": homeUrl,
             "assetsUrl": assetsUrl,
+            "years": years,
             "content": content.render(),
             "partialName": partialName,
         ]

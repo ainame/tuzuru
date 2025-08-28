@@ -18,6 +18,14 @@ struct BlogGenerator {
         formatter.locale = configuration.metadata.locale
     }
 
+    private func extractYears(from posts: [Post]) -> [String] {
+        let calendar = Calendar.current
+        let years = Set(posts.map { post in
+            calendar.component(.year, from: post.publishedAt)
+        })
+        return years.sorted(by: >).map { String($0) }
+    }
+
     func generate(_ source: Source) throws -> FilePath {
         let blogRoot = FilePath(configuration.outputOptions.directory)
         let pageRenderer = PageRenderer(templates: source.templates)
@@ -30,19 +38,19 @@ struct BlogGenerator {
 
         // Generate individual post pages
         for post in source.posts {
-            try generatePostPage(pageRenderer: pageRenderer, post: post, blogRoot: blogRoot)
+            try generatePostPage(pageRenderer: pageRenderer, post: post, allPosts: source.posts, blogRoot: blogRoot)
         }
 
         // Generate list page (index.html)
         try generateListPage(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
 
         // Generate yearly list pages
-        try generateYearlyListPages(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
+        try generateYearlyListPages(pageRenderer: pageRenderer, posts: source.posts, allPosts: source.posts, blogRoot: blogRoot)
 
         return blogRoot
     }
 
-    private func generatePostPage(pageRenderer: PageRenderer, post: Post, blogRoot: FilePath) throws {
+    private func generatePostPage(pageRenderer: PageRenderer, post: Post, allPosts: [Post], blogRoot: FilePath) throws {
         // Prepare data for post template
         let postData = PostData(
             title: post.title,
@@ -58,6 +66,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(from: post.path),
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path),
+            years: extractYears(from: allPosts),
             content: postData,
         )
 
@@ -99,6 +108,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
             assetsUrl: pathGenerator.generateAssetsUrl(),
+            years: extractYears(from: posts),
             content: list,
         )
 
@@ -110,7 +120,7 @@ struct BlogGenerator {
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws {
+    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], allPosts: [Post], blogRoot: FilePath) throws {
         // Group posts by publication year
         let calendar = Calendar.current
         let postsByYear = Dictionary(grouping: posts) { post in
@@ -142,6 +152,7 @@ struct BlogGenerator {
                 copyright: configuration.metadata.copyright,
                 homeUrl: "../",
                 assetsUrl: "../assets/",
+                years: extractYears(from: allPosts),
                 content: list,
             )
 
