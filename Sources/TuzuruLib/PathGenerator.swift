@@ -48,4 +48,20 @@ public struct PathGenerator: Sendable {
             }
         }
     }
+
+    /// Generate assets URL for CSS/JS/images (context-aware)
+    public func generateAssetsUrl(from pagePath: FilePath? = nil) -> String {
+        switch configuration.style {
+        case .direct:
+            "assets/"
+        case .subdirectory:
+            // If we're generating for an article page (in a subdirectory), go up one level
+            if pagePath != nil {
+                "../assets/"
+            } else {
+                // For the index page itself
+                "assets/"
+            }
+        }
+    }
 }

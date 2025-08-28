@@ -25,6 +25,9 @@ struct BlogGenerator {
         // Create site directory if it doesn't exist
         try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
 
+        // Copy assets directory if it exists
+        try copyAssetsIfExists(to: blogRoot)
+
         // Generate individual article pages
         for article in source.articles {
             try generateArticlePage(pageRenderer: pageRenderer, article: article, blogRoot: blogRoot)
@@ -51,6 +54,7 @@ struct BlogGenerator {
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(from: article.path),
+            assetsUrl: pathGenerator.generateAssetsUrl(from: article.path),
             content: articleData,
         )
 
@@ -88,6 +92,7 @@ struct BlogGenerator {
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
+            assetsUrl: pathGenerator.generateAssetsUrl(),
             content: list,
         )
 
@@ -97,5 +102,24 @@ struct BlogGenerator {
         // Write index.html
         let indexPath = blogRoot.appending(configuration.outputOptions.indexFileName)
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
+    }
+
+    private func copyAssetsIfExists(to blogRoot: FilePath) throws {
+        let assetsPath = configuration.sourceLayout.assets
+        
+        // Check if assets directory exists
+        guard fileManager.fileExists(atPath: assetsPath.string) else {
+            return // No assets directory, nothing to copy
+        }
+        
+        let destinationPath = blogRoot.appending("assets")
+        
+        // Remove existing assets directory if it exists
+        if fileManager.fileExists(atPath: destinationPath.string) {
+            try fileManager.removeItem(atPath: destinationPath.string)
+        }
+        
+        // Copy the entire assets directory
+        try fileManager.copyItem(atPath: assetsPath.string, toPath: destinationPath.string)
     }
 }
