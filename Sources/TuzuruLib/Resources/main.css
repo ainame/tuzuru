@@ -42,19 +42,3 @@ footer {
     padding-bottom: 24px;
     text-align: center;
 }
-
-pre code {
-    border-radius: 6px;
-}
-code {
-    background-color: #f6f8fa;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 0.9em;
-}
-pre {
-    background-color: #f6f8fa;
-    padding: 16px;
-    border-radius: 6px;
-    overflow-x: auto;
-}
