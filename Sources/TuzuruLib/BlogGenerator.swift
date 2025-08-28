@@ -35,7 +35,7 @@ struct BlogGenerator {
 
         // Generate list page (index.html)
         try generateListPage(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
-        
+
         // Generate yearly list pages
         try generateYearlyListPages(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
 
@@ -147,11 +147,11 @@ struct BlogGenerator {
 
             // Render final page
             let finalHTML = try pageRenderer.render(layoutData)
-            
+
             // Create year directory and write index.html
             let yearDirectory = blogRoot.appending("\(year)")
             try fileManager.createDirectory(atPath: yearDirectory.string, withIntermediateDirectories: true)
-            
+
             let yearIndexPath = yearDirectory.appending(configuration.outputOptions.indexFileName)
             fileManager.createFile(atPath: yearIndexPath.string, contents: Data(finalHTML.utf8))
         }
@@ -159,19 +159,19 @@ struct BlogGenerator {
 
     private func copyAssetsIfExists(to blogRoot: FilePath) throws {
         let assetsPath = configuration.sourceLayout.assets
-        
+
         // Check if assets directory exists
         guard fileManager.fileExists(atPath: assetsPath.string) else {
             return // No assets directory, nothing to copy
         }
-        
+
         let destinationPath = blogRoot.appending("assets")
-        
+
         // Remove existing assets directory if it exists
         if fileManager.fileExists(atPath: destinationPath.string) {
             try fileManager.removeItem(atPath: destinationPath.string)
         }
-        
+
         // Copy the entire assets directory
         try fileManager.copyItem(atPath: assetsPath.string, toPath: destinationPath.string)
     }

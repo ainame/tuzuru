@@ -1,36 +1,30 @@
 import Foundation
 import System
 
-public enum BlogInitializer {
-    public static func copyTemplateFiles(to templatesDirectory: FilePath) throws {
-        let fileManager = FileManager.default
-        let bundle = Bundle.module
-
-        let templateNames = [
-            "layout",
-            "post",
-            "list",
-        ]
-
-        for templateName in templateNames {
-            guard let bundlePath = bundle.path(forResource: templateName, ofType: "mustache") else {
-                throw TuzuruError.templateNotFound(templateName)
-            }
-
-            let destinationPath = templatesDirectory.appending("\(templateName).mustache")
-            try fileManager.copyItem(atPath: bundlePath, toPath: destinationPath.string)
-        }
+public struct BlogInitializer {
+    private let fileManager: FileManager
+    private let bundle: Bundle
+    
+    public init(fileManager: FileManager = .default, bundle: Bundle? = nil) {
+        self.fileManager = fileManager
+        self.bundle = bundle ?? Bundle.module
     }
     
-    public static func copyAssetFiles(to assetsDirectory: FilePath) throws {
-        let fileManager = FileManager.default
-        let bundle = Bundle.module
-
-        guard let bundlePath = bundle.path(forResource: "main", ofType: "css") else {
-            throw TuzuruError.templateNotFound("main.css")
+    public func copyTemplateFiles(to templatesDirectory: FilePath) throws {
+        try copyBundleDirectory(named: "templates", to: templatesDirectory)
+    }
+    
+    public func copyAssetFiles(to assetsDirectory: FilePath) throws {
+        try copyBundleDirectory(named: "assets", to: assetsDirectory)
+    }
+    
+    private func copyBundleDirectory(named directoryName: String, to destinationDirectory: FilePath) throws {
+        guard let bundleDirectoryPath = bundle.path(forResource: directoryName, ofType: nil) else {
+            throw TuzuruError.templateNotFound("\(directoryName) directory")
         }
 
-        let destinationPath = assetsDirectory.appending("main.css")
-        try fileManager.copyItem(atPath: bundlePath, toPath: destinationPath.string)
+        let bundleDirectoryURL = URL(fileURLWithPath: bundleDirectoryPath)
+        let destinationURL = URL(fileURLWithPath: destinationDirectory.string)
+        try fileManager.copyItem(at: bundleDirectoryURL, to: destinationURL)
     }
 }

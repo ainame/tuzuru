@@ -21,19 +21,6 @@ struct InitCommand: AsyncParsableCommand {
             return
         }
 
-        // Create directory structure
-        print("📁 Creating directory structure...")
-        let directories = [
-            currentPath.appending("assets"),
-            currentPath.appending("contents"),
-            currentPath.appending("templates"),
-        ]
-
-        for directory in directories {
-            try fileManager.createDirectory(atPath: directory.string, withIntermediateDirectories: true)
-            print("  ✅ Created \(directory.lastComponent?.string ?? "")/")
-        }
-
         // Generate default configuration
         let defaultConfig = BlogConfiguration(
             sourceLayout: SourceLayout(
@@ -64,26 +51,38 @@ struct InitCommand: AsyncParsableCommand {
         try configData.write(to: URL(fileURLWithPath: configPath.string))
         print("  ✅ Created tuzuru.json")
 
-        // Copy template files from bundle
+        // Copy template and asset files from bundle
+        let initializer = BlogInitializer(fileManager: fileManager)
+        
         print("📄 Copying template files...")
         let templatesDir = currentPath.appending("templates")
 
         do {
-            try BlogInitializer.copyTemplateFiles(to: templatesDir)
+            try initializer.copyTemplateFiles(to: templatesDir)
             print("  ✅ Copied template files")
         } catch {
             print("  ⚠️ Warning: Failed to copy template files: \(error)")
         }
 
-        // Copy asset files from bundle
         print("🎨 Copying asset files...")
         let assetsDir = currentPath.appending("assets")
 
         do {
-            try BlogInitializer.copyAssetFiles(to: assetsDir)
+            try initializer.copyAssetFiles(to: assetsDir)
             print("  ✅ Copied main.css to assets/")
         } catch {
             print("  ⚠️ Warning: Failed to copy asset files: \(error)")
+        }
+
+        // Create directory structure
+        print("📁 Creating directory structure...")
+        let directories = [
+            currentPath.appending("contents"),
+        ]
+
+        for directory in directories {
+            try fileManager.createDirectory(atPath: directory.string, withIntermediateDirectories: true)
+            print("  ✅ Created \(directory.lastComponent?.string ?? "")/")
         }
 
         print("🎉 Site initialized successfully!")

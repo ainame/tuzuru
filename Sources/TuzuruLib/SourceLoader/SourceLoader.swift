@@ -110,7 +110,7 @@ struct SourceLoader: Sendable {
         guard let contents = try? fileManager.contentsOfDirectory(atPath: directory.string) else {
             return // Directory doesn't exist or is empty, no conflict possible
         }
-        
+
         for item in contents {
             #if canImport(Darwin)
             var isDirectory: ObjCBool = false

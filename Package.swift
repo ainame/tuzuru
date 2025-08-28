@@ -42,7 +42,7 @@ let package = Package(
                 // .product(name: "SystemPackage", package: "swift-system"),
             ],
             resources: [
-                .process("Resources"),
+                .copy("Resources"),
             ],
         ),
         .testTarget(
