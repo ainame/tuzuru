@@ -18,19 +18,17 @@
 
     <main>
         <div class="container">
-            <aside class="sidebar">
-                <div class="years-section">
-                    <h3>Years</h3>
-                    <ul>
-                        {{#years}}
-                        <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
-                        {{/years}}
-                    </ul>
-                </div>
-            </aside>
             <div class="content">
                 {{>*partialName}}
             </div>
+            <aside class="sidebar">
+                <h3>Years</h3>
+                <ul>
+                    {{#years}}
+                    <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
+                    {{/years}}
+                </ul>
+            </aside>
         </div>
     </main>
 

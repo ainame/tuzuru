@@ -42,3 +42,39 @@ footer {
     padding-bottom: 24px;
     text-align: center;
 }
+
+/* Sidebar Layout */
+.container {
+    display: flex;
+    gap: 24px;
+}
+
+.content {
+    flex: 1;
+}
+
+.sidebar {
+    width: 150px;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: auto;
+        order: 2;
+    }
+}
