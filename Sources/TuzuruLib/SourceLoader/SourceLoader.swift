@@ -16,11 +16,11 @@ struct SourceLoader: Sendable {
     @concurrent
     func loadSources() async throws -> Source {
         let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
-        var source = Source(metadata: configuration.metadata, templates: templates, articles: [])
+        var source = Source(metadata: configuration.metadata, templates: templates, posts: [])
 
         let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents)
 
-        source.articles = try await withThrowingTaskGroup(of: Article?.self) { group in
+        source.posts = try await withThrowingTaskGroup(of: Post?.self) { group in
             for markdownPath in markdownFiles {
                 group.addTask {
                     let fileManager = FileManager()
@@ -28,17 +28,17 @@ struct SourceLoader: Sendable {
                 }
             }
 
-            var articles = [Article]()
+            var posts = [Post]()
             for try await result in group {
                 if let result {
-                    articles.append(result)
+                    posts.append(result)
                 }
             }
-            return articles
+            return posts
         }
 
         // Sort pages by publish date (newest first)
-        source.articles.sort { $0.publishedAt > $1.publishedAt && $0.title > $0.title }
+        source.posts.sort { $0.publishedAt > $1.publishedAt && $0.title > $0.title }
 
         return source
     }
@@ -61,7 +61,7 @@ struct SourceLoader: Sendable {
         return markdownFiles
     }
 
-    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath) async throws -> Article? {
+    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath) async throws -> Post? {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
 
         // Get the first commit (initial commit) for publish date and author
@@ -95,7 +95,7 @@ struct SourceLoader: Sendable {
         var walker = MarkdownExcerptWalker(maxLength: 150)
         walker.visit(newDocument)
 
-        return Article(
+        return Post(
             path: markdownPath,
             title: title,
             author: author,
@@ -141,10 +141,10 @@ struct SourceLoader: Sendable {
             throw TuzuruError.templateNotFound(templates.layoutFile.string)
         }
 
-        guard let articleData = fileManager.contents(atPath: templates.articleFile.string),
-              let articleTemplate = String(data: articleData, encoding: .utf8)
+        guard let postData = fileManager.contents(atPath: templates.postFile.string),
+              let postTemplate = String(data: postData, encoding: .utf8)
         else {
-            throw TuzuruError.templateNotFound(templates.articleFile.string)
+            throw TuzuruError.templateNotFound(templates.postFile.string)
         }
 
         guard let listData = fileManager.contents(atPath: templates.listFile.string),
@@ -154,7 +154,7 @@ struct SourceLoader: Sendable {
         }
         return try LoadedTemplates(
             layout: MustacheTemplate(string: layoutTemplate),
-            article: MustacheTemplate(string: articleTemplate),
+            post: MustacheTemplate(string: postTemplate),
             list: MustacheTemplate(string: listTemplate),
         )
     }

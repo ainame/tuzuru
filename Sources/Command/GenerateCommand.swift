@@ -30,9 +30,9 @@ struct GenerateCommand: AsyncParsableCommand {
         // Load sources (scan markdown files and get git info)
         let source = try await tuzuru.loadSources(blogConfig.sourceLayout)
 
-        print("📝 Found \(source.articles.count) articles")
-        for article in source.articles {
-            print("  - \(article.title) by \(article.author)")
+        print("📝 Found \(source.posts.count) posts")
+        for post in source.posts {
+            print("  - \(post.title) by \(post.author)")
         }
 
         print("🚀 Generating site...")
@@ -44,9 +44,9 @@ struct GenerateCommand: AsyncParsableCommand {
         print("📄 Generated:")
         print("  - \(blogConfig.outputOptions.indexFileName) (list page)")
         let pathGenerator = PathGenerator(configuration: blogConfig.outputOptions, contentsBasePath: blogConfig.sourceLayout.contents)
-        for article in source.articles {
-            let articleName = pathGenerator.generateOutputPath(for: article.path)
-            print("  - \(articleName)")
+        for post in source.posts {
+            let postName = pathGenerator.generateOutputPath(for: post.path)
+            print("  - \(postName)")
         }
     }
 }

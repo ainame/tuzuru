@@ -4,11 +4,11 @@ import System
 public struct Source: Sendable {
     public var metadata: BlogMetadata
     var templates: LoadedTemplates
-    public var articles: [Article]
+    public var posts: [Post]
 
-    init(metadata: BlogMetadata, templates: LoadedTemplates, articles: [Article]) {
+    init(metadata: BlogMetadata, templates: LoadedTemplates, posts: [Post]) {
         self.metadata = metadata
         self.templates = templates
-        self.articles = articles
+        self.posts = posts
     }
 }

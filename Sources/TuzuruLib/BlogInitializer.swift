@@ -8,7 +8,7 @@ public enum BlogInitializer {
 
         let templateNames = [
             "layout",
-            "article",
+            "post",
             "list",
         ]
 

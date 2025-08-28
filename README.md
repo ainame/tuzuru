@@ -48,7 +48,7 @@ Edit `tuzuru.json` to customize your site:
     "assets": "assets",
     "contents": "contents",
     "templates": {
-      "articleFile" : "templates/article.html.mustache",
+      "postFile" : "templates/post.html.mustache",
       "layoutFile" : "templates/layout.html.mustache",
       "listFile" : "templates/list.html.mustache"
     }
@@ -75,6 +75,6 @@ Make sure your files are committed to git for proper metadata extraction.
 
 Generated files appear in the configured output directory (`blog/` by default):
 
-- `index.html` - List of all articles
-- `article-name/index.html` - Individual article pages (subdirectory style)
-- OR `article-name.html` - Individual article pages (direct style)
+- `index.html` - List of all posts
+- `post-name/index.html` - Individual post pages (subdirectory style)
+- OR `post-name.html` - Individual post pages (direct style)

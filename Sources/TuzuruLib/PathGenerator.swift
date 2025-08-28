@@ -76,7 +76,7 @@ public struct PathGenerator: Sendable {
             if let pagePath = pagePath {
                 let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count + 1 // +1 for the article subdirectory
+                let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
                 return String(repeating: "../", count: depth)
             } else {
                 // For the index page itself
@@ -102,7 +102,7 @@ public struct PathGenerator: Sendable {
             if let pagePath = pagePath {
                 let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count + 1 // +1 for the article subdirectory
+                let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
                 return String(repeating: "../", count: depth) + "assets/"
             } else {
                 // For the index page itself

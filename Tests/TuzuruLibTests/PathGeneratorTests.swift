@@ -23,9 +23,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for top-level file in direct style")
     func generateOutputPathTopLevelDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/welcome.md")
+        let postPath = FilePath("/contents/welcome.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "welcome.html")
     }
@@ -33,9 +33,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for nested file in direct style")
     func generateOutputPathNestedDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "tech/swift-concurrency.html")
     }
@@ -43,9 +43,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for deeply nested file in direct style")
     func generateOutputPathDeeplyNestedDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/2024/10/01/diary.md")
+        let postPath = FilePath("/contents/2024/10/01/diary.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "2024/10/01/diary.html")
     }
@@ -53,9 +53,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for top-level file in subdirectory style")
     func generateOutputPathTopLevelSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/welcome.md")
+        let postPath = FilePath("/contents/welcome.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "welcome/index.html")
     }
@@ -63,9 +63,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for nested file in subdirectory style")
     func generateOutputPathNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "tech/swift-concurrency/index.html")
     }
@@ -73,9 +73,9 @@ struct PathGeneratorTests {
     @Test("Generate output path for deeply nested file in subdirectory style")
     func generateOutputPathDeeplyNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/2024/10/01/diary.md")
+        let postPath = FilePath("/contents/2024/10/01/diary.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "2024/10/01/diary/index.html")
     }
@@ -85,9 +85,9 @@ struct PathGeneratorTests {
     @Test("Generate URL for top-level file in direct style")
     func generateUrlTopLevelDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/welcome.md")
+        let postPath = FilePath("/contents/welcome.md")
 
-        let result = pathGenerator.generateUrl(for: articlePath)
+        let result = pathGenerator.generateUrl(for: postPath)
 
         #expect(result == "welcome.html")
     }
@@ -95,61 +95,61 @@ struct PathGeneratorTests {
     @Test("Generate URL for nested file in subdirectory style")
     func generateUrlNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateUrl(for: articlePath)
+        let result = pathGenerator.generateUrl(for: postPath)
 
         #expect(result == "tech/swift-concurrency/")
     }
 
     // MARK: - generateHomeUrl Tests
 
-    @Test("Generate home URL from top-level article in direct style")
+    @Test("Generate home URL from top-level post in direct style")
     func generateHomeUrlTopLevelDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/welcome.md")
+        let postPath = FilePath("/contents/welcome.md")
 
-        let result = pathGenerator.generateHomeUrl(from: articlePath)
+        let result = pathGenerator.generateHomeUrl(from: postPath)
 
         #expect(result == "index.html")
     }
 
-    @Test("Generate home URL from nested article in direct style")
+    @Test("Generate home URL from nested post in direct style")
     func generateHomeUrlNestedDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateHomeUrl(from: articlePath)
+        let result = pathGenerator.generateHomeUrl(from: postPath)
 
         #expect(result == "../index.html")
     }
 
-    @Test("Generate home URL from deeply nested article in direct style")
+    @Test("Generate home URL from deeply nested post in direct style")
     func generateHomeUrlDeeplyNestedDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/2024/10/01/diary.md")
+        let postPath = FilePath("/contents/2024/10/01/diary.md")
 
-        let result = pathGenerator.generateHomeUrl(from: articlePath)
+        let result = pathGenerator.generateHomeUrl(from: postPath)
 
         #expect(result == "../../../index.html")
     }
 
-    @Test("Generate home URL from nested article in subdirectory style")
+    @Test("Generate home URL from nested post in subdirectory style")
     func generateHomeUrlNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateHomeUrl(from: articlePath)
+        let result = pathGenerator.generateHomeUrl(from: postPath)
 
         #expect(result == "../../")
     }
 
-    @Test("Generate home URL from deeply nested article in subdirectory style")
+    @Test("Generate home URL from deeply nested post in subdirectory style")
     func generateHomeUrlDeeplyNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/2024/10/01/diary.md")
+        let postPath = FilePath("/contents/2024/10/01/diary.md")
 
-        let result = pathGenerator.generateHomeUrl(from: articlePath)
+        let result = pathGenerator.generateHomeUrl(from: postPath)
 
         #expect(result == "../../../../")
     }
@@ -165,42 +165,42 @@ struct PathGeneratorTests {
 
     // MARK: - generateAssetsUrl Tests
 
-    @Test("Generate assets URL from top-level article in direct style")
+    @Test("Generate assets URL from top-level post in direct style")
     func generateAssetsUrlTopLevelDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/welcome.md")
+        let postPath = FilePath("/contents/welcome.md")
 
-        let result = pathGenerator.generateAssetsUrl(from: articlePath)
+        let result = pathGenerator.generateAssetsUrl(from: postPath)
 
         #expect(result == "assets/")
     }
 
-    @Test("Generate assets URL from nested article in direct style")
+    @Test("Generate assets URL from nested post in direct style")
     func generateAssetsUrlNestedDirect() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateAssetsUrl(from: articlePath)
+        let result = pathGenerator.generateAssetsUrl(from: postPath)
 
         #expect(result == "../assets/")
     }
 
-    @Test("Generate assets URL from nested article in subdirectory style")
+    @Test("Generate assets URL from nested post in subdirectory style")
     func generateAssetsUrlNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/swift-concurrency.md")
+        let postPath = FilePath("/contents/tech/swift-concurrency.md")
 
-        let result = pathGenerator.generateAssetsUrl(from: articlePath)
+        let result = pathGenerator.generateAssetsUrl(from: postPath)
 
         #expect(result == "../../assets/")
     }
 
-    @Test("Generate assets URL from deeply nested article in subdirectory style")
+    @Test("Generate assets URL from deeply nested post in subdirectory style")
     func generateAssetsUrlDeeplyNestedSubdirectory() async throws {
         let pathGenerator = PathGenerator(configuration: makeSubdirectoryOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/2024/10/01/diary.md")
+        let postPath = FilePath("/contents/2024/10/01/diary.md")
 
-        let result = pathGenerator.generateAssetsUrl(from: articlePath)
+        let result = pathGenerator.generateAssetsUrl(from: postPath)
 
         #expect(result == "../../../../assets/")
     }
@@ -219,9 +219,9 @@ struct PathGeneratorTests {
     @Test("Handle file with missing extension")
     func handleFileWithMissingExtension() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/noextension")
+        let postPath = FilePath("/contents/tech/noextension")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
         #expect(result == "tech/noextension.html")
     }
@@ -229,10 +229,10 @@ struct PathGeneratorTests {
     @Test("Handle file with multiple dots in name")
     func handleFileWithMultipleDots() async throws {
         let pathGenerator = PathGenerator(configuration: makeDirectOutputConfig(), contentsBasePath: contentsBasePath)
-        let articlePath = FilePath("/contents/tech/my.article.name.md")
+        let postPath = FilePath("/contents/tech/my.post.name.md")
 
-        let result = pathGenerator.generateOutputPath(for: articlePath)
+        let result = pathGenerator.generateOutputPath(for: postPath)
 
-        #expect(result == "tech/my.article.name.html")
+        #expect(result == "tech/my.post.name.html")
     }
 }

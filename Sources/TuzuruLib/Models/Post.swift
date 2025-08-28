@@ -1,7 +1,7 @@
 import Foundation
 import System
 
-public struct Article: Sendable, Hashable {
+public struct Post: Sendable, Hashable {
     public let path: FilePath
     public var title: String
     public var author: String

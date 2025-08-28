@@ -1,11 +1,11 @@
 import Foundation
 
-struct ArticleData: PageRendererable {
+struct PostData: PageRendererable {
     let title: String
     let author: String
     let publishedAt: String
     let body: String
-
+    
     func render() -> [String: Any] {
         [
             "title": title,

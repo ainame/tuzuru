@@ -28,44 +28,44 @@ struct BlogGenerator {
         // Copy assets directory if it exists
         try copyAssetsIfExists(to: blogRoot)
 
-        // Generate individual article pages
-        for article in source.articles {
-            try generateArticlePage(pageRenderer: pageRenderer, article: article, blogRoot: blogRoot)
+        // Generate individual post pages
+        for post in source.posts {
+            try generatePostPage(pageRenderer: pageRenderer, post: post, blogRoot: blogRoot)
         }
 
         // Generate list page (index.html)
-        try generateListPage(pageRenderer: pageRenderer, articles: source.articles, blogRoot: blogRoot)
+        try generateListPage(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
         
         // Generate yearly list pages
-        try generateYearlyListPages(pageRenderer: pageRenderer, articles: source.articles, blogRoot: blogRoot)
+        try generateYearlyListPages(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
 
         return blogRoot
     }
 
-    private func generateArticlePage(pageRenderer: PageRenderer, article: Article, blogRoot: FilePath) throws {
-        // Prepare data for article template
-        let articleData = ArticleData(
-            title: article.title,
-            author: article.author,
-            publishedAt: formatter.string(from: article.publishedAt),
-            body: article.htmlContent,
+    private func generatePostPage(pageRenderer: PageRenderer, post: Post, blogRoot: FilePath) throws {
+        // Prepare data for post template
+        let postData = PostData(
+            title: post.title,
+            author: post.author,
+            publishedAt: formatter.string(from: post.publishedAt),
+            body: post.htmlContent,
         )
 
         // Prepare data for layout template
         let layoutData = LayoutData(
-            pageTitle: "\(article.title) | \(configuration.metadata.blogName)",
+            pageTitle: "\(post.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
-            homeUrl: pathGenerator.generateHomeUrl(from: article.path),
-            assetsUrl: pathGenerator.generateAssetsUrl(from: article.path),
-            content: articleData,
+            homeUrl: pathGenerator.generateHomeUrl(from: post.path),
+            assetsUrl: pathGenerator.generateAssetsUrl(from: post.path),
+            content: postData,
         )
 
         // Render final page
         let finalHTML = try pageRenderer.render(layoutData)
 
         // Write to file
-        let fileName = pathGenerator.generateOutputPath(for: article.path)
+        let fileName = pathGenerator.generateOutputPath(for: post.path)
         let outputPath = blogRoot.appending(fileName)
 
         // Create subdirectory if needed (for subdirectory style)
@@ -77,17 +77,17 @@ struct BlogGenerator {
         fileManager.createFile(atPath: outputPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateListPage(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
-        // Prepare articles data for list template
+    private func generateListPage(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws {
+        // Prepare posts data for list template
         let list = ListData(
             title: "Recent Posts",
-            articles: articles.map { article in
+            posts: posts.map { post in
                 ListItemData(
-                    title: article.title,
-                    author: article.author,
-                    publishedAt: formatter.string(from: article.publishedAt),
-                    excerpt: article.excerpt,
-                    url: pathGenerator.generateUrl(for: article.path),
+                    title: post.title,
+                    author: post.author,
+                    publishedAt: formatter.string(from: post.publishedAt),
+                    excerpt: post.excerpt,
+                    url: pathGenerator.generateUrl(for: post.path),
                 )
             }
         )
@@ -110,27 +110,27 @@ struct BlogGenerator {
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
     }
     
-    private func generateYearlyListPages(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
-        // Group articles by publication year
+    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws {
+        // Group posts by publication year
         let calendar = Calendar.current
-        let articlesByYear = Dictionary(grouping: articles) { article in
-            calendar.component(.year, from: article.publishedAt)
+        let postsByYear = Dictionary(grouping: posts) { post in
+            calendar.component(.year, from: post.publishedAt)
         }
         
-        // Generate a list page for each year that has articles
-        for (year, yearArticles) in articlesByYear {
-            let yearArticlesSorted = yearArticles.sorted { $0.publishedAt > $1.publishedAt }
+        // Generate a list page for each year that has posts
+        for (year, yearPosts) in postsByYear {
+            let yearPostsSorted = yearPosts.sorted { $0.publishedAt > $1.publishedAt }
             
-            // Prepare articles data for list template
+            // Prepare posts data for list template
             let list = ListData(
                 title: String(describing: year),
-                articles: yearArticlesSorted.map { article in
+                posts: yearPostsSorted.map { post in
                     ListItemData(
-                        title: article.title,
-                        author: article.author,
-                        publishedAt: formatter.string(from: article.publishedAt),
-                        excerpt: article.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: article.path))",
+                        title: post.title,
+                        author: post.author,
+                        publishedAt: formatter.string(from: post.publishedAt),
+                        excerpt: post.excerpt,
+                        url: "../\(pathGenerator.generateUrl(for: post.path))",
                     )
                 }
             )

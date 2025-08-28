@@ -39,7 +39,7 @@ struct InitCommand: AsyncParsableCommand {
             sourceLayout: SourceLayout(
                 templates: Templates(
                     layoutFile: FilePath("templates/layout.mustache"),
-                    articleFile: FilePath("templates/article.mustache"),
+                    postFile: FilePath("templates/post.mustache"),
                     listFile: FilePath("templates/list.mustache"),
                 ),
                 contents: FilePath("contents"),

@@ -79,8 +79,8 @@ let tuzuru = Tuzuru(configuration: config)
 
 Uses **three-tier templating**:
 1. **Layout template** (`layout.mustache`) - Overall page structure with `{{{content}}}` injection
-2. **Article template** (`article.html`) - Individual post layout
-3. **List template** (`list.html`) - Index page with article listings
+2. **Post template** (`post.html`) - Individual post layout
+3. **List template** (`list.html`) - Index page with post listings
 
 Templates use Mustache syntax with variables like `{{title}}`, `{{author}}`, `{{publishedAt}}`.
 
@@ -88,7 +88,7 @@ Templates use Mustache syntax with variables like `{{title}}`, `{{author}}`, `{{
 
 The system **automatically extracts metadata** from git history:
 - First commit date becomes publication date
-- First commit author becomes article author
+- First commit author becomes post author
 - Uses `GitWrapper` with `swift-subprocess` for git operations
 
 ## Dependencies
@@ -115,7 +115,7 @@ Sources/
 
 ## Testing Environment
 
-The `tmp/` directory contains a **complete working blog** with 8 sample articles across different categories (tech, travel, recipes, life). Use this for testing changes:
+The `tmp/` directory contains a **complete working blog** with 8 sample posts across different categories (tech, travel, recipes, life). Use this for testing changes:
 
 ```bash
 cd tmp/

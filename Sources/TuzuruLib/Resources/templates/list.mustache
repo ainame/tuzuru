@@ -1,8 +1,8 @@
 {{#content}}
 <div>
     <h1>{{title}}</h1>
-    <ul class="articles">
-        {{#articles}}
+    <ul class="posts">
+        {{#posts}}
         <li>
             <h3>
                 <a href="{{url}}">{{title}}</a>
@@ -14,10 +14,10 @@
             <p>{{excerpt}}</p>
             {{/excerpt}}
         </li>
-        {{/articles}}
+        {{/posts}}
     </ul>
-    {{^articles}}
-    <p>No articles available.</p>
-    {{/articles}}
+    {{^posts}}
+    <p>No posts available.</p>
+    {{/posts}}
 </div>
 {{/content}}

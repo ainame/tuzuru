@@ -9,7 +9,7 @@ struct PageRenderer {
         self.library = MustacheLibrary(templates: [
             "layout": templates.layout,
             "list": templates.list,
-            "article": templates.article,
+            "post": templates.post,
         ])
     }
 
