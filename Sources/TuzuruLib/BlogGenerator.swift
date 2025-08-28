@@ -109,18 +109,18 @@ struct BlogGenerator {
         let indexPath = blogRoot.appending(configuration.outputOptions.indexFileName)
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
     }
-    
+
     private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws {
         // Group posts by publication year
         let calendar = Calendar.current
         let postsByYear = Dictionary(grouping: posts) { post in
             calendar.component(.year, from: post.publishedAt)
         }
-        
+
         // Generate a list page for each year that has posts
         for (year, yearPosts) in postsByYear {
-            let yearPostsSorted = yearPosts.sorted { $0.publishedAt > $1.publishedAt }
-            
+            let yearPostsSorted = yearPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+
             // Prepare posts data for list template
             let list = ListData(
                 title: String(describing: year),

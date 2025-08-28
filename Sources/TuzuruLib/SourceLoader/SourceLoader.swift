@@ -38,7 +38,7 @@ struct SourceLoader: Sendable {
         }
 
         // Sort pages by publish date (newest first)
-        source.posts.sort { $0.publishedAt > $1.publishedAt && $0.title > $0.title }
+        source.posts.sort { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
 
         return source
     }
