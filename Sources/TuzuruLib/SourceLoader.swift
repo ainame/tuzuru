@@ -15,7 +15,7 @@ struct SourceLoader: Sendable {
 
     @concurrent
     func loadSources() async throws -> Source {
-        let templates = try loadTemplates(templates: configuration.sourceLayout.templates)
+        let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
         var source = Source(metadata: configuration.metadata, templates: templates, articles: [])
 
         let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents)
@@ -134,8 +134,7 @@ struct SourceLoader: Sendable {
         }
     }
 
-    private func loadTemplates(templates: Templates) throws -> LoadedTemplates {
-        let fileManager = FileManager()
+    private func loadTemplates(fileManager: FileManager, templates: Templates) throws -> LoadedTemplates {
         guard let layoutData = fileManager.contents(atPath: templates.layoutFile.string),
               let layoutTemplate = String(data: layoutData, encoding: .utf8)
         else {
