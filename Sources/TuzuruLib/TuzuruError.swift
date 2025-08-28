@@ -4,4 +4,5 @@ public enum TuzuruError: Error {
     case templateNotFound(String)
     case directoryCreationFailed(String)
     case fileNotFound(String)
+    case yearDirectoryConflict(String)
 }

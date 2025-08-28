@@ -35,6 +35,9 @@ struct BlogGenerator {
 
         // Generate list page (index.html)
         try generateListPage(pageRenderer: pageRenderer, articles: source.articles, blogRoot: blogRoot)
+        
+        // Generate yearly list pages
+        try generateYearlyListPages(pageRenderer: pageRenderer, articles: source.articles, blogRoot: blogRoot)
 
         return blogRoot
     }
@@ -102,6 +105,50 @@ struct BlogGenerator {
         // Write index.html
         let indexPath = blogRoot.appending(configuration.outputOptions.indexFileName)
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
+    }
+    
+    private func generateYearlyListPages(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
+        // Group articles by publication year
+        let calendar = Calendar.current
+        let articlesByYear = Dictionary(grouping: articles) { article in
+            calendar.component(.year, from: article.publishedAt)
+        }
+        
+        // Generate a list page for each year that has articles
+        for (year, yearArticles) in articlesByYear {
+            let yearArticlesSorted = yearArticles.sorted { $0.publishedAt > $1.publishedAt }
+            
+            // Prepare articles data for list template
+            let list = ListData(articles: yearArticlesSorted.map { article in
+                ListItemData(
+                    title: article.title,
+                    author: article.author,
+                    publishedAt: formatter.string(from: article.publishedAt),
+                    excerpt: article.excerpt,
+                    url: "../\(pathGenerator.generateUrl(for: article.path))",
+                )
+            })
+
+            // Prepare data for layout template
+            let layoutData = LayoutData(
+                pageTitle: "\(year) - \(configuration.metadata.blogName)",
+                blogName: configuration.metadata.blogName,
+                copyright: configuration.metadata.copyright,
+                homeUrl: "../",
+                assetsUrl: "../assets/",
+                content: list,
+            )
+
+            // Render final page
+            let finalHTML = try pageRenderer.render(layoutData)
+            
+            // Create year directory and write index.html
+            let yearDirectory = blogRoot.appending("\(year)")
+            try fileManager.createDirectory(atPath: yearDirectory.string, withIntermediateDirectories: true)
+            
+            let yearIndexPath = yearDirectory.appending(configuration.outputOptions.indexFileName)
+            fileManager.createFile(atPath: yearIndexPath.string, contents: Data(finalHTML.utf8))
+        }
     }
 
     private func copyAssetsIfExists(to blogRoot: FilePath) throws {

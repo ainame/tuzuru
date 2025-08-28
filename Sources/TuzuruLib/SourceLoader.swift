@@ -48,6 +48,9 @@ struct SourceLoader: Sendable {
     private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
 
+        // Check for year-based directory conflicts
+        try checkForYearDirectoryConflicts(fileManager: fileManager, in: directory)
+
         let enumerator = fileManager.enumerator(atPath: directory.string)
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
@@ -101,6 +104,34 @@ struct SourceLoader: Sendable {
             content: markdownContent,
             htmlContent: htmlFormatter.result,
         )
+    }
+
+    private func checkForYearDirectoryConflicts(fileManager: FileManager, in directory: FilePath) throws {
+        guard let contents = try? fileManager.contentsOfDirectory(atPath: directory.string) else {
+            return // Directory doesn't exist or is empty, no conflict possible
+        }
+        
+        for item in contents {
+            #if canImport(Darwin)
+            var isDirectory: ObjCBool = false
+            #else
+            var isDirectory = false
+            #endif
+
+            let itemPath = directory.appending(item)
+            let fileExists = fileManager.fileExists(atPath: itemPath.string, isDirectory: &isDirectory)
+            #if canImport(Darwin)
+            let isDirectoryBool = isDirectory.boolValue
+            #else
+            let isDirectoryBool = isDirectory
+            #endif
+
+            if fileExists && isDirectoryBool {
+                if item.wholeMatch(of: /\d\d\d\d/) != nil {
+                    throw TuzuruError.yearDirectoryConflict("Directory '\(item)' conflicts with yearly list generation. Year-based directories are reserved for automatically generated yearly index pages.")
+                }
+            }
+        }
     }
 
     private func loadTemplates(templates: Templates) throws -> LoadedTemplates {
