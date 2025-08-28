@@ -76,31 +76,35 @@ struct SourceLoader: Sendable {
             throw TuzuruError.fileNotFound(markdownPath.string)
         }
 
+        // * Extract title from markdown file (first # header or filename)
+        // * Escape HTML tags in code blocks
+        // * Convert Markdown to HTML
+        // * Cite first 150 chars
         let document = Document(parsing: markdownContent)
-
-        // Extract title from markdown file (first # header or filename)
         var destructor = MarkdownDestructor()
-        let newDocument = destructor.visit(document)
-        let title = destructor.title
+        var escaper = CodeBlockHTMLEscaper()
+        var htmlFormatter = HTMLFormatter()
+        var excerptWalker = MarkdownExcerptWalker(maxLength: 150)
 
-        guard let newDocument, let title else {
+        destructor.visit(document)
+            .flatMap { escaper.visit($0) }
+            .flatMap {
+                // Walk for the same document
+                htmlFormatter.visit($0)
+                excerptWalker.visit($0)
+            }
+
+        guard let title = destructor.title else {
             print("title is missing in \(markdownPath.string) ")
             return nil
         }
-
-        // Convert markdown to HTML
-        var htmlFormatter = HTMLFormatter()
-        htmlFormatter.visit(newDocument)
-
-        var walker = MarkdownExcerptWalker(maxLength: 150)
-        walker.visit(newDocument)
 
         return Post(
             path: markdownPath,
             title: title,
             author: author,
             publishedAt: publishedAt,
-            excerpt: walker.result,
+            excerpt: excerptWalker.result,
             content: markdownContent,
             htmlContent: htmlFormatter.result,
         )
