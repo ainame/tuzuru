@@ -45,15 +45,13 @@ struct BlogGenerator {
             body: article.htmlContent,
         )
 
-        let renderedArticle = try pageRenderer.render(articleData)
-
         // Prepare data for layout template
         let layoutData = LayoutData(
             pageTitle: "\(article.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(from: article.path),
-            content: renderedArticle,
+            content: articleData,
         )
 
         // Render final page
@@ -74,7 +72,7 @@ struct BlogGenerator {
 
     private func generateListPage(pageRenderer: PageRenderer, articles: [Article], blogRoot: FilePath) throws {
         // Prepare articles data for list template
-        let listItems = articles.map { article in
+        let list = ListData(articles: articles.map { article in
             ListItemData(
                 title: article.title,
                 author: article.author,
@@ -82,10 +80,7 @@ struct BlogGenerator {
                 excerpt: article.excerpt,
                 url: pathGenerator.generateUrl(for: article.path),
             )
-        }
-
-        // Render list template
-        let renderedList = try pageRenderer.render(listItems)
+        })
 
         // Prepare data for layout template
         let layoutData = LayoutData(
@@ -93,7 +88,7 @@ struct BlogGenerator {
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
-            content: renderedList,
+            content: list,
         )
 
         // Render final page

@@ -6,21 +6,18 @@ public enum BlogInitializer {
         let fileManager = FileManager.default
         let bundle = Bundle.module
 
-        let templateFiles = [
-            "layout.html.mustache",
-            "article.html.mustache",
-            "list.html.mustache",
+        let templateNames = [
+            "layout",
+            "article",
+            "list",
         ]
 
-        for templateFile in templateFiles {
-            // Remove .mustache extension for resource lookup
-            let resourceName = String(templateFile.dropLast(9))
-
-            guard let bundlePath = bundle.path(forResource: resourceName, ofType: "mustache") else {
-                throw TuzuruError.templateNotFound(templateFile)
+        for templateName in templateNames {
+            guard let bundlePath = bundle.path(forResource: templateName, ofType: "mustache") else {
+                throw TuzuruError.templateNotFound(templateName)
             }
 
-            let destinationPath = templatesDirectory.appending(templateFile)
+            let destinationPath = templatesDirectory.appending("\(templateName).mustache")
             try fileManager.copyItem(atPath: bundlePath, toPath: destinationPath.string)
         }
     }

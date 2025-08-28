@@ -3,23 +3,18 @@ import Mustache
 import System
 
 struct PageRenderer {
-    private let templates: LoadedTemplates
+    private let library: MustacheLibrary
 
     init(templates: LoadedTemplates) {
-        self.templates = templates
-    }
-
-    func render(_ data: ArticleData) throws -> String {
-        templates.article.render(data.render())
-    }
-
-    func render(_ data: [ListItemData]) throws -> String {
-        templates.list.render([
-            "articles": data.map { $0.render() },
+        self.library = MustacheLibrary(templates: [
+            "layout": templates.layout,
+            "list": templates.list,
+            "article": templates.article,
         ])
     }
 
-    func render(_ data: LayoutData) throws -> String {
-        templates.layout.render(data.render())
+    func render<Content: PageRendererable>(_ data: LayoutData<Content>) throws -> String {
+        print(data.render())
+        return library.render(data.render(), withTemplate: "layout")!
     }
 }

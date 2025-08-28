@@ -38,9 +38,9 @@ struct InitCommand: AsyncParsableCommand {
         let defaultConfig = BlogConfiguration(
             sourceLayout: SourceLayout(
                 templates: Templates(
-                    layoutFile: FilePath("templates/layout.html.mustache"),
-                    articleFile: FilePath("templates/article.html.mustache"),
-                    listFile: FilePath("templates/list.html.mustache"),
+                    layoutFile: FilePath("templates/layout.mustache"),
+                    articleFile: FilePath("templates/article.mustache"),
+                    listFile: FilePath("templates/list.mustache"),
                 ),
                 contents: FilePath("contents"),
                 assets: FilePath("assets"),

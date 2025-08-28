@@ -1,6 +1,6 @@
 import Foundation
 
-struct ArticleData {
+struct ArticleData: PageRendererable {
     let title: String
     let author: String
     let publishedAt: String
