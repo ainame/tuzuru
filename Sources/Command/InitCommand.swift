@@ -75,6 +75,17 @@ struct InitCommand: AsyncParsableCommand {
             print("  ⚠️ Warning: Failed to copy template files: \(error)")
         }
 
+        // Copy asset files from bundle
+        print("🎨 Copying asset files...")
+        let assetsDir = currentPath.appending("assets")
+
+        do {
+            try BlogInitializer.copyAssetFiles(to: assetsDir)
+            print("  ✅ Copied main.css to assets/")
+        } catch {
+            print("  ⚠️ Warning: Failed to copy asset files: \(error)")
+        }
+
         print("🎉 Site initialized successfully!")
         print("📋 Next steps:")
         print("  1. Add your markdown files to contents/")

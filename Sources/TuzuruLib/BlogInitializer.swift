@@ -21,4 +21,16 @@ public enum BlogInitializer {
             try fileManager.copyItem(atPath: bundlePath, toPath: destinationPath.string)
         }
     }
+    
+    public static func copyAssetFiles(to assetsDirectory: FilePath) throws {
+        let fileManager = FileManager.default
+        let bundle = Bundle.module
+
+        guard let bundlePath = bundle.path(forResource: "main", ofType: "css") else {
+            throw TuzuruError.templateNotFound("main.css")
+        }
+
+        let destinationPath = assetsDirectory.appending("main.css")
+        try fileManager.copyItem(atPath: bundlePath, toPath: destinationPath.string)
+    }
 }
