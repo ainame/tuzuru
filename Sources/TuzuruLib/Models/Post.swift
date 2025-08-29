@@ -9,6 +9,7 @@ public struct Post: Sendable, Hashable {
     public var excerpt: String
     public var content: String
     public var htmlContent: String
+    public var isUnlisted: Bool
 
     public init(
         path: FilePath,
@@ -18,6 +19,7 @@ public struct Post: Sendable, Hashable {
         excerpt: String,
         content: String,
         htmlContent: String,
+        isUnlisted: Bool = false
     ) {
         self.path = path
         self.title = title
@@ -26,5 +28,6 @@ public struct Post: Sendable, Hashable {
         self.excerpt = excerpt
         self.content = content
         self.htmlContent = htmlContent
+        self.isUnlisted = isUnlisted
     }
 }

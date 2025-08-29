@@ -18,13 +18,25 @@ struct SourceLoader: Sendable {
         let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
         var source = Source(metadata: configuration.metadata, templates: templates, posts: [])
 
-        let markdownFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents)
+        // Find markdown files in contents directory (excluding unlisted subdirectory)
+        let contentsFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
+        // Find markdown files in unlisted directory
+        let unlistedFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.unlisted)
 
         source.posts = try await withThrowingTaskGroup(of: Post?.self) { group in
-            for markdownPath in markdownFiles {
+            // Process regular content files
+            for markdownPath in contentsFiles {
                 group.addTask {
                     let fileManager = FileManager()
-                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath)
+                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: false)
+                }
+            }
+            
+            // Process unlisted content files
+            for markdownPath in unlistedFiles {
+                group.addTask {
+                    let fileManager = FileManager()
+                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: true)
                 }
             }
 
@@ -45,23 +57,46 @@ struct SourceLoader: Sendable {
 
     // MARK: - Private Methods
 
-    private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath) throws -> [FilePath] {
+    private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
+        
+        // Check if directory exists, if not, return empty array
+        guard fileManager.fileExists(atPath: directory.string) else {
+            return markdownFiles
+        }
 
-        // Check for year-based directory conflicts
-        try checkForYearDirectoryConflicts(fileManager: fileManager, in: directory)
+        // Check for year-based directory conflicts only in contents directory
+        if directory == configuration.sourceLayout.contents {
+            try checkForYearDirectoryConflicts(fileManager: fileManager, in: directory)
+        }
 
         let enumerator = fileManager.enumerator(atPath: directory.string)
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
-                markdownFiles.append(directory.appending(file))
+                let fullPath = directory.appending(file)
+                
+                // Skip files that are in the excluded path
+                if let excludePath = excludePath {
+                    let fileComponents = fullPath.components
+                    let excludeComponents = excludePath.components
+                    
+                    // Check if the file is under the excluded path
+                    if fileComponents.count > excludeComponents.count {
+                        let filePrefix = Array(fileComponents.prefix(excludeComponents.count))
+                        if filePrefix.elementsEqual(excludeComponents) {
+                            continue // Skip this file
+                        }
+                    }
+                }
+                
+                markdownFiles.append(fullPath)
             }
         }
 
         return markdownFiles
     }
 
-    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath) async throws -> Post? {
+    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
         let gitLogs = await gitWrapper.logs(for: markdownPath)
 
         // Get the first commit (initial commit) for publish date and author
@@ -107,6 +142,7 @@ struct SourceLoader: Sendable {
             excerpt: excerptWalker.result,
             content: markdownContent,
             htmlContent: htmlFormatter.result,
+            isUnlisted: isUnlisted
         )
     }
 

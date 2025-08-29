@@ -12,7 +12,11 @@ struct BlogGenerator {
     init(fileManager: FileManager = .default, configuration: BlogConfiguration) throws {
         self.fileManager = fileManager
         self.configuration = configuration
-        pathGenerator = PathGenerator(configuration: configuration.outputOptions, contentsBasePath: configuration.sourceLayout.contents)
+        pathGenerator = PathGenerator(
+            configuration: configuration.outputOptions,
+            contentsBasePath: configuration.sourceLayout.contents,
+            unlistedBasePath: configuration.sourceLayout.unlisted
+        )
         formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.locale = configuration.metadata.locale
@@ -28,16 +32,19 @@ struct BlogGenerator {
         // Copy assets directory if it exists
         try copyAssetsIfExists(to: blogRoot)
 
-        // Extract years once and reuse
-        let availableYears = try generateYearlyListPages(pageRenderer: pageRenderer, posts: source.posts, blogRoot: blogRoot)
+        // Filter out unlisted posts for list pages
+        let listedPosts = source.posts.filter { !$0.isUnlisted }
 
-        // Generate individual post pages
+        // Extract years once and reuse (only from listed posts)
+        let availableYears = try generateYearlyListPages(pageRenderer: pageRenderer, posts: listedPosts, blogRoot: blogRoot)
+
+        // Generate individual post pages for ALL posts (including unlisted)
         for post in source.posts {
             try generatePostPage(pageRenderer: pageRenderer, post: post, years: availableYears, blogRoot: blogRoot)
         }
 
-        // Generate list page (index.html)
-        try generateListPage(pageRenderer: pageRenderer, posts: source.posts, years: availableYears, blogRoot: blogRoot)
+        // Generate list page (index.html) with only listed posts
+        try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, blogRoot: blogRoot)
 
         return blogRoot
     }
@@ -56,8 +63,8 @@ struct BlogGenerator {
             pageTitle: "\(post.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
-            homeUrl: pathGenerator.generateHomeUrl(from: post.path),
-            assetsUrl: pathGenerator.generateAssetsUrl(from: post.path),
+            homeUrl: pathGenerator.generateHomeUrl(from: post.path, isUnlisted: post.isUnlisted),
+            assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
             years: years,
             content: postData,
         )
@@ -66,7 +73,7 @@ struct BlogGenerator {
         let finalHTML = try pageRenderer.render(layoutData)
 
         // Write to file
-        let fileName = pathGenerator.generateOutputPath(for: post.path)
+        let fileName = pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
         let outputPath = blogRoot.appending(fileName)
 
         // Create subdirectory if needed (for subdirectory style)
@@ -88,7 +95,7 @@ struct BlogGenerator {
                     author: post.author,
                     publishedAt: formatter.string(from: post.publishedAt),
                     excerpt: post.excerpt,
-                    url: pathGenerator.generateUrl(for: post.path),
+                    url: pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted),
                 )
             }
         )
@@ -135,7 +142,7 @@ struct BlogGenerator {
                         author: post.author,
                         publishedAt: formatter.string(from: post.publishedAt),
                         excerpt: post.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: post.path))",
+                        url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
                     )
                 }
             )

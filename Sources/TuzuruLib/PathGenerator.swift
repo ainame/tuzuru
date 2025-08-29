@@ -5,18 +5,21 @@ import System
 public struct PathGenerator: Sendable {
     private let configuration: OutputOptions
     private let contentsBasePath: FilePath
+    private let unlistedBasePath: FilePath
 
-    public init(configuration: OutputOptions, contentsBasePath: FilePath) {
+    public init(configuration: OutputOptions, contentsBasePath: FilePath, unlistedBasePath: FilePath) {
         self.configuration = configuration
         self.contentsBasePath = contentsBasePath
+        self.unlistedBasePath = unlistedBasePath
     }
 
     /// Generate output file path for a page based on its source path and style
-    public func generateOutputPath(for pagePath: FilePath) -> String {
+    public func generateOutputPath(for pagePath: FilePath, isUnlisted: Bool = false) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
-        // Calculate relative path from contents directory
-        let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+        // Calculate relative path from appropriate base directory
+        let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+        let relativePath = getRelativePath(from: basePath, to: pagePath)
         let relativeDir = relativePath.removingLastComponent()
 
         switch configuration.style {
@@ -36,11 +39,12 @@ public struct PathGenerator: Sendable {
     }
 
     /// Generate clean URL for linking to a page (used in templates)
-    public func generateUrl(for pagePath: FilePath) -> String {
+    public func generateUrl(for pagePath: FilePath, isUnlisted: Bool = false) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
-        // Calculate relative path from contents directory
-        let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+        // Calculate relative path from appropriate base directory
+        let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+        let relativePath = getRelativePath(from: basePath, to: pagePath)
         let relativeDir = relativePath.removingLastComponent()
 
         switch configuration.style {
@@ -60,11 +64,12 @@ public struct PathGenerator: Sendable {
     }
 
     /// Generate home page URL for blog title link (context-aware)
-    public func generateHomeUrl(from pagePath: FilePath? = nil) -> String {
+    public func generateHomeUrl(from pagePath: FilePath? = nil, isUnlisted: Bool = false) -> String {
         switch configuration.style {
         case .direct:
             if let pagePath = pagePath {
-                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+                let relativePath = getRelativePath(from: basePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
                 let depth = relativeDir.components.count
                 if depth > 0 {
@@ -74,7 +79,8 @@ public struct PathGenerator: Sendable {
             return configuration.indexFileName
         case .subdirectory:
             if let pagePath = pagePath {
-                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+                let relativePath = getRelativePath(from: basePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
                 let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
                 return String(repeating: "../", count: depth)
@@ -86,11 +92,12 @@ public struct PathGenerator: Sendable {
     }
 
     /// Generate assets URL for CSS/JS/images (context-aware)
-    public func generateAssetsUrl(from pagePath: FilePath? = nil) -> String {
+    public func generateAssetsUrl(from pagePath: FilePath? = nil, isUnlisted: Bool = false) -> String {
         switch configuration.style {
         case .direct:
             if let pagePath = pagePath {
-                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+                let relativePath = getRelativePath(from: basePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
                 let depth = relativeDir.components.count
                 if depth > 0 {
@@ -100,7 +107,8 @@ public struct PathGenerator: Sendable {
             return "assets/"
         case .subdirectory:
             if let pagePath = pagePath {
-                let relativePath = getRelativePath(from: contentsBasePath, to: pagePath)
+                let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
+                let relativePath = getRelativePath(from: basePath, to: pagePath)
                 let relativeDir = relativePath.removingLastComponent()
                 let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
                 return String(repeating: "../", count: depth) + "assets/"

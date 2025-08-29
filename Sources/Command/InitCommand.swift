@@ -30,6 +30,7 @@ struct InitCommand: AsyncParsableCommand {
                     listFile: FilePath("templates/list.mustache"),
                 ),
                 contents: FilePath("contents"),
+                unlisted: FilePath("contents/unlisted"),
                 assets: FilePath("assets"),
             ),
             output: OutputOptions(
@@ -78,6 +79,7 @@ struct InitCommand: AsyncParsableCommand {
         print("📁 Creating directory structure...")
         let directories = [
             currentPath.appending("contents"),
+            currentPath.appending("contents/unlisted"),
         ]
 
         for directory in directories {
@@ -88,7 +90,8 @@ struct InitCommand: AsyncParsableCommand {
         print("🎉 Site initialized successfully!")
         print("📋 Next steps:")
         print("  1. Add your markdown files to contents/")
-        print("  2. Customize templates in templates/")
-        print("  3. Run 'tuzuru generate' to build your site")
+        print("  2. Add unlisted pages (like /about) to contents/unlisted/")
+        print("  3. Customize templates in templates/")
+        print("  4. Run 'tuzuru generate' to build your site")
     }
 }
