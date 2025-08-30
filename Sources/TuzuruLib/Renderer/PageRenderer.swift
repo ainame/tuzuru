@@ -2,17 +2,13 @@ import Foundation
 import Mustache
 
 struct PageRenderer {
-    private let library: MustacheLibrary
+    private let templates: MustacheLibrary
 
-    init(templates: LoadedTemplates) {
-        self.library = MustacheLibrary(templates: [
-            "layout": templates.layout,
-            "list": templates.list,
-            "post": templates.post,
-        ])
+    init(templates: MustacheLibrary) {
+        self.templates = templates
     }
 
     func render<Content: PageRendererable>(_ data: LayoutData<Content>) throws -> String {
-        library.render(data.render(), withTemplate: "layout")!
+        templates.render(data.render(), withTemplate: "layout")!
     }
 }

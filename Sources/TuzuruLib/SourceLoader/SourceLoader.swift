@@ -30,7 +30,7 @@ struct SourceLoader: Sendable {
                     return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: false)
                 }
             }
-            
+
             // Process unlisted content files
             for markdownPath in unlistedFiles {
                 group.addTask {
@@ -58,7 +58,7 @@ struct SourceLoader: Sendable {
 
     private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
-        
+
         // Check if directory exists, if not, return empty array
         guard fileManager.fileExists(atPath: directory.string) else {
             return markdownFiles
@@ -73,12 +73,12 @@ struct SourceLoader: Sendable {
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
                 let fullPath = directory.appending(file)
-                
+
                 // Skip files that are in the excluded path
                 if let excludePath = excludePath {
                     let fileComponents = fullPath.components
                     let excludeComponents = excludePath.components
-                    
+
                     // Check if the file is under the excluded path
                     if fileComponents.count > excludeComponents.count {
                         let filePrefix = Array(fileComponents.prefix(excludeComponents.count))
@@ -87,7 +87,7 @@ struct SourceLoader: Sendable {
                         }
                     }
                 }
-                
+
                 markdownFiles.append(fullPath)
             }
         }
@@ -173,28 +173,18 @@ struct SourceLoader: Sendable {
         }
     }
 
-    private func loadTemplates(fileManager: FileManager, templates: Templates) throws -> LoadedTemplates {
-        guard let layoutData = fileManager.contents(atPath: templates.layout.string),
-              let layoutTemplate = String(data: layoutData, encoding: .utf8)
-        else {
-            throw TuzuruError.templateNotFound(templates.layout.string)
-        }
+    private func loadTemplates(fileManager: FileManager, templates: Templates) throws -> MustacheLibrary {
+        var library = MustacheLibrary()
+        try loadTemplate(fileManager: fileManager, filePath: templates.layout, for: "layout", into: &library)
+        try loadTemplate(fileManager: fileManager, filePath: templates.post, for: "post", into: &library)
+        try loadTemplate(fileManager: fileManager, filePath: templates.list, for: "list", into: &library)
+        return library
+    }
 
-        guard let postData = fileManager.contents(atPath: templates.post.string),
-              let postTemplate = String(data: postData, encoding: .utf8)
-        else {
-            throw TuzuruError.templateNotFound(templates.post.string)
+    private func loadTemplate(fileManager: FileManager, filePath: FilePath, for name: String, into library: inout MustacheLibrary) throws {
+        guard let data = fileManager.contents(atPath: filePath.string) else {
+            throw TuzuruError.templateNotFound(filePath.string)
         }
-
-        guard let listData = fileManager.contents(atPath: templates.list.string),
-              let listTemplate = String(data: listData, encoding: .utf8)
-        else {
-            throw TuzuruError.templateNotFound(templates.list.string)
-        }
-        return try LoadedTemplates(
-            layout: MustacheTemplate(string: layoutTemplate),
-            post: MustacheTemplate(string: postTemplate),
-            list: MustacheTemplate(string: listTemplate),
-        )
+        try library.register(MustacheTemplate(string: String(decoding: data, as: UTF8.self)), named: name)
     }
 }
