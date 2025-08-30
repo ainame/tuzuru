@@ -5,16 +5,17 @@ import Mustache
 struct BlogGenerator {
     private let configuration: BlogConfiguration
     private let fileManager: FileManager
+    private let buildVersion: String
     private let calendar: Calendar
     private let dateProvider: () -> Date
     private let pathGenerator: PathGenerator
-    private let formatter: DateFormatter
+    private let dateFormatter: DateFormatter
 
     init(
         configuration: BlogConfiguration,
         fileManager: FileManager = .default,
         calendar: Calendar = .current,
-        dateProvider: @escaping () -> Date = { Date() },
+        dateProvider: @escaping () -> Date = { let now = Date(); return { now } }(),
     ) throws {
         self.configuration = configuration
         self.fileManager = fileManager
@@ -25,9 +26,11 @@ struct BlogGenerator {
             contentsBasePath: configuration.sourceLayout.contents,
             unlistedBasePath: configuration.sourceLayout.unlisted
         )
-        formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.locale = configuration.metadata.locale
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .long
+        dateFormatter.locale = configuration.metadata.locale
+        self.dateFormatter = dateFormatter
+        self.buildVersion = String(dateProvider().timeIntervalSince1970)
     }
 
     func generate(_ source: Source) throws -> FilePath {
@@ -62,12 +65,13 @@ struct BlogGenerator {
         let postData = PostData(
             title: post.title,
             author: post.author,
-            publishedAt: formatter.string(from: post.publishedAt),
+            publishedAt: dateFormatter.string(from: post.publishedAt),
             body: post.htmlContent,
         )
 
         // Prepare data for layout template
         let layoutData = LayoutData(
+            content: postData,
             pageTitle: "\(post.title) | \(configuration.metadata.blogName)",
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
@@ -75,7 +79,7 @@ struct BlogGenerator {
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
             currentYear: getCurrentYear(),
             years: years,
-            content: postData,
+            buildVersion: buildVersion,
         )
 
         // Render final page
@@ -102,7 +106,7 @@ struct BlogGenerator {
                 ListItemData(
                     title: post.title,
                     author: post.author,
-                    publishedAt: formatter.string(from: post.publishedAt),
+                    publishedAt: dateFormatter.string(from: post.publishedAt),
                     excerpt: post.excerpt,
                     url: pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted),
                 )
@@ -111,6 +115,7 @@ struct BlogGenerator {
 
         // Prepare data for layout template
         let layoutData = LayoutData(
+            content: list,
             pageTitle: configuration.metadata.blogName,
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
@@ -118,7 +123,7 @@ struct BlogGenerator {
             assetsUrl: pathGenerator.generateAssetsUrl(),
             currentYear: getCurrentYear(),
             years: years,
-            content: list,
+            buildVersion: buildVersion,
         )
 
         // Render final page
@@ -150,7 +155,7 @@ struct BlogGenerator {
                     ListItemData(
                         title: post.title,
                         author: post.author,
-                        publishedAt: formatter.string(from: post.publishedAt),
+                        publishedAt: dateFormatter.string(from: post.publishedAt),
                         excerpt: post.excerpt,
                         url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
                     )
@@ -159,6 +164,7 @@ struct BlogGenerator {
 
             // Prepare data for layout template
             let layoutData = LayoutData(
+                content: list,
                 pageTitle: "\(year) - \(configuration.metadata.blogName)",
                 blogName: configuration.metadata.blogName,
                 copyright: configuration.metadata.copyright,
@@ -166,7 +172,7 @@ struct BlogGenerator {
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
                 years: availableYears,
-                content: list,
+                buildVersion: buildVersion,
             )
 
             // Render final page
