@@ -1,12 +1,12 @@
 import Foundation
 
 public struct BlogSourceLayout: Sendable, Codable {
-    public let templates: Templates
+    public let templates: BlogTemplates
     public let contents: FilePath
     public let unlisted: FilePath
     public let assets: FilePath
 
-    public init(templates: Templates, contents: FilePath, unlisted: FilePath, assets: FilePath) {
+    public init(templates: BlogTemplates, contents: FilePath, unlisted: FilePath, assets: FilePath) {
         self.templates = templates
         self.contents = contents
         self.unlisted = unlisted
@@ -20,7 +20,7 @@ public struct BlogSourceLayout: Sendable, Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        templates = try container.decode(Templates.self, forKey: .templates)
+        templates = try container.decode(BlogTemplates.self, forKey: .templates)
         contents = try FilePath(container.decode(String.self, forKey: .contents))
         unlisted = try FilePath(container.decodeIfPresent(String.self, forKey: .unlisted) ?? "contents/unlisted")
         assets = try FilePath(container.decode(String.self, forKey: .assets))

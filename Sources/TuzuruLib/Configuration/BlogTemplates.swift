@@ -1,15 +1,15 @@
 import Foundation
 
 /// Template file configuration
-public struct Templates: Sendable, Equatable, Codable {
+public struct BlogTemplates: Sendable, Equatable, Codable {
     public let layout: FilePath
     public let post: FilePath
     public let list: FilePath
 
-    public init(layoutFile: FilePath, postFile: FilePath, listFile: FilePath) {
-        self.layout = layoutFile
-        self.post = postFile
-        self.list = listFile
+    public init(layout: FilePath, post: FilePath, list: FilePath) {
+        self.layout = layout
+        self.post = post
+        self.list = list
     }
 
     // Custom Codable implementation for FilePath

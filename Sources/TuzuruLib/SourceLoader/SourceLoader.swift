@@ -175,7 +175,7 @@ struct SourceLoader: Sendable {
         }
     }
 
-    private func loadTemplates(fileManager: FileManager, templates: Templates) throws -> MustacheLibrary {
+    private func loadTemplates(fileManager: FileManager, templates: BlogTemplates) throws -> MustacheLibrary {
         var library = MustacheLibrary()
         try loadTemplate(fileManager: fileManager, filePath: templates.layout, for: "layout", into: &library)
         try loadTemplate(fileManager: fileManager, filePath: templates.post, for: "post", into: &library)
