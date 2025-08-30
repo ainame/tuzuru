@@ -35,7 +35,7 @@ struct GitCommitter: Sendable {
     private func addFileToGit(_ filePath: FilePath) async throws -> String {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "add",
                     filePath.string,
@@ -52,7 +52,7 @@ struct GitCommitter: Sendable {
     private func commitWithAuthor(message: String, date: String, author: String) async throws -> String {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "commit",
                     "-m", message,
@@ -71,7 +71,7 @@ struct GitCommitter: Sendable {
     private func commitWithoutAuthor(message: String, date: String) async throws -> String {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "commit",
                     "-m", message,
@@ -128,7 +128,7 @@ struct GitCommitter: Sendable {
     private func gitStatus() async throws -> String {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "status",
                     "--porcelain",
@@ -145,7 +145,7 @@ struct GitCommitter: Sendable {
     private func gitInit() async throws -> String {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "init",
                 ],

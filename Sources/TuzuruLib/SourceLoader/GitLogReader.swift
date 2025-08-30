@@ -11,7 +11,7 @@ struct GitLogReader {
     func logs(for filePath: FilePath) async -> [GitLog] {
         do {
             let result = try await Subprocess.run(
-                .path(FilePath("/usr/bin/git")),
+                .name("git"),
                 arguments: [
                     "log",
                     "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
