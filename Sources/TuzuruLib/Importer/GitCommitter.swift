@@ -17,7 +17,7 @@ struct GitCommitter {
 
         // Add the file to staging area
         _ = try await addFileToGit(filePath)
-        
+
         // Create the commit with custom date
         if let author = author {
             _ = try await commitWithAuthor(message: message, date: gitDateString, author: author)
@@ -25,7 +25,7 @@ struct GitCommitter {
             _ = try await commitWithoutAuthor(message: message, date: gitDateString)
         }
     }
-    
+
     private func addFileToGit(_ filePath: FilePath) async throws -> String {
         do {
             let result = try await Subprocess.run(
@@ -42,7 +42,7 @@ struct GitCommitter {
             throw GitCommitterError.commandFailed("git add \(filePath.string)", error.localizedDescription)
         }
     }
-    
+
     private func commitWithAuthor(message: String, date: String, author: String) async throws -> String {
         do {
             let result = try await Subprocess.run(
@@ -50,7 +50,7 @@ struct GitCommitter {
                 arguments: [
                     "commit",
                     "-m", message,
-                    "--author-date", date,
+                    "--date", date,
                     "--author", author,
                 ],
                 output: .string(limit: .max),
@@ -61,7 +61,7 @@ struct GitCommitter {
             throw GitCommitterError.commandFailed("git commit", error.localizedDescription)
         }
     }
-    
+
     private func commitWithoutAuthor(message: String, date: String) async throws -> String {
         do {
             let result = try await Subprocess.run(
@@ -69,7 +69,7 @@ struct GitCommitter {
                 arguments: [
                     "commit",
                     "-m", message,
-                    "--author-date", date,
+                    "--date", date,
                 ],
                 output: .string(limit: .max),
                 error: .string(limit: .max)
@@ -79,7 +79,7 @@ struct GitCommitter {
             throw GitCommitterError.commandFailed("git commit", error.localizedDescription)
         }
     }
-    
+
     /// Creates multiple commits for a batch of files
     /// - Parameters:
     ///   - files: Array of file information to commit
@@ -94,8 +94,8 @@ struct GitCommitter {
             )
         }
     }
-    
-    
+
+
     /// Generates a commit message for an imported post
     /// - Parameters:
     ///   - title: Post title
@@ -111,7 +111,8 @@ enum GitCommitterError: Error, LocalizedError, Sendable {
     case commandFailed(String, String)
     case subprocessError(Error)
     case invalidAuthorFormat(String)
-    
+    case notAGitRepository
+
     var errorDescription: String? {
         switch self {
         case .commandFailed(let command, let error):
@@ -120,6 +121,8 @@ enum GitCommitterError: Error, LocalizedError, Sendable {
             return "Subprocess error: \(error.localizedDescription)"
         case .invalidAuthorFormat(let author):
             return "Invalid author format: '\(author)'. Expected format: 'Name <email>'"
+        case .notAGitRepository:
+            return "Not a git repository. Run 'git init' first to initialize a git repository."
         }
     }
 }
