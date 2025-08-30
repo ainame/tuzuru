@@ -12,7 +12,7 @@ public struct Tuzuru {
         configuration: BlogConfiguration,
     ) throws {
         sourceLoader = SourceLoader(configuration: configuration)
-        siteGenerator = try BlogGenerator(fileManager: fileManager, configuration: configuration)
+        siteGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
         self.configuration = configuration
     }
 

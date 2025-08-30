@@ -11,11 +11,19 @@ struct PathGeneratorTests {
     let unlistedBasePath = FilePath("/contents/unlisted")
 
     func makeDirectOutputConfig() -> BlogOutputOptions {
-        BlogOutputOptions(directory: "blog", style: .direct)
+        BlogOutputOptions(
+            directory: "blog",
+            routingStyle: .direct,
+            homePageStyle: .all,
+        )
     }
 
     func makeSubdirectoryOutputConfig() -> BlogOutputOptions {
-        BlogOutputOptions(directory: "blog", style: .subdirectory)
+        BlogOutputOptions(
+            directory: "blog",
+            routingStyle: .subdirectory,
+            homePageStyle: .all,
+        )
     }
 
     // MARK: - generateOutputPath Tests
