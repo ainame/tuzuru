@@ -15,9 +15,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
         .package(url: "https://github.com/hummingbird-project/swift-mustache.git", from: "2.0.0"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.6.0"),
-        // System package exists from SDK and Subprocess depends on this
-        // https://github.com/swiftlang/swift-subprocess/issues/141
-        // .package(url: "https://github.com/apple/swift-system.git", from: "1.5.0"),
+        .package(url: "https://github.com/apple/swift-system.git", from: "1.5.0"),
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", branch: "main"),
     ],
     targets: [
@@ -39,7 +37,7 @@ let package = Package(
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "Mustache", package: "swift-mustache"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
-                // .product(name: "SystemPackage", package: "swift-system"),
+                .product(name: "SystemPackage", package: "swift-system"),
             ],
             resources: [
                 .copy("Resources"),
