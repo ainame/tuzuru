@@ -97,6 +97,27 @@ footer {
     text-decoration: none;
 }
 
+@media (prefers-color-scheme: dark) {
+    .sidebar {
+        background: #151b23;
+        border: 1px solid #3d444db3;
+    }
+
+    .sidebar h3 {
+        color: #8b949e;
+        border-bottom: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    .sidebar a {
+        color: #c9d1d9;
+    }
+
+    .sidebar a:hover {
+        background-color: rgba(56, 139, 253, 0.15);
+        color: #58a6ff;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
