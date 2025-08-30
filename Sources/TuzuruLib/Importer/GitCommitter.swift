@@ -101,62 +101,6 @@ struct GitCommitter: Sendable {
         }
     }
     
-    /// Checks if the current directory is a git repository
-    /// - Returns: True if current directory is a git repository
-    func isGitRepository() async -> Bool {
-        do {
-            _ = try await gitStatus()
-            return true
-        } catch {
-            return false
-        }
-    }
-    
-    /// Initializes a git repository in the current directory
-    /// - Throws: GitCommitterError if initialization fails
-    func initializeRepository() async throws {
-        _ = try await gitInit()
-    }
-    
-    /// Gets the current git status
-    /// - Returns: Git status output
-    /// - Throws: GitCommitterError if the operation fails
-    func getStatus() async throws -> String {
-        return try await gitStatus()
-    }
-    
-    private func gitStatus() async throws -> String {
-        do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "status",
-                    "--porcelain",
-                ],
-                output: .string(limit: .max),
-                error: .string(limit: .max)
-            )
-            return result.standardOutput ?? ""
-        } catch {
-            throw GitCommitterError.commandFailed("git status", error.localizedDescription)
-        }
-    }
-    
-    private func gitInit() async throws -> String {
-        do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "init",
-                ],
-                output: .string(limit: .max),
-                error: .string(limit: .max)
-            )
-            return result.standardOutput ?? ""
-        } catch {
-            throw GitCommitterError.commandFailed("git init", error.localizedDescription)
-        }
-    }
     
     /// Generates a commit message for an imported post
     /// - Parameters:
@@ -165,16 +109,13 @@ struct GitCommitter: Sendable {
     /// - Returns: Generated commit message
     func generateImportCommitMessage(title: String, originalDate: Date) -> String {
         let dateString = DateFormatter.shortDate.string(from: originalDate)
-        return "Import post: \(title) (originally published \(dateString))"
+        return "[tuzuru import]: \(title) (originally published \(dateString))"
     }
-    
-    // MARK: - Private Methods
 }
 
 enum GitCommitterError: Error, LocalizedError, Sendable {
     case commandFailed(String, String)
     case subprocessError(Error)
-    case notAGitRepository
     case invalidAuthorFormat(String)
     
     var errorDescription: String? {
@@ -183,8 +124,6 @@ enum GitCommitterError: Error, LocalizedError, Sendable {
             return "Git command failed: '\(command)' - \(error)"
         case .subprocessError(let error):
             return "Subprocess error: \(error.localizedDescription)"
-        case .notAGitRepository:
-            return "Current directory is not a git repository"
         case .invalidAuthorFormat(let author):
             return "Invalid author format: '\(author)'. Expected format: 'Name <email>'"
         }
