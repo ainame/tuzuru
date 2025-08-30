@@ -5,11 +5,11 @@ import Mustache
 /// Handles loading and processing source content from markdown files
 struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
-    private let gitWrapper: GitWrapper
+    private let gitLogReader: GitLogReader
 
     init(configuration: BlogConfiguration) {
         self.configuration = configuration
-        gitWrapper = GitWrapper()
+        gitLogReader = GitLogReader()
     }
 
     @concurrent
@@ -96,7 +96,7 @@ struct SourceLoader: Sendable {
     }
 
     private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
-        let gitLogs = await gitWrapper.logs(for: markdownPath)
+        let gitLogs = await gitLogReader.logs(for: markdownPath)
 
         // Get the first commit (initial commit) for publish date and author
         let firstCommit = gitLogs.last // logs are in reverse chronological order

@@ -1,7 +1,7 @@
 import Foundation
 import Subprocess
 
-struct GitWrapper {
+struct GitLogReader {
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
