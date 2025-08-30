@@ -19,7 +19,7 @@ struct BlogConfigurationLoaderTests {
           },
           "output" : {
             "directory" : "public",
-            "style" : "subdirectory"
+            "routingStyle" : "subdirectory"
           },
           "sourceLayout" : {
             "assets" : "assets",
@@ -48,7 +48,7 @@ struct BlogConfigurationLoaderTests {
         #expect(config.metadata.copyright == "My Tech Blog")
         #expect(config.metadata.locale.identifier == "en_GB")
         #expect(config.output.directory == "public")
-        #expect(config.output.style == .subdirectory)
+        #expect(config.output.routingStyle == .subdirectory)
         #expect(config.sourceLayout.assets.string == "assets")
         #expect(config.sourceLayout.contents.string == "contents")
         #expect(config.sourceLayout.imported.string == "contents/imported")
@@ -90,7 +90,7 @@ struct BlogConfigurationLoaderTests {
 
         // Verify default values are used for missing fields
         #expect(config.output.directory == "blog")
-        #expect(config.output.style == .subdirectory)
+        #expect(config.output.routingStyle == .subdirectory)
         #expect(config.sourceLayout.assets.string == "assets")
         #expect(config.sourceLayout.contents.string == "contents")
         #expect(config.sourceLayout.imported.string == "contents/imported")

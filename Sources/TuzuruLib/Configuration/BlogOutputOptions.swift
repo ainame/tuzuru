@@ -2,8 +2,8 @@ import Foundation
 
 public struct BlogOutputOptions: Sendable {
     /// Output file and directory configuration
-    /// Output style for generated HTML files
-    public enum OutputStyle: String, Sendable, CaseIterable, Codable {
+    /// Routing style for generated HTML files
+    public enum RoutingStyle: String, Sendable, CaseIterable, Codable {
         /// Direct HTML files (e.g., "about.html")
         case direct
         /// Subdirectory with index.html (e.g., "about/index.html" for clean URLs)
@@ -14,11 +14,11 @@ public struct BlogOutputOptions: Sendable {
     public let directory: String
 
     /// Output style for generated pages
-    public let style: OutputStyle
+    public let routingStyle: RoutingStyle
 
-    public init(directory: String, style: OutputStyle) {
+    public init(directory: String, style: RoutingStyle) {
         self.directory = directory
-        self.style = style
+        self.routingStyle = style
     }
 
     /// Index page filename is always "index.html"
@@ -33,18 +33,18 @@ extension BlogOutputOptions {
 
 extension BlogOutputOptions: Codable {
     private enum CodingKeys: CodingKey {
-        case directory, style
+        case directory, routingStyle
     }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.directory = try container.decodeIfPresent(String.self, forKey: .directory) ?? Self.default.directory
-        self.style = try container.decodeIfPresent(BlogOutputOptions.OutputStyle.self, forKey: .style) ?? Self.default.style
+        self.routingStyle = try container.decodeIfPresent(BlogOutputOptions.RoutingStyle.self, forKey: .routingStyle) ?? Self.default.routingStyle
     }
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.directory, forKey: .directory)
-        try container.encode(self.style, forKey: .style)
+        try container.encode(self.routingStyle, forKey: .routingStyle)
     }
 }

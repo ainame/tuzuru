@@ -21,7 +21,7 @@ public struct PathGenerator: Sendable {
         let relativePath = getRelativePath(from: basePath, to: pagePath)
         let relativeDir = relativePath.removingLastComponent()
 
-        switch configuration.style {
+        switch configuration.routingStyle {
         case .direct:
             if relativeDir.components.isEmpty {
                 return "\(stem).html"
@@ -46,7 +46,7 @@ public struct PathGenerator: Sendable {
         let relativePath = getRelativePath(from: basePath, to: pagePath)
         let relativeDir = relativePath.removingLastComponent()
 
-        switch configuration.style {
+        switch configuration.routingStyle {
         case .direct:
             if relativeDir.components.isEmpty {
                 return "\(stem).html"
@@ -64,7 +64,7 @@ public struct PathGenerator: Sendable {
 
     /// Generate home page URL for blog title link (context-aware)
     public func generateHomeUrl(from pagePath: FilePath? = nil, isUnlisted: Bool = false) -> String {
-        switch configuration.style {
+        switch configuration.routingStyle {
         case .direct:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
@@ -92,7 +92,7 @@ public struct PathGenerator: Sendable {
 
     /// Generate assets URL for CSS/JS/images (context-aware)
     public func generateAssetsUrl(from pagePath: FilePath? = nil, isUnlisted: Bool = false) -> String {
-        switch configuration.style {
+        switch configuration.routingStyle {
         case .direct:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
