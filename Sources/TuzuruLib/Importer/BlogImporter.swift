@@ -4,6 +4,7 @@ import Foundation
 public struct BlogImporter {
     private let parser = YAMLFrontMatterParser()
     private let transformer = MarkdownTransformer()
+    private let shortcodeProcessor = HugoShortcodeProcessor()
     private let gitCommitter = GitCommitter()
     
     public struct ImportOptions: Sendable {
@@ -149,8 +150,9 @@ public struct BlogImporter {
             throw ImportError.destinationFileExists(destinationPath.string)
         }
         
-        // Transform content
-        let transformedContent = transformer.transform(content: parseResult.content, title: title)
+        // Process Hugo shortcodes first, then transform content
+        let contentWithProcessedShortcodes = shortcodeProcessor.processShortcodes(in: parseResult.content)
+        let transformedContent = transformer.transform(content: contentWithProcessedShortcodes, title: title)
         
         if dryRun {
             let dateStr = publicationDate.map { " (\(ISO8601DateFormatter().string(from: $0)))" } ?? ""
