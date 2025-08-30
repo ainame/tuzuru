@@ -8,18 +8,24 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
     let assetsUrl: String
     let years: [String]
     let content: Content
+    let partialName: String
 
-    func render() -> [String: Any] {
-        let partialName = String(describing: type(of: content)).replacingOccurrences(of: "Data", with: "").lowercased()
-        return [
-            "pageTitle": pageTitle,
-            "blogName": blogName,
-            "copyright": copyright,
-            "homeUrl": homeUrl,
-            "assetsUrl": assetsUrl,
-            "years": years,
-            "content": content.render(),
-            "partialName": partialName,
-        ]
+    init(
+        pageTitle: String,
+        blogName: String,
+        copyright: String,
+        homeUrl: String,
+        assetsUrl: String,
+        years: [String],
+        content: Content
+    ) {
+        self.pageTitle = pageTitle
+        self.blogName = blogName
+        self.copyright = copyright
+        self.homeUrl = homeUrl
+        self.assetsUrl = assetsUrl
+        self.years = years
+        self.content = content
+        self.partialName = String(describing: type(of: content)).replacingOccurrences(of: "Data", with: "").lowercased()
     }
 }

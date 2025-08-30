@@ -1,3 +1,1 @@
-protocol PageRendererable {
-    func render() -> [String: Any]
-}
+protocol PageRendererable {}

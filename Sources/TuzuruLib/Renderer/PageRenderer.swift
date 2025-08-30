@@ -9,6 +9,6 @@ struct PageRenderer {
     }
 
     func render<Content: PageRendererable>(_ data: LayoutData<Content>) throws -> String {
-        templates.render(data.render(), withTemplate: "layout")!
+        templates.render(data, withTemplate: "layout")!
     }
 }

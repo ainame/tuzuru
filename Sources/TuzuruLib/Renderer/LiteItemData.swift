@@ -6,14 +6,4 @@ struct ListItemData: PageRendererable {
     let publishedAt: String
     let excerpt: String
     let url: String
-
-    func render() -> [String: Any] {
-        [
-            "title": title,
-            "author": author,
-            "publishedAt": publishedAt,
-            "url": url,
-            "excerpt": excerpt,
-        ]
-    }
 }
