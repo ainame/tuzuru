@@ -62,6 +62,11 @@ tuzuru generate
 ```
 
 You can now see the `blog` directory that can be deployed to GitHub Pages or your favorite HTTP server.
+Or you can preview it with local HTTP server like `python3 -m http.server 8000 -d blog` and open `http://localhost:8000`.
+
+The default layout is good enough to start (hopefully). It adopted [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) already.
+
+![screenshot](.github/assets/screenshot.png)
 
 ### Example project structure
 
