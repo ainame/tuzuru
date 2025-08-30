@@ -22,16 +22,6 @@ public struct BlogSourceLayout: Sendable {
     }
 }
 
-extension BlogSourceLayout {
-    public static let `default` = BlogSourceLayout(
-        templates: .default,
-        assets: "assets",
-        contents: "contents",
-        imported: "contents/imported",
-        unlisted: "contents/unlisted",
-    )
-}
-
 extension BlogSourceLayout: Codable {
     private enum CodingKeys: String, CodingKey {
         case templates, assets, contents, imported, unlisted

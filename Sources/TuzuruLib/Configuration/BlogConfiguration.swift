@@ -39,15 +39,3 @@ public struct BlogConfiguration: Sendable, Codable {
         try container.encode(self.sourceLayout, forKey: .sourceLayout)
     }
 }
-
-extension BlogConfiguration {
-    public static let template = BlogConfiguration(
-        metadata: BlogMetadata(
-            blogName: "My Blog",
-            copyright: "My Blog",
-            locale: Locale(identifier: "en_GB"),
-        ),
-        output: .default,
-        sourceLayout: .default,
-    )
-}

@@ -25,7 +25,7 @@ struct InitCommand: AsyncParsableCommand {
         print("⚙️ Generating tuzuru.json...")
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        let configData = try encoder.encode(BlogConfiguration.template)
+        let configData = try encoder.encode(BlogConfiguration.default)
         try configData.write(to: URL(fileURLWithPath: configPath.string))
         print("  ✅ Created tuzuru.json")
 

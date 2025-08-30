@@ -74,10 +74,6 @@ extension BlogOutputOptions {
     }
 }
 
-extension BlogOutputOptions {
-    public static let `default` = BlogOutputOptions(directory: "blog", routingStyle: .subdirectory, homePageStyle: .all)
-}
-
 extension BlogOutputOptions: Codable {
     private enum CodingKeys: CodingKey {
         case directory, routingStyle, homePageStyle

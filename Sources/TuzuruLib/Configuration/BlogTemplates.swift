@@ -13,14 +13,6 @@ public struct BlogTemplates: Sendable {
     }
 }
 
-extension BlogTemplates {
-    public static let `default`: BlogTemplates = .init(
-        layout: "templates/layout.mustache",
-        post: "templates/post.mustache",
-        list: "templates/list.mustache"
-    )
-}
-
 extension BlogTemplates: Codable {
     // Custom Codable implementation for FilePath
     private enum CodingKeys: String, CodingKey {
