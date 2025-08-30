@@ -3,14 +3,23 @@ import Mustache
 
 /// Handles template processing and site generation
 struct BlogGenerator {
-    private let fileManager: FileManager
     private let configuration: BlogConfiguration
+    private let fileManager: FileManager
+    private let calendar: Calendar
+    private let dateProvider: () -> Date
     private let pathGenerator: PathGenerator
     private let formatter: DateFormatter
 
-    init(fileManager: FileManager = .default, configuration: BlogConfiguration) throws {
-        self.fileManager = fileManager
+    init(
+        configuration: BlogConfiguration,
+        fileManager: FileManager = .default,
+        calendar: Calendar = .current,
+        dateProvider: @escaping () -> Date = { Date() },
+    ) throws {
         self.configuration = configuration
+        self.fileManager = fileManager
+        self.calendar = calendar
+        self.dateProvider = dateProvider
         pathGenerator = PathGenerator(
             configuration: configuration.output,
             contentsBasePath: configuration.sourceLayout.contents,
@@ -194,6 +203,6 @@ struct BlogGenerator {
     }
 
     private func getCurrentYear() -> String {
-        String(describing: Calendar.current.dateComponents([.year], from: Date()).year!)
+        String(describing: calendar.dateComponents([.year], from: dateProvider()).year!)
     }
 }
