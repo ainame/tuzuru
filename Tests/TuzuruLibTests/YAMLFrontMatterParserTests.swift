@@ -1,6 +1,7 @@
 import Testing
 @testable import TuzuruLib
 
+@Suite
 struct YAMLFrontMatterParserTests {
     let parser = YAMLFrontMatterParser()
     

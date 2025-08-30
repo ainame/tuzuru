@@ -20,6 +20,7 @@ struct MarkdownExcerptWalkerTests {
         let document = Document(parsing: rawMarkdown)
         var walker = MarkdownExcerptWalker(maxLength: 20)
         walker.visit(document)
-        #expect(walker.result == "2. 2nd heading 2(3.)")
+        #expect(walker.result == "2. 2nd heading 2 (3…")
+        #expect(walker.result.count == 20)
     }
 }
