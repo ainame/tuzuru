@@ -1,6 +1,6 @@
 import Foundation
 
-public struct BlogOutputOptions: Sendable, Codable {
+public struct BlogOutputOptions: Sendable {
     /// Output file and directory configuration
     /// Output style for generated HTML files
     public enum OutputStyle: String, Sendable, CaseIterable, Codable {
@@ -25,15 +25,21 @@ public struct BlogOutputOptions: Sendable, Codable {
     public var indexFileName: String {
         "index.html"
     }
+}
 
+extension BlogOutputOptions {
+    public static let `default` = BlogOutputOptions(directory: "blog", style: .subdirectory)
+}
+
+extension BlogOutputOptions: Codable {
     private enum CodingKeys: CodingKey {
         case directory, style
     }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.directory = try container.decodeIfPresent(String.self, forKey: .directory) ?? "blog"
-        self.style = try container.decodeIfPresent(BlogOutputOptions.OutputStyle.self, forKey: .style) ?? .subdirectory
+        self.directory = try container.decodeIfPresent(String.self, forKey: .directory) ?? Self.default.directory
+        self.style = try container.decodeIfPresent(BlogOutputOptions.OutputStyle.self, forKey: .style) ?? Self.default.style
     }
 
     public func encode(to encoder: any Encoder) throws {

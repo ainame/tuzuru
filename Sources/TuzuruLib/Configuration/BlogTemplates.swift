@@ -1,7 +1,7 @@
 import Foundation
 
 /// Template file configuration
-public struct BlogTemplates: Sendable, Equatable, Codable {
+public struct BlogTemplates: Sendable {
     public let layout: FilePath
     public let post: FilePath
     public let list: FilePath
@@ -11,7 +11,17 @@ public struct BlogTemplates: Sendable, Equatable, Codable {
         self.post = post
         self.list = list
     }
+}
 
+extension BlogTemplates {
+    public static let `default`: BlogTemplates = .init(
+        layout: "templates/layout.mustache",
+        post: "templates/post.mustache",
+        list: "templates/list.mustache"
+    )
+}
+
+extension BlogTemplates: Codable {
     // Custom Codable implementation for FilePath
     private enum CodingKeys: String, CodingKey {
         case layout, post, list
@@ -19,9 +29,9 @@ public struct BlogTemplates: Sendable, Equatable, Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        layout = try FilePath(container.decodeIfPresent(String.self, forKey: .layout) ?? "layout.mustache")
-        post = try FilePath(container.decodeIfPresent(String.self, forKey: .post) ?? "post.mustache")
-        list = try FilePath(container.decodeIfPresent(String.self, forKey: .list) ?? "list.mustache")
+        layout = try FilePath(container.decodeIfPresent(String.self, forKey: .layout) ?? Self.default.layout.string)
+        post = try FilePath(container.decodeIfPresent(String.self, forKey: .post) ?? Self.default.post.string)
+        list = try FilePath(container.decodeIfPresent(String.self, forKey: .list) ?? Self.default.list.string)
     }
 
     public func encode(to encoder: Encoder) throws {

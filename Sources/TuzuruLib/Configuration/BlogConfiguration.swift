@@ -20,29 +20,34 @@ public struct BlogConfiguration: Sendable, Codable {
         self.output = output
         self.sourceLayout = sourceLayout
     }
+
+    private enum CodingKeys: CodingKey {
+        case metadata, output, sourceLayout
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.metadata = try container.decode(BlogMetadata.self, forKey: .metadata)
+        self.output = try container.decodeIfPresent(BlogOutputOptions.self, forKey: .output) ?? BlogOutputOptions.default
+        self.sourceLayout = try container.decodeIfPresent(BlogSourceLayout.self, forKey: .sourceLayout) ?? BlogSourceLayout.default
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.metadata, forKey: .metadata)
+        try container.encode(self.output, forKey: .output)
+        try container.encode(self.sourceLayout, forKey: .sourceLayout)
+    }
 }
 
 extension BlogConfiguration {
     public static let template = BlogConfiguration(
         metadata: BlogMetadata(
             blogName: "My Blog",
-            copyright: "2025 My Blog",
+            copyright: "My Blog",
             locale: Locale(identifier: "en_GB"),
         ),
-        output: BlogOutputOptions(
-            directory: "blog",
-            style: .subdirectory,
-        ),
-        sourceLayout: BlogSourceLayout(
-            templates: BlogTemplates(
-                layout: FilePath("templates/layout.mustache"),
-                post: FilePath("templates/post.mustache"),
-                list: FilePath("templates/list.mustache"),
-            ),
-            assets: FilePath("assets"),
-            contents: FilePath("contents"),
-            imported: FilePath("contents/imported"),
-            unlisted: FilePath("contents/unlisted"),
-        ),
+        output: .default,
+        sourceLayout: .default,
     )
 }

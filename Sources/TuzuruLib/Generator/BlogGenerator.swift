@@ -64,6 +64,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(from: post.path, isUnlisted: post.isUnlisted),
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
+            currentYear: getCurrentYear(),
             years: years,
             content: postData,
         )
@@ -106,6 +107,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             homeUrl: pathGenerator.generateHomeUrl(),
             assetsUrl: pathGenerator.generateAssetsUrl(),
+            currentYear: getCurrentYear(),
             years: years,
             content: list,
         )
@@ -153,6 +155,7 @@ struct BlogGenerator {
                 copyright: configuration.metadata.copyright,
                 homeUrl: "../",
                 assetsUrl: "../assets/",
+                currentYear: getCurrentYear(),
                 years: availableYears,
                 content: list,
             )
@@ -188,5 +191,9 @@ struct BlogGenerator {
 
         // Copy the entire assets directory
         try fileManager.copyItem(atPath: assetsPath.string, toPath: destinationPath.string)
+    }
+
+    private func getCurrentYear() -> String {
+        String(describing: Calendar.current.dateComponents([.year], from: Date()).year!)
     }
 }
