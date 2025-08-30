@@ -116,11 +116,13 @@ struct SourceLoader: Sendable {
         // * Cite first 150 chars
         let document = Document(parsing: markdownContent)
         var destructor = MarkdownDestructor()
+        var urlLinker = URLLinker()
         var escaper = CodeBlockHTMLEscaper()
         var htmlFormatter = HTMLFormatter()
         var excerptWalker = MarkdownExcerptWalker(maxLength: 150)
 
         destructor.visit(document)
+            .flatMap { urlLinker.visit($0) }
             .flatMap { escaper.visit($0) }
             .flatMap {
                 // Walk for the same document
