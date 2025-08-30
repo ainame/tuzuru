@@ -11,8 +11,8 @@ struct ImportCommand: AsyncParsableCommand {
     @Argument(help: "Source directory containing markdown files to import")
     var sourcePath: String
 
-    @Option(name: .shortAndLong, help: "Destination directory (default: contents/)")
-    var destination: String = "contents/"
+    @Option(name: .shortAndLong, help: "Destination directory (default: contents/imported/ or sourceLayout.imported in tuzuru.json)")
+    var destination: String = "contents/imported/"
 
     @Flag(name: .shortAndLong, help: "Import as unlisted content")
     var unlisted: Bool = false
