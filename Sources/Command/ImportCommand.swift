@@ -17,23 +17,29 @@ struct ImportCommand: AsyncParsableCommand {
     @Flag(name: .shortAndLong, help: "Import as unlisted content")
     var unlisted: Bool = false
 
-    @Flag(name: .shortAndLong, help: "Skip git commits")
-    var skipGit: Bool = false
-
     @Flag(name: [.long, .customShort("n")], help: "Dry run - show what would be imported without making changes")
     var dryRun: Bool = false
 
-    @Flag(name: .shortAndLong, help: "Verbose output")
-    var verbose: Bool = false
+    @Option(name: [.long, .customShort("c")], help: "Path to configuration file (default: tuzuru.json)")
+    var config: String?
 
     mutating func run() async throws {
-        let destinationPath = unlisted ? "contents/unlisted/" : destination
+        // Load configuration
+        let loader = BlogConfigurationLoader()
+        let blogConfig: BlogConfiguration
+        
+        do {
+            blogConfig = try loader.load(from: config)
+        } catch let error as BlogConfigurationLoader.LoadError {
+            print("❌ \(error.localizedDescription)")
+            return
+        }
+
+        let destinationPath = unlisted ? blogConfig.sourceLayout.unlisted.string : destination
 
         let options = BlogImporter.ImportOptions(
             sourcePath: sourcePath,
-            destinationPath: destinationPath,
-            skipGit: skipGit,
-            verbose: verbose
+            destinationPath: destinationPath
         )
 
         let importer = BlogImporter()
@@ -51,9 +57,7 @@ struct ImportCommand: AsyncParsableCommand {
 
         if !dryRun && result.importedCount > 0 {
             print("📁 Files imported to: \(destinationPath)")
-            if !skipGit {
-                print("🔗 Git commits created with original publication dates")
-            }
+            print("🔗 Git commits created with original publication dates")
         }
     }
 }

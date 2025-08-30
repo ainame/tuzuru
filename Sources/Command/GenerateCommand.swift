@@ -7,19 +7,20 @@ struct GenerateCommand: AsyncParsableCommand {
         commandName: "generate",
     )
 
-    mutating func run() async throws {
-        let currentPath = FilePath(FileManager.default.currentDirectoryPath)
-        let configPath = currentPath.appending("tuzuru.json")
+    @Option(name: [.long, .customShort("c")], help: "Path to configuration file (default: tuzuru.json)")
+    var config: String?
 
-        // Load configuration from tuzuru.json
-        guard FileManager.default.fileExists(atPath: configPath.string) else {
-            print("❌ tuzuru.json not found. Run 'tuzuru init' first to initialize a new site.")
+    mutating func run() async throws {
+        // Load configuration
+        let loader = BlogConfigurationLoader()
+        let blogConfig: BlogConfiguration
+        
+        do {
+            blogConfig = try loader.load(from: config)
+        } catch let error as BlogConfigurationLoader.LoadError {
+            print("❌ \(error.localizedDescription)")
             return
         }
-
-        let configData = try Data(contentsOf: URL(fileURLWithPath: configPath.string))
-        let decoder = JSONDecoder()
-        let blogConfig = try decoder.decode(BlogConfiguration.self, from: configData)
 
         // Initialize Tuzuru with configuration
         let tuzuru = try Tuzuru(configuration: blogConfig)
