@@ -174,22 +174,22 @@ struct SourceLoader: Sendable {
     }
 
     private func loadTemplates(fileManager: FileManager, templates: Templates) throws -> LoadedTemplates {
-        guard let layoutData = fileManager.contents(atPath: templates.layoutFile.string),
+        guard let layoutData = fileManager.contents(atPath: templates.layout.string),
               let layoutTemplate = String(data: layoutData, encoding: .utf8)
         else {
-            throw TuzuruError.templateNotFound(templates.layoutFile.string)
+            throw TuzuruError.templateNotFound(templates.layout.string)
         }
 
-        guard let postData = fileManager.contents(atPath: templates.postFile.string),
+        guard let postData = fileManager.contents(atPath: templates.post.string),
               let postTemplate = String(data: postData, encoding: .utf8)
         else {
-            throw TuzuruError.templateNotFound(templates.postFile.string)
+            throw TuzuruError.templateNotFound(templates.post.string)
         }
 
-        guard let listData = fileManager.contents(atPath: templates.listFile.string),
+        guard let listData = fileManager.contents(atPath: templates.list.string),
               let listTemplate = String(data: listData, encoding: .utf8)
         else {
-            throw TuzuruError.templateNotFound(templates.listFile.string)
+            throw TuzuruError.templateNotFound(templates.list.string)
         }
         return try LoadedTemplates(
             layout: MustacheTemplate(string: layoutTemplate),

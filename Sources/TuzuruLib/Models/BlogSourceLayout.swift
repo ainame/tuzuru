@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SourceLayout: Sendable, Codable {
+public struct BlogSourceLayout: Sendable, Codable {
     public let templates: Templates
     public let contents: FilePath
     public let unlisted: FilePath

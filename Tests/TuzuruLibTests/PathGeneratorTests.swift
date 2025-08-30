@@ -9,12 +9,12 @@ struct PathGeneratorTests {
 
     let contentsBasePath = FilePath("/contents")
 
-    func makeDirectOutputConfig() -> OutputOptions {
-        OutputOptions(directory: "blog", style: .direct)
+    func makeDirectOutputConfig() -> BlogOutputOptions {
+        BlogOutputOptions(directory: "blog", style: .direct)
     }
 
-    func makeSubdirectoryOutputConfig() -> OutputOptions {
-        OutputOptions(directory: "blog", style: .subdirectory)
+    func makeSubdirectoryOutputConfig() -> BlogOutputOptions {
+        BlogOutputOptions(directory: "blog", style: .subdirectory)
     }
 
     // MARK: - generateOutputPath Tests

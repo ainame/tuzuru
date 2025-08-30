@@ -2,11 +2,11 @@ import Foundation
 
 /// Generates paths and URLs based on output configuration
 public struct PathGenerator: Sendable {
-    private let configuration: OutputOptions
+    private let configuration: BlogOutputOptions
     private let contentsBasePath: FilePath
     private let unlistedBasePath: FilePath
 
-    public init(configuration: OutputOptions, contentsBasePath: FilePath, unlistedBasePath: FilePath) {
+    public init(configuration: BlogOutputOptions, contentsBasePath: FilePath, unlistedBasePath: FilePath) {
         self.configuration = configuration
         self.contentsBasePath = contentsBasePath
         self.unlistedBasePath = unlistedBasePath

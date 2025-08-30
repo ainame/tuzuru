@@ -12,7 +12,7 @@ struct BlogGenerator {
         self.fileManager = fileManager
         self.configuration = configuration
         pathGenerator = PathGenerator(
-            configuration: configuration.outputOptions,
+            configuration: configuration.output,
             contentsBasePath: configuration.sourceLayout.contents,
             unlistedBasePath: configuration.sourceLayout.unlisted
         )
@@ -22,7 +22,7 @@ struct BlogGenerator {
     }
 
     func generate(_ source: Source) throws -> FilePath {
-        let blogRoot = FilePath(configuration.outputOptions.directory)
+        let blogRoot = FilePath(configuration.output.directory)
         let pageRenderer = PageRenderer(templates: source.templates)
 
         // Create site directory if it doesn't exist
@@ -114,7 +114,7 @@ struct BlogGenerator {
         let finalHTML = try pageRenderer.render(layoutData)
 
         // Write index.html
-        let indexPath = blogRoot.appending(configuration.outputOptions.indexFileName)
+        let indexPath = blogRoot.appending(configuration.output.indexFileName)
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
     }
 
@@ -164,7 +164,7 @@ struct BlogGenerator {
             let yearDirectory = blogRoot.appending("\(year)")
             try fileManager.createDirectory(atPath: yearDirectory.string, withIntermediateDirectories: true)
 
-            let yearIndexPath = yearDirectory.appending(configuration.outputOptions.indexFileName)
+            let yearIndexPath = yearDirectory.appending(configuration.output.indexFileName)
             fileManager.createFile(atPath: yearIndexPath.string, contents: Data(finalHTML.utf8))
         }
 

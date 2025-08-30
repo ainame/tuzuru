@@ -3,21 +3,21 @@ import Foundation
 /// Configuration for blog generation, eliminating hardcoded assumptions
 public struct BlogConfiguration: Sendable, Codable {
     /// Source file directory paths
-    public let sourceLayout: SourceLayout
+    public let sourceLayout: BlogSourceLayout
 
     /// Output configuration
-    public let outputOptions: OutputOptions
+    public let output: BlogOutputOptions
 
     /// Blog metadata
     public let metadata: BlogMetadata
 
     public init(
-        sourceLayout: SourceLayout,
-        output: OutputOptions,
+        sourceLayout: BlogSourceLayout,
+        output: BlogOutputOptions,
         metadata: BlogMetadata,
     ) {
         self.sourceLayout = sourceLayout
-        outputOptions = output
+        self.output = output
         self.metadata = metadata
     }
 }

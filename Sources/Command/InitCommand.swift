@@ -22,7 +22,7 @@ struct InitCommand: AsyncParsableCommand {
 
         // Generate default configuration
         let defaultConfig = BlogConfiguration(
-            sourceLayout: SourceLayout(
+            sourceLayout: BlogSourceLayout(
                 templates: Templates(
                     layoutFile: FilePath("templates/layout.mustache"),
                     postFile: FilePath("templates/post.mustache"),
@@ -32,7 +32,7 @@ struct InitCommand: AsyncParsableCommand {
                 unlisted: FilePath("contents/unlisted"),
                 assets: FilePath("assets"),
             ),
-            output: OutputOptions(
+            output: BlogOutputOptions(
                 directory: "blog",
                 style: .subdirectory,
             ),

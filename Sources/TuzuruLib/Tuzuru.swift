@@ -22,7 +22,7 @@ public struct Tuzuru {
         return outputPath
     }
 
-    public func loadSources(_: SourceLayout) async throws -> Source {
+    public func loadSources(_: BlogSourceLayout) async throws -> Source {
         try await sourceLoader.loadSources()
     }
 

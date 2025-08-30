@@ -1,6 +1,6 @@
 import Foundation
 
-public struct OutputOptions: Sendable, Codable {
+public struct BlogOutputOptions: Sendable, Codable {
     /// Output file and directory configuration
     /// Output style for generated HTML files
     public enum OutputStyle: String, Sendable, CaseIterable, Codable {
