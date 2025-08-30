@@ -18,16 +18,16 @@ struct SourceLoader: Sendable {
         var source = Source(metadata: configuration.metadata, templates: templates, posts: [])
 
         // Find markdown files in contents directory (excluding unlisted subdirectory)
-        let contentsFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
+        let contentsFiles = try findMarkdowns(fileManager: FileManager(), in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
         // Find markdown files in unlisted directory
-        let unlistedFiles = try findMarkdownFiles(fileManager: FileManager(), in: configuration.sourceLayout.unlisted)
+        let unlistedFiles = try findMarkdowns(fileManager: FileManager(), in: configuration.sourceLayout.unlisted)
 
         source.posts = try await withThrowingTaskGroup(of: Post?.self) { group in
             // Process regular content files
             for markdownPath in contentsFiles {
                 group.addTask {
                     let fileManager = FileManager()
-                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: false)
+                    return try await processMarkdown(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: false)
                 }
             }
 
@@ -35,7 +35,7 @@ struct SourceLoader: Sendable {
             for markdownPath in unlistedFiles {
                 group.addTask {
                     let fileManager = FileManager()
-                    return try await processMarkdownFile(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: true)
+                    return try await processMarkdown(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: true)
                 }
             }
 
@@ -101,7 +101,7 @@ struct SourceLoader: Sendable {
         return categorySet.sorted()
     }
 
-    private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
+    private func findMarkdowns(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
 
         // Check if directory exists, if not, return empty array
@@ -140,7 +140,7 @@ struct SourceLoader: Sendable {
         return markdownFiles
     }
 
-    private func processMarkdownFile(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
+    private func processMarkdown(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
         let gitLogs = await gitLogReader.logs(for: markdownPath)
 
         // Get the first commit (initial commit) for publish date and author
