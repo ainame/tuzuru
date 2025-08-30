@@ -2,6 +2,8 @@
 
 Tuzuru (綴る) is dead-simple static **blog** generator CLI written in Swift. It's similar to static site generators but focuses on simple blog.
 
+![logo](.github/assets/logo.png)
+
 In Tuzuru, Git is the way to manage metadata. You just write **plain** markdown and save them to Git.
 Tuzuru will get published date and author info for each post from Git. You don't need to remember "YAML front matter" syntax/rules.
 
