@@ -108,7 +108,7 @@ struct GitCommitter: Sendable {
     ///   - originalDate: Original publication date
     /// - Returns: Generated commit message
     func generateImportCommitMessage(title: String, originalDate: Date) -> String {
-        let dateString = DateFormatter.shortDate.string(from: originalDate)
+        let dateString = ISO8601DateFormatter.shortDate.string(from: originalDate)
         return "[tuzuru import]: \(title) (originally published \(dateString))"
     }
 }
@@ -132,12 +132,10 @@ enum GitCommitterError: Error, LocalizedError, Sendable {
 
 // MARK: - DateFormatter Extensions
 
-extension DateFormatter {
-    public static let shortDate: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+extension ISO8601DateFormatter {
+    public static let shortDate: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
         return formatter
     }()
 }
