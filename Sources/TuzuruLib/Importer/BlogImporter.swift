@@ -9,14 +9,10 @@ public struct BlogImporter {
     public struct ImportOptions: Sendable {
         public let sourcePath: String
         public let destinationPath: String
-        public let skipGit: Bool
-        public let verbose: Bool
         
-        public init(sourcePath: String, destinationPath: String, skipGit: Bool = false, verbose: Bool = false) {
+        public init(sourcePath: String, destinationPath: String) {
             self.sourcePath = sourcePath
             self.destinationPath = destinationPath
-            self.skipGit = skipGit
-            self.verbose = verbose
         }
     }
     
@@ -58,15 +54,11 @@ public struct BlogImporter {
         let markdownFiles = try findMarkdownFiles(in: sourceDir, fileManager: fileManager)
         
         if markdownFiles.isEmpty {
-            if options.verbose {
-                print("📝 No markdown files found in \(options.sourcePath)")
-            }
+            print("📝 No markdown files found in \(options.sourcePath)")
             return ImportResult(importedCount: 0, skippedCount: 0, errorCount: 0)
         }
         
-        if options.verbose {
-            print("🔍 Found \(markdownFiles.count) markdown file(s) to import")
-        }
+        print("🔍 Found \(markdownFiles.count) markdown file(s) to import")
         
         if dryRun {
             print("🔬 DRY RUN - No files will be modified")
@@ -95,9 +87,6 @@ public struct BlogImporter {
             } catch {
                 errorCount += 1
                 print("❌ Error processing \(markdownFile.lastComponent?.string ?? markdownFile.string): \(error.localizedDescription)")
-                if options.verbose {
-                    print("   Detail: \(error)")
-                }
             }
         }
         
@@ -137,9 +126,7 @@ public struct BlogImporter {
         
         // Validate required metadata
         guard let title = parseResult.metadata.title else {
-            if options.verbose {
-                print("⏭️  Skipping \(sourcePath.lastComponent?.string ?? sourcePath.string): No title in front matter")
-            }
+            print("⏭️  Skipping \(sourcePath.lastComponent?.string ?? sourcePath.string): No title in front matter")
             return false
         }
         
@@ -147,7 +134,7 @@ public struct BlogImporter {
         var publicationDate: Date? = nil
         if let dateString = parseResult.metadata.date {
             publicationDate = parser.parseDate(dateString)
-            if publicationDate == nil && options.verbose {
+            if publicationDate == nil {
                 print("⚠️  Could not parse date '\(dateString)' for \(title)")
             }
         }
@@ -158,52 +145,39 @@ public struct BlogImporter {
         
         // Check if destination file already exists
         if !dryRun && fileManager.fileExists(atPath: destinationPath.string) {
-            if options.verbose {
-                print("⚠️  File already exists: \(destinationPath.string)")
-            }
+            print("⚠️  File already exists: \(destinationPath.string)")
             throw ImportError.destinationFileExists(destinationPath.string)
         }
         
         // Transform content
         let transformedContent = transformer.transform(content: parseResult.content, title: title)
         
-        if options.verbose {
-            print("📝 Processing: \(title)")
-            if let date = publicationDate {
-                print("   📅 Original date: \(ISO8601DateFormatter().string(from: date))")
-            }
-            print("   📄 Source: \(sourcePath.string)")
-            print("   📄 Destination: \(destinationPath.string)")
-        }
-        
         if dryRun {
-            print("📝 Would import: \(title) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
+            let dateStr = publicationDate.map { " (\(ISO8601DateFormatter().string(from: $0)))" } ?? ""
+            print("📝 Would import: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
             return true
         }
         
         // Write transformed file
         try transformedContent.write(toFile: destinationPath.string, atomically: true, encoding: .utf8)
         
-        // Create git commit if enabled
-        if !options.skipGit {
-            let commitDate = publicationDate ?? Date()
-            let author = parseResult.metadata.author.map { "\($0) <imported@tuzuru.local>" }
-            let commitMessage = gitCommitter.generateImportCommitMessage(
-                title: title,
-                originalDate: commitDate
-            )
-            
-            try await gitCommitter.commit(
-                filePath: destinationPath,
-                message: commitMessage,
-                date: commitDate,
-                author: author
-            )
-        }
+        // Create git commit
+        let commitDate = publicationDate ?? Date()
+        let author = parseResult.metadata.author.map { "\($0) <imported@tuzuru.local>" }
+        let commitMessage = gitCommitter.generateImportCommitMessage(
+            title: title,
+            originalDate: commitDate
+        )
         
-        if !options.verbose {
-            print("✅ Imported: \(title)")
-        }
+        try await gitCommitter.commit(
+            filePath: destinationPath,
+            message: commitMessage,
+            date: commitDate,
+            author: author
+        )
+        
+        let dateStr = publicationDate.map { " (\(ISO8601DateFormatter().string(from: $0)))" } ?? ""
+        print("✅ Imported: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
         
         return true
     }
