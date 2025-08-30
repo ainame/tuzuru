@@ -51,10 +51,55 @@ struct SourceLoader: Sendable {
         // Sort pages by publish date (newest first)
         source.posts.sort { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
 
+        // Extract years and categories from posts
+        source.years = extractYears(from: source.posts)
+        source.categories = extractCategories(from: source.posts)
+
         return source
     }
 
     // MARK: - Private Methods
+
+    private func extractYears(from posts: [Post]) -> [String] {
+        // Extract years from listed posts only
+        let listedPosts = posts.filter { !$0.isUnlisted }
+        let calendar = Calendar.current
+        let yearSet = Set(listedPosts.map { post in
+            String(calendar.component(.year, from: post.publishedAt))
+        })
+        return yearSet.sorted(by: >)
+    }
+
+    private func extractCategories(from posts: [Post]) -> [String] {
+        // Extract top-level directories from listed posts only
+        let listedPosts = posts.filter { !$0.isUnlisted }
+        var categorySet = Set<String>()
+
+        for post in listedPosts {
+            // Get the relative path within the contents directory
+            let contentsPath = configuration.sourceLayout.contents.string
+            let postPath = post.path.string
+            
+            // Remove the contents base path to get the relative path
+            guard postPath.hasPrefix(contentsPath) else { continue }
+            let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
+            let pathComponents = relativePath.split(separator: "/")
+            
+            // Skip posts directly in contents root (no directory)
+            guard pathComponents.count > 1 else { continue }
+            
+            let topLevelDirectory = String(pathComponents[0])
+
+            // Skip imported directory (based on configuration)
+            let importedDirName = configuration.sourceLayout.imported.lastComponent?.string
+            if topLevelDirectory == importedDirName {
+                continue
+            }
+            
+            categorySet.insert(topLevelDirectory)
+        }
+        return categorySet.sorted()
+    }
 
     private func findMarkdownFiles(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []

@@ -46,24 +46,28 @@ struct BlogGenerator {
         // Filter out unlisted posts for list pages
         let listedPosts = source.posts.filter { !$0.isUnlisted }
 
-        // Extract years once and reuse (only from listed posts)
-        let availableYears = try generateYearlyListPages(pageRenderer: pageRenderer, posts: listedPosts, blogRoot: blogRoot)
+        // Use precomputed years and categories from source
+        let availableYears = source.years
+        let availableCategories = source.categories
+
+        // Generate yearly list pages (only from listed posts)
+        try generateYearlyListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
 
         // Generate directory list pages (only from listed posts)
-        _ = try generateDirectoryListPages(pageRenderer: pageRenderer, posts: listedPosts, blogRoot: blogRoot)
+        try generateDirectoryListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
 
         // Generate individual post pages for ALL posts (including unlisted)
         for post in source.posts {
-            try generatePostPage(pageRenderer: pageRenderer, post: post, years: availableYears, blogRoot: blogRoot)
+            try generatePostPage(pageRenderer: pageRenderer, post: post, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
         }
 
         // Generate list page (index.html) with only listed posts
-        try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, blogRoot: blogRoot)
+        try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
 
         return blogRoot
     }
 
-    private func generatePostPage(pageRenderer: PageRenderer, post: Post, years: [String], blogRoot: FilePath) throws {
+    private func generatePostPage(pageRenderer: PageRenderer, post: Post, years: [String], categories: [String], blogRoot: FilePath) throws {
         // Prepare data for post template
         let postData = PostData(
             title: post.title,
@@ -82,6 +86,7 @@ struct BlogGenerator {
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
             currentYear: getCurrentYear(),
             years: years,
+            categories: categories,
             buildVersion: buildVersion,
         )
 
@@ -101,7 +106,7 @@ struct BlogGenerator {
         fileManager.createFile(atPath: outputPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], blogRoot: FilePath) throws {
+    private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
         // Prepare posts data for list template
         let list = ListData(
             title: nil, // Let users name title in layout.mustache
@@ -126,6 +131,7 @@ struct BlogGenerator {
             assetsUrl: pathGenerator.generateAssetsUrl(),
             currentYear: getCurrentYear(),
             years: years,
+            categories: categories,
             buildVersion: buildVersion,
         )
 
@@ -137,15 +143,12 @@ struct BlogGenerator {
         fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
     }
 
-    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws -> [String] {
+    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
         // Group posts by publication year
         let calendar = Calendar.current
         let postsByYear = Dictionary(grouping: posts) { post in
             calendar.component(.year, from: post.publishedAt)
         }
-
-        // Extract and sort years for reuse
-        let availableYears = postsByYear.keys.sorted(by: >).map { String($0) }
 
         // Generate a list page for each year that has posts
         for (year, yearPosts) in postsByYear {
@@ -174,7 +177,8 @@ struct BlogGenerator {
                 homeUrl: "../",
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
-                years: availableYears,
+                years: years,
+                categories: categories,
                 buildVersion: buildVersion,
             )
 
@@ -188,50 +192,45 @@ struct BlogGenerator {
             let yearIndexPath = yearDirectory.appending(configuration.output.indexFileName)
             fileManager.createFile(atPath: yearIndexPath.string, contents: Data(finalHTML.utf8))
         }
-
-        return availableYears
     }
 
-    private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], blogRoot: FilePath) throws -> [String] {
-        // Extract top-level directories from post paths (excluding unlisted and imported posts)
+    private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
+        // Group posts by their top-level directory
         var directoryPosts: [String: [Post]] = [:]
-        
+
         for post in posts where !post.isUnlisted {
             // Get the relative path within the contents directory
             let contentsPath = configuration.sourceLayout.contents.string
             let postPath = post.path.string
-            
+
             // Remove the contents base path to get the relative path
             guard postPath.hasPrefix(contentsPath) else { continue }
             let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
             let pathComponents = relativePath.split(separator: "/")
-            
+
             // Skip posts directly in contents root (no directory)
             guard pathComponents.count > 1 else { continue }
-            
+
             let topLevelDirectory = String(pathComponents[0])
-            
-            // Skip imported directory (configured path)
-            // The imported path is relative to contents, so just check for "imported"
-            if topLevelDirectory == "imported" {
+
+            // Skip imported directory (based on configuration)
+            let importedDirName = configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
+            if topLevelDirectory == importedDirName {
                 continue
             }
-            
+
             if directoryPosts[topLevelDirectory] == nil {
                 directoryPosts[topLevelDirectory] = []
             }
             directoryPosts[topLevelDirectory]?.append(post)
         }
-        
-        // Sort directories alphabetically and extract for reuse
-        let availableDirectories = directoryPosts.keys.sorted()
-        
+
         // Generate a list page for each directory that has posts
         for (directory, dirPosts) in directoryPosts {
-            let dirPostsSorted = dirPosts.sorted { 
-                $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title 
+            let dirPostsSorted = dirPosts.sorted {
+                $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title
             }
-            
+
             // Prepare posts data for list template
             let list = ListData(
                 title: directory.capitalized,
@@ -245,7 +244,7 @@ struct BlogGenerator {
                     )
                 }
             )
-            
+
             // Prepare data for layout template
             let layoutData = LayoutData(
                 content: list,
@@ -255,22 +254,21 @@ struct BlogGenerator {
                 homeUrl: "../",
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
-                years: [], // Don't show years in directory pages
+                years: years,
+                categories: categories,
                 buildVersion: buildVersion,
             )
-            
+
             // Render final page
             let finalHTML = try pageRenderer.render(layoutData)
-            
+
             // Create directory and write index.html
             let directoryPath = blogRoot.appending(directory)
             try fileManager.createDirectory(atPath: directoryPath.string, withIntermediateDirectories: true)
-            
+
             let dirIndexPath = directoryPath.appending(configuration.output.indexFileName)
             fileManager.createFile(atPath: dirIndexPath.string, contents: Data(finalHTML.utf8))
         }
-        
-        return availableDirectories
     }
 
     private func copyAssetsIfExists(to blogRoot: FilePath) throws {

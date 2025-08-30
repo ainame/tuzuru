@@ -9,6 +9,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
     let assetsUrl: String
     let currentYear: String
     let years: [String]
+    let categories: [String]
     let buildVersion: String
     let partialName: String
 
@@ -21,6 +22,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
         assetsUrl: String,
         currentYear: String,
         years: [String],
+        categories: [String],
         buildVersion: String,
     ) {
         self.content = content
@@ -31,6 +33,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
         self.assetsUrl = assetsUrl
         self.currentYear = currentYear
         self.years = years
+        self.categories = categories
         self.buildVersion = buildVersion
         self.partialName = String(describing: type(of: content)).replacingOccurrences(of: "Data", with: "").lowercased()
     }
