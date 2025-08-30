@@ -107,10 +107,20 @@ struct BlogGenerator {
     }
 
     private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
+        let filteredPosts = switch configuration.output.homePageStyle {
+        case .all: posts
+        case .currentYear:
+            posts.filter {
+                calendar.component(.year, from: $0.publishedAt) == calendar.component(.year, from: dateProvider())
+            }
+        case .last(let number):
+            Array(posts.prefix(number))
+        }
+
         // Prepare posts data for list template
         let list = ListData(
             title: nil, // Let users name title in layout.mustache
-            posts: posts.map { post in
+            posts: filteredPosts.map { post in
                 ListItemData(
                     title: post.title,
                     author: post.author,
@@ -291,6 +301,6 @@ struct BlogGenerator {
     }
 
     private func getCurrentYear() -> String {
-        String(describing: calendar.dateComponents([.year], from: dateProvider()).year!)
+        String(describing: calendar.component(.year, from: dateProvider()))
     }
 }
