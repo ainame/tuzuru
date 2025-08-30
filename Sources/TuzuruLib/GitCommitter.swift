@@ -56,7 +56,7 @@ struct GitCommitter: Sendable {
                 arguments: [
                     "commit",
                     "-m", message,
-                    "--date", date,
+                    "--author-date", date,
                     "--author", author,
                 ],
                 output: .string(limit: .max),
@@ -75,7 +75,7 @@ struct GitCommitter: Sendable {
                 arguments: [
                     "commit",
                     "-m", message,
-                    "--date", date,
+                    "--author-date", date,
                 ],
                 output: .string(limit: .max),
                 error: .string(limit: .max)

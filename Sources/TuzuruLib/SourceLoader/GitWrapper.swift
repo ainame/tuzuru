@@ -14,7 +14,7 @@ struct GitWrapper {
                 .path(FilePath("/usr/bin/git")),
                 arguments: [
                     "log",
-                    "--pretty=format:%H%n%s%n%an%n%ae%n%ci",
+                    "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
                     "--",
                     filePath.string,
                 ],
