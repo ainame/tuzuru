@@ -2,15 +2,11 @@ import Foundation
 import Subprocess
 
 /// Handles git operations for creating commits with custom dates
-struct GitCommitter: Sendable {
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        return formatter
-    }()
-    
+struct GitCommitter {
+    private let gitDateFormatter = ISO8601DateFormatter()
+
+    private let iso8601DateFormatter = ISO8601DateFormatter()
+
     /// Creates a git commit for a file with a custom date
     /// - Parameters:
     ///   - filePath: Path to the file to commit
@@ -19,7 +15,7 @@ struct GitCommitter: Sendable {
     ///   - author: Author name and email in format "Name <email>"
     /// - Throws: GitCommitterError if the operation fails
     func commit(filePath: FilePath, message: String, date: Date, author: String? = nil) async throws {
-        let gitDateString = dateFormatter.string(from: date)
+        let gitDateString = gitDateFormatter.string(from: date)
         
         // Add the file to staging area
         _ = try await addFileToGit(filePath)
@@ -108,7 +104,7 @@ struct GitCommitter: Sendable {
     ///   - originalDate: Original publication date
     /// - Returns: Generated commit message
     func generateImportCommitMessage(title: String, originalDate: Date) -> String {
-        let dateString = ISO8601DateFormatter.shortDate.string(from: originalDate)
+        let dateString = iso8601DateFormatter.string(from: originalDate)
         return "[tuzuru import]: \(title) (originally published \(dateString))"
     }
 }
@@ -128,14 +124,4 @@ enum GitCommitterError: Error, LocalizedError, Sendable {
             return "Invalid author format: '\(author)'. Expected format: 'Name <email>'"
         }
     }
-}
-
-// MARK: - DateFormatter Extensions
-
-extension ISO8601DateFormatter {
-    public static let shortDate: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        return formatter
-    }()
 }
