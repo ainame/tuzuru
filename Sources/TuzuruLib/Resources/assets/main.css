@@ -28,6 +28,8 @@ ul.posts {
     max-width: 980px;
     margin: 0 auto;
     padding: 48px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 @media (max-width: 767px) {
@@ -51,6 +53,9 @@ footer {
 
 .content {
     flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .sidebar {
