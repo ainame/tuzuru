@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 public struct Post: Sendable, Hashable {
     public let path: FilePath

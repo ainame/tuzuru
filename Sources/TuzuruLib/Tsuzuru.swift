@@ -1,7 +1,6 @@
 import Foundation
 import Markdown
 import Mustache
-import System
 
 public struct Tuzuru {
     private let sourceLoader: SourceLoader

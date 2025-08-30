@@ -1,6 +1,5 @@
 import Foundation
 import Subprocess
-import System
 
 struct GitWrapper {
     private let formatter: DateFormatter = {

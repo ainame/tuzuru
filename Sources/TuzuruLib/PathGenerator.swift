@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 /// Generates paths and URLs based on output configuration
 public struct PathGenerator: Sendable {

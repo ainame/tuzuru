@@ -1,6 +1,5 @@
 import Foundation
 import Mustache
-import System
 
 /// Handles template processing and site generation
 struct BlogGenerator {

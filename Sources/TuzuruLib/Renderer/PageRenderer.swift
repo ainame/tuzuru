@@ -1,6 +1,5 @@
 import Foundation
 import Mustache
-import System
 
 struct PageRenderer {
     private let library: MustacheLibrary

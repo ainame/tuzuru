@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 public struct OutputOptions: Sendable, Codable {
     /// Output file and directory configuration

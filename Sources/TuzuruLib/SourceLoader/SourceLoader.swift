@@ -1,7 +1,6 @@
 import Foundation
 import Markdown
 import Mustache
-import System
 
 /// Handles loading and processing source content from markdown files
 struct SourceLoader: Sendable {

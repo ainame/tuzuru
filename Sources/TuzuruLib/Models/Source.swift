@@ -1,10 +1,9 @@
 import Foundation
-import System
 
 public struct Source: Sendable {
     public var metadata: BlogMetadata
-    var templates: LoadedTemplates
     public var posts: [Post]
+    var templates: LoadedTemplates
 
     init(metadata: BlogMetadata, templates: LoadedTemplates, posts: [Post]) {
         self.metadata = metadata

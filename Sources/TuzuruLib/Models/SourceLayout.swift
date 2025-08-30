@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 public struct SourceLayout: Sendable, Codable {
     public let templates: Templates

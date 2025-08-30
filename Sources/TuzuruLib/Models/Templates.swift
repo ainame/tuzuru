@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 /// Template file configuration
 public struct Templates: Sendable, Equatable, Codable {

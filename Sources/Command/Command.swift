@@ -1,7 +1,6 @@
 import ArgumentParser
 import Foundation
 import TuzuruLib
-import System
 
 @main
 struct MainCommand: AsyncParsableCommand {

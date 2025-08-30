@@ -1,5 +1,4 @@
 import Foundation
-import System
 
 public struct BlogInitializer {
     private let fileManager: FileManager

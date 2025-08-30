@@ -1,6 +1,5 @@
 import Foundation
 import Markdown
-import System
 
 struct CodeBlockHTMLEscaper: MarkupRewriter {
     mutating func decendInto(_ markup: Markup) -> Markup? {

@@ -1,7 +1,6 @@
 import ArgumentParser
 import Foundation
 import TuzuruLib
-import System
 
 struct InitCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
