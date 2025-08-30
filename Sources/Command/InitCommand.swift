@@ -21,33 +21,11 @@ struct InitCommand: AsyncParsableCommand {
         }
 
         // Generate default configuration
-        let defaultConfig = BlogConfiguration(
-            sourceLayout: BlogSourceLayout(
-                templates: BlogTemplates(
-                    layout: FilePath("templates/layout.mustache"),
-                    post: FilePath("templates/post.mustache"),
-                    list: FilePath("templates/list.mustache"),
-                ),
-                contents: FilePath("contents"),
-                unlisted: FilePath("contents/unlisted"),
-                assets: FilePath("assets"),
-            ),
-            output: BlogOutputOptions(
-                directory: "blog",
-                style: .subdirectory,
-            ),
-            metadata: BlogMetadata(
-                blogName: "My Blog",
-                copyright: "2025 My Blog",
-                locale: Locale(identifier: "en_GB"),
-            ),
-        )
-
         // Write tuzuru.json
         print("⚙️ Generating tuzuru.json...")
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        let configData = try encoder.encode(defaultConfig)
+        let configData = try encoder.encode(BlogConfiguration.template)
         try configData.write(to: URL(fileURLWithPath: configPath.string))
         print("  ✅ Created tuzuru.json")
 

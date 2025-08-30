@@ -19,9 +19,9 @@ public struct BlogTemplates: Sendable, Equatable, Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        layout = try FilePath(container.decode(String.self, forKey: .layout))
-        post = try FilePath(container.decode(String.self, forKey: .post))
-        list = try FilePath(container.decode(String.self, forKey: .list))
+        layout = try FilePath(container.decodeIfPresent(String.self, forKey: .layout) ?? "layout.mustache")
+        post = try FilePath(container.decodeIfPresent(String.self, forKey: .post) ?? "post.mustache")
+        list = try FilePath(container.decodeIfPresent(String.self, forKey: .list) ?? "list.mustache")
     }
 
     public func encode(to encoder: Encoder) throws {

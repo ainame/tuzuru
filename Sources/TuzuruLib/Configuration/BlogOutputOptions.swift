@@ -25,4 +25,20 @@ public struct BlogOutputOptions: Sendable, Codable {
     public var indexFileName: String {
         "index.html"
     }
+
+    private enum CodingKeys: CodingKey {
+        case directory, style
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.directory = try container.decodeIfPresent(String.self, forKey: .directory) ?? "blog"
+        self.style = try container.decodeIfPresent(BlogOutputOptions.OutputStyle.self, forKey: .style) ?? .subdirectory
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.directory, forKey: .directory)
+        try container.encode(self.style, forKey: .style)
+    }
 }
