@@ -17,6 +17,7 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.6.0"),
         .package(url: "https://github.com/apple/swift-system.git", from: "1.5.0"),
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", branch: "main"),
+        .package(url: "https://github.com/jpsim/Yams.git", from: "6.1.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -25,6 +26,7 @@ let package = Package(
             name: "Command",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "Yams", package: "Yams"),
                 "TuzuruLib",
             ],
             swiftSettings: [
@@ -38,6 +40,7 @@ let package = Package(
                 .product(name: "Mustache", package: "swift-mustache"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
                 .product(name: "SystemPackage", package: "swift-system"),
+                .product(name: "Yams", package: "Yams"),
             ],
             resources: [
                 .copy("Resources"),

@@ -9,6 +9,7 @@ struct MainCommand: AsyncParsableCommand {
         subcommands: [
             InitCommand.self,
             GenerateCommand.self,
+            ImportCommand.self,
         ],
         defaultSubcommand: GenerateCommand.self,
     )
