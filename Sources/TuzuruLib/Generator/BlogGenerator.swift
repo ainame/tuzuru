@@ -101,7 +101,7 @@ struct BlogGenerator {
     private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], blogRoot: FilePath) throws {
         // Prepare posts data for list template
         let list = ListData(
-            title: "Recent Posts",
+            title: nil, // Let users name title in layout.mustache
             posts: posts.map { post in
                 ListItemData(
                     title: post.title,

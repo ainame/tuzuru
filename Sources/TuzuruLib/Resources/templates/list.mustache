@@ -1,6 +1,15 @@
 {{#content}}
 <div>
-    <h1>{{title}}</h1>
+    <h1>
+    {{#title}}
+    {{! This is top-level directory title that is automatically determined }}
+    {{.}}
+    {{/title}}
+    {{^title}}
+    {{! This is the home page title that you can customize here }}
+    Recent Posts
+    {{/title}}
+    </h1>
     <ul class="posts">
         {{#posts}}
         <li>
