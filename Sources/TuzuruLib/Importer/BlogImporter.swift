@@ -1,7 +1,7 @@
 import Foundation
 
 /// Handles importing Hugo/Jekyll markdown files with YAML front matter to Tuzuru format
-public struct BlogImporter: Sendable {
+public struct BlogImporter {
     private let parser = YAMLFrontMatterParser()
     private let transformer = MarkdownTransformer()
     private let gitCommitter = GitCommitter()
@@ -52,15 +52,6 @@ public struct BlogImporter: Sendable {
         // Create destination directory if needed
         if !dryRun {
             try fileManager.createDirectory(atPath: destinationDir.string, withIntermediateDirectories: true)
-        }
-        
-        // Check git repository status
-        let isGitRepo = await gitCommitter.isGitRepository()
-        if !options.skipGit && !isGitRepo && !dryRun {
-            if options.verbose {
-                print("⚠️  Not a git repository. Initializing git repository...")
-            }
-            try await gitCommitter.initializeRepository()
         }
         
         // Find markdown files
@@ -179,7 +170,7 @@ public struct BlogImporter: Sendable {
         if options.verbose {
             print("📝 Processing: \(title)")
             if let date = publicationDate {
-                print("   📅 Original date: \(DateFormatter.shortDate.string(from: date))")
+                print("   📅 Original date: \(ISO8601DateFormatter().string(from: date))")
             }
             print("   📄 Source: \(sourcePath.string)")
             print("   📄 Destination: \(destinationPath.string)")

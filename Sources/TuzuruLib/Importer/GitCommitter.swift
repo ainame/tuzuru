@@ -3,8 +3,6 @@ import Subprocess
 
 /// Handles git operations for creating commits with custom dates
 struct GitCommitter {
-    private let gitDateFormatter = ISO8601DateFormatter()
-
     private let iso8601DateFormatter = ISO8601DateFormatter()
 
     /// Creates a git commit for a file with a custom date
@@ -15,8 +13,8 @@ struct GitCommitter {
     ///   - author: Author name and email in format "Name <email>"
     /// - Throws: GitCommitterError if the operation fails
     func commit(filePath: FilePath, message: String, date: Date, author: String? = nil) async throws {
-        let gitDateString = gitDateFormatter.string(from: date)
-        
+        let gitDateString = iso8601DateFormatter.string(from: date)
+
         // Add the file to staging area
         _ = try await addFileToGit(filePath)
         
