@@ -85,7 +85,9 @@ struct BlogGenerator {
             homeUrl: pathGenerator.generateHomeUrl(from: post.path, isUnlisted: post.isUnlisted),
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
             currentYear: getCurrentYear(),
+            hasYears: !years.isEmpty,
             years: years,
+            hasCategories: !categories.isEmpty,
             categories: categories,
             buildVersion: buildVersion,
         )
@@ -140,7 +142,9 @@ struct BlogGenerator {
             homeUrl: pathGenerator.generateHomeUrl(),
             assetsUrl: pathGenerator.generateAssetsUrl(),
             currentYear: getCurrentYear(),
+            hasYears: !years.isEmpty,
             years: years,
+            hasCategories: !categories.isEmpty,
             categories: categories,
             buildVersion: buildVersion,
         )
@@ -187,7 +191,9 @@ struct BlogGenerator {
                 homeUrl: "../",
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
+                hasYears: !years.isEmpty,
                 years: years,
+                hasCategories: !categories.isEmpty,
                 categories: categories,
                 buildVersion: buildVersion,
             )
@@ -264,7 +270,9 @@ struct BlogGenerator {
                 homeUrl: "../",
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
+                hasYears: !years.isEmpty,
                 years: years,
+                hasCategories: !categories.isEmpty,
                 categories: categories,
                 buildVersion: buildVersion,
             )

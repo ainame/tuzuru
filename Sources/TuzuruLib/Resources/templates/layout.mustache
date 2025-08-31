@@ -22,18 +22,22 @@
                 {{>*partialName}}
             </div>
             <aside class="sidebar">
+                {{#hasYears}}
                 <h3>Years</h3>
                 <ul>
                     {{#years}}
                     <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
                     {{/years}}
                 </ul>
+                {{/hasYears}}
+                {{#hasCategories}}
                 <h3>Categories</h3>
                 <ul>
                     {{#categories}}
                     <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
                     {{/categories}}
                 </ul>
+                {{/hasCategories}}
             </aside>
         </div>
     </main>
