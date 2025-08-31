@@ -20,6 +20,7 @@ Tuzuru aims for the following policy
 * Plain markdown (No YAML front matter)
 * Simple routing that suits blogs
 * No JavaScript framework
+* Signle binary installation (No node/npm version management, cargo install, go get...)
 
 ## Installation
 
@@ -66,7 +67,10 @@ tuzuru generate
 You can now see the `blog` directory that can be deployed to GitHub Pages or your favorite HTTP server.
 Or you can preview it with local HTTP server like `python3 -m http.server 8000 -d blog` and open `http://localhost:8000`.
 
-The default layout is good enough to start (hopefully). It adopted [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) already.
+### Built-in layout
+
+The built-in layout is good enough to start (hopefully) and easy to customize.
+It adopted [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) already to write tech blog posts.
 
 ![screenshot](.github/assets/screenshot.png)
 
