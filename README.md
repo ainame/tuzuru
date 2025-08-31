@@ -150,6 +150,8 @@ You can actually omit most of it if you just use default values.
   "metadata" : {
     "blogName" : "My Blog",
     "copyright" : "My Blog",
+    "description" : "My personal blog", // description for meta tag
+    "baseUrl" : "https://example.com",  // URL for production deploy
     "locale" : "en_GB" // This will affect the published date's format
   },
   // "output" to configure output options
