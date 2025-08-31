@@ -1,7 +1,7 @@
 class Tuzuru < Formula
   desc "Static site generator for Swift developers"
   homepage "https://github.com/ainame/Tuzuru"
-  url "https://github.com/ainame/Tuzuru/releases/download/0.1.0/tuzuru-0.1.0-macos-universal.tar.gz"
+  url "https://github.com/ainame/Tuzuru/releases/download/0.0.2/tuzuru-0.0.2-macos-universal.tar.gz"
   sha256 "PLACEHOLDER_SHA256"
   license "MIT"
   head "https://github.com/ainame/Tuzuru.git", branch: "main"
