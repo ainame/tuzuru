@@ -49,8 +49,8 @@ jobs:
           cp .build/apple/Products/Release/tuzuru tuzuru
           chmod +x tuzuru
           
-          # Copy bundle files from one of the architecture builds
-          # (both architectures will have the same bundle content)
+          # Copy bundle files from single-arch build (same content, correct structure)
+          # Universal build creates nested Resources/Resources which Bundle.path() can't find
           cp -r .build/arm64-apple-macosx/release/tuzuru_TuzuruLib.bundle .
 
       - name: Test binary
