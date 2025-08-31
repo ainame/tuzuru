@@ -37,7 +37,8 @@ extension BlogOutputOptions {
 
     public enum HomePageStyle: Sendable, Codable {
         case all
-        case currentYear
+        /// last 12 months
+        case pastYear
         case last(Int)
 
         public init(from decoder: any Decoder) throws {
@@ -46,8 +47,8 @@ extension BlogOutputOptions {
             switch value {
             case "all":
                 self = .all
-            case "currentYear":
-                self = .currentYear
+            case "pastYear":
+                self = .pastYear
             default:
                 if let intValue = Int(value) {
                     self = .last(intValue)
@@ -55,7 +56,7 @@ extension BlogOutputOptions {
                 }
                 throw DecodingError.dataCorruptedError(
                     in: container,
-                    debugDescription: "Invalid HomePageStyle value: \(value). [\"all\", \"currentYear\", a number in String (last X posts)] are available."
+                    debugDescription: "Invalid HomePageStyle value: \(value). [\"all\", \"pastYear\", a number in String (last X posts)] are available."
                 )
             }
         }
@@ -65,8 +66,8 @@ extension BlogOutputOptions {
             switch self {
             case .all:
                 try container.encode("all")
-            case .currentYear:
-                try container.encode("currentYear")
+            case .pastYear:
+                try container.encode("pastYear")
             case .last(let intValue):
                 try container.encode(String(intValue))
             }

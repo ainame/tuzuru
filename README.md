@@ -145,7 +145,7 @@ You can actually omit most of it if you just use default values.
   "output" : {
     // the artifact directory
     "directory" : "blog",
-    // "all", "currentYear", or a number in string (last X posts)
+    // "all", "pastYear", or a number in string (last X posts)
     "homePageStyle" : "all",
     // "subdirectory" or "direct"; "subdirectory" routes "contents/hello-world.md" to "/hello-world",
     // whilst "direct" routes it to "/hello-world.html"

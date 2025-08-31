@@ -16,7 +16,7 @@ extension BlogOutputOptions {
     public static let `default` = BlogOutputOptions(
         directory: "blog",
         routingStyle: .subdirectory,
-        homePageStyle: .all
+        homePageStyle: .pastYear
     )
 }
 

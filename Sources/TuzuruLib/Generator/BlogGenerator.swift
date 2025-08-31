@@ -107,12 +107,12 @@ struct BlogGenerator {
     }
 
     private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
+        let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: dateProvider())!
         let filteredPosts = switch configuration.output.homePageStyle {
-        case .all: posts
-        case .currentYear:
-            posts.filter {
-                calendar.component(.year, from: $0.publishedAt) == calendar.component(.year, from: dateProvider())
-            }
+        case .all:
+            posts
+        case .pastYear:
+            posts.filter { oneYearAgo < $0.publishedAt && $0.publishedAt < dateProvider() }
         case .last(let number):
             Array(posts.prefix(number))
         }
