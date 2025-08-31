@@ -7,6 +7,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
     let copyright: String
     let description: String
     let homeUrl: String
+    let currentPageUrl: String
     let assetsUrl: String
     let currentYear: String
     let hasYears: Bool
@@ -23,6 +24,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
         copyright: String,
         description: String,
         homeUrl: String,
+        currentPageUrl: String,
         assetsUrl: String,
         currentYear: String,
         hasYears: Bool,
@@ -37,6 +39,7 @@ struct LayoutData<Content: PageRendererable>: PageRendererable {
         self.copyright = copyright
         self.description = description
         self.homeUrl = homeUrl
+        self.currentPageUrl = currentPageUrl
         self.assetsUrl = assetsUrl
         self.currentYear = currentYear
         self.hasYears = hasYears

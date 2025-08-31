@@ -6,6 +6,7 @@ extension BlogConfiguration {
             blogName: "My Blog",
             copyright: "My Blog",
             description: "My personal blog",
+            baseUrl: "https://example.com",
             locale: Locale(identifier: "en_GB"),
         ),
         output: .default,

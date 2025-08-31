@@ -67,6 +67,7 @@ struct BlogGenerator {
         return blogRoot
     }
 
+
     private func generatePostPage(pageRenderer: PageRenderer, post: Post, years: [String], categories: [String], blogRoot: FilePath) throws {
         // Prepare data for post template
         let postData = PostData(
@@ -84,6 +85,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             description: configuration.metadata.description,
             homeUrl: pathGenerator.generateHomeUrl(from: post.path, isUnlisted: post.isUnlisted),
+            currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)),
             assetsUrl: pathGenerator.generateAssetsUrl(from: post.path, isUnlisted: post.isUnlisted),
             currentYear: getCurrentYear(),
             hasYears: !years.isEmpty,
@@ -142,6 +144,7 @@ struct BlogGenerator {
             copyright: configuration.metadata.copyright,
             description: configuration.metadata.description,
             homeUrl: pathGenerator.generateHomeUrl(),
+            currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
             assetsUrl: pathGenerator.generateAssetsUrl(),
             currentYear: getCurrentYear(),
             hasYears: !years.isEmpty,
@@ -192,6 +195,7 @@ struct BlogGenerator {
                 copyright: configuration.metadata.copyright,
                 description: configuration.metadata.description,
                 homeUrl: "../",
+                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
                 hasYears: !years.isEmpty,
@@ -272,6 +276,7 @@ struct BlogGenerator {
                 copyright: configuration.metadata.copyright,
                 description: configuration.metadata.description,
                 homeUrl: "../",
+                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
                 assetsUrl: "../assets/",
                 currentYear: getCurrentYear(),
                 hasYears: !years.isEmpty,

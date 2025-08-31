@@ -56,6 +56,7 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 - Public interfaces for library components
 - Dependency injection pattern (e.g., FileManager injection)
 - Async/await for command execution
+- **IMPORTANT**: Default values for configuration structs must be defined in `BlogConfiguration+DefaultValues.swift`, NEVER inline in the decoder methods
 
 ### Naming
 - Structs: PascalCase (MainCommand, GenerateCommand)

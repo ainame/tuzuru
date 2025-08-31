@@ -118,6 +118,18 @@ public struct PathGenerator: Sendable {
         }
     }
 
+    /// Generate absolute URL using baseUrl and relative path
+    public func generateAbsoluteUrl(baseUrl: String, relativePath: String) -> String {
+        if baseUrl.isEmpty {
+            return relativePath
+        }
+
+        let cleanBaseUrl = baseUrl.hasSuffix("/") ? String(baseUrl.dropLast()) : baseUrl
+        let cleanRelativePath = relativePath.hasPrefix("/") ? relativePath : "/" + relativePath
+
+        return cleanBaseUrl + cleanRelativePath
+    }
+
     /// Calculate relative path from base to target
     private func getRelativePath(from base: FilePath, to target: FilePath) -> FilePath {
         let baseComponents = base.components
