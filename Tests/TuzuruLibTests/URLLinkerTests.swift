@@ -6,7 +6,7 @@ import Markdown
 @Suite
 struct URLLinkerTests {
     @Test
-    func `No URLs should return original text unchanged`() async throws {
+    func testNoURLsShouldReturnOriginalTextUnchanged() async throws {
         let rawMarkdown = """
         # Title
         This is a paragraph with no URLs in it.
@@ -27,7 +27,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `Single URL should be converted to link`() async throws {
+    func testSingleURLShouldBeConvertedToLink() async throws {
         let rawMarkdown = """
         Visit https://example.com for more info.
         """
@@ -55,7 +55,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `Multiple URLs in same paragraph should all be converted`() async throws {
+    func testMultipleURLsInSameParagraphShouldAllBeConverted() async throws {
         let rawMarkdown = """
         Visit https://apple.com and https://developer.apple.com for resources.
         """
@@ -77,7 +77,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `HTTP and HTTPS URLs should both work`() async throws {
+    func testHTTPAndHTTPSURLsShouldBothWork() async throws {
         let rawMarkdown = """
         Secure: https://secure.example.com and insecure: http://insecure.example.com
         """
@@ -99,7 +99,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `URLs with paths and query parameters should work`() async throws {
+    func testURLsWithPathsAndQueryParametersShouldWork() async throws {
         let rawMarkdown = """
         Check https://github.com/ainame/Tuzuru/issues?state=open for issues.
         """
@@ -114,7 +114,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `URL at beginning of paragraph should work`() async throws {
+    func testURLAtBeginningOfParagraphShouldWork() async throws {
         let rawMarkdown = """
         https://example.com is a great website.
         """
@@ -131,7 +131,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `URL at end of paragraph should work`() async throws {
+    func testURLAtEndOfParagraphShouldWork() async throws {
         let rawMarkdown = """
         Visit my website at https://example.com
         """
@@ -148,7 +148,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `Multiple paragraphs with URLs should all be processed`() async throws {
+    func testMultipleParagraphsWithURLsShouldAllBeProcessed() async throws {
         let rawMarkdown = """
         First paragraph with https://first.com link.
         
@@ -173,7 +173,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `URLs in headings should not be processed`() async throws {
+    func testURLsInHeadingsShouldNotBeProcessed() async throws {
         let rawMarkdown = """
         # Visit https://example.com
         
@@ -191,7 +191,7 @@ struct URLLinkerTests {
     }
     
     @Test
-    func `Existing links should not be double-processed`() async throws {
+    func testExistingLinksShouldNotBeDoubleProcessed() async throws {
         let rawMarkdown = """
         Visit [my site](https://example.com) and also https://other.com
         """

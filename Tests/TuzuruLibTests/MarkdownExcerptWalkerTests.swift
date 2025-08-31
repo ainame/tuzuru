@@ -6,7 +6,7 @@ import Markdown
 @Suite
 struct MarkdownExcerptWalkerTests {
     @Test
-    func `Remove children node up to the first heading`() async throws {
+    func testRemoveChildrenNodeUpToFirstHeading() async throws {
         let rawMarkdown = """
         # 1. Title
         ## 2. 2nd heading 2

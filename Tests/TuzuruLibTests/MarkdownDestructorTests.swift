@@ -6,7 +6,7 @@ import Markdown
 @Suite
 struct MarkdownDestructorTests {
     @Test
-    func `Remove children node up to the first heading`() async throws {
+    func removeChildrenNodeUpToFirstHeading() async throws {
         let rawMarkdown = """
         (1.) paragraph 1
         ## 2. 2nd heading 1
