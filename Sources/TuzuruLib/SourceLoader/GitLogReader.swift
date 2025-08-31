@@ -1,5 +1,4 @@
 import Foundation
-import Subprocess
 
 struct GitLogReader: Sendable {
     private let formatter: DateFormatter = {
@@ -10,19 +9,12 @@ struct GitLogReader: Sendable {
 
     func logs(for filePath: FilePath) async -> [GitLog] {
         do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "log",
-                    "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
-                    "--",
-                    filePath.string,
-                ],
-                output: .string(limit: .max),
-                error: .discarded,
-            )
-
-            let output = result.standardOutput ?? ""
+            let output = try await GitWrapper.run(arguments: [
+                "log",
+                "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
+                "--",
+                filePath.string
+            ])
             return parseGitLogs(from: output)
         } catch {
             return []

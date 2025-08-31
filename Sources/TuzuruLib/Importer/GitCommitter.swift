@@ -1,5 +1,4 @@
 import Foundation
-import Subprocess
 
 /// Handles git operations for creating commits with custom dates
 struct GitCommitter {
@@ -16,68 +15,38 @@ struct GitCommitter {
         let gitDateString = iso8601DateFormatter.string(from: date)
 
         // Add the file to staging area
-        _ = try await addFileToGit(filePath)
+        try await addFileToGit(filePath)
 
         // Create the commit with custom date
         if let author = author {
-            _ = try await commitWithAuthor(message: message, date: gitDateString, author: author)
+            try await commitWithAuthor(message: message, date: gitDateString, author: author)
         } else {
-            _ = try await commitWithoutAuthor(message: message, date: gitDateString)
+            try await commitWithoutAuthor(message: message, date: gitDateString)
         }
     }
 
-    private func addFileToGit(_ filePath: FilePath) async throws -> String {
-        do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "add",
-                    filePath.string,
-                ],
-                output: .string(limit: .max),
-                error: .string(limit: .max)
-            )
-            return result.standardOutput ?? ""
-        } catch {
-            throw GitCommitterError.commandFailed("git add \(filePath.string)", error.localizedDescription)
-        }
+    private func addFileToGit(_ filePath: FilePath) async throws {
+        try await GitWrapper.run(arguments: [
+            "add",
+            filePath.string
+        ])
     }
 
-    private func commitWithAuthor(message: String, date: String, author: String) async throws -> String {
-        do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "commit",
-                    "-m", message,
-                    "--date", date,
-                    "--author", author,
-                ],
-                output: .string(limit: .max),
-                error: .string(limit: .max)
-            )
-            return result.standardOutput ?? ""
-        } catch {
-            throw GitCommitterError.commandFailed("git commit", error.localizedDescription)
-        }
+    private func commitWithAuthor(message: String, date: String, author: String) async throws {
+        try await GitWrapper.run(arguments: [
+            "commit",
+            "-m", message,
+            "--date", date,
+            "--author", author
+        ])
     }
 
-    private func commitWithoutAuthor(message: String, date: String) async throws -> String {
-        do {
-            let result = try await Subprocess.run(
-                .name("git"),
-                arguments: [
-                    "commit",
-                    "-m", message,
-                    "--date", date,
-                ],
-                output: .string(limit: .max),
-                error: .string(limit: .max)
-            )
-            return result.standardOutput ?? ""
-        } catch {
-            throw GitCommitterError.commandFailed("git commit", error.localizedDescription)
-        }
+    private func commitWithoutAuthor(message: String, date: String) async throws {
+        try await GitWrapper.run(arguments: [
+            "commit",
+            "-m", message,
+            "--date", date
+        ])
     }
 
     /// Creates multiple commits for a batch of files
@@ -95,6 +64,25 @@ struct GitCommitter {
         }
     }
 
+    /// Gets the current author information for the most recent commit that modified the specified file
+    /// - Parameter filePath: Path to the file to check
+    /// - Returns: Author string in "Name <email>" format
+    /// - Throws: GitCommitterError if the operation fails
+    private func getCurrentAuthor(filePath: FilePath) async throws -> String {
+        let output = try await GitWrapper.run(arguments: [
+            "log",
+            "-1",
+            "--format=%an <%ae>",
+            "--",
+            filePath.string
+        ])
+
+        guard !output.isEmpty else {
+            throw GitCommitterError.commandFailed("git log", "No commit found for file")
+        }
+
+        return output
+    }
 
     /// Generates a commit message for an imported post
     /// - Parameters:
