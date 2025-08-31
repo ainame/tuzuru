@@ -9,42 +9,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css">
     <link rel="stylesheet" href="{{assetsUrl}}main.css?{{buildVersion}}">
 </head>
-<body class="markdown-body">
-    <header>
-        <div class="blogName">
-            <a href="{{homeUrl}}">{{blogName}}</a>
-        </div>
-    </header>
-
-    <main>
-        <div class="container">
-            <div class="content">
-                {{>*partialName}}
+<body>
+    <div class="markdown-body">
+        <header>
+            <div class="blogName">
+                <a href="{{homeUrl}}">{{blogName}}</a>
             </div>
-            <aside class="sidebar">
-                {{#hasYears}}
-                <h3>Years</h3>
-                <ul>
-                    {{#years}}
-                    <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
-                    {{/years}}
-                </ul>
-                {{/hasYears}}
-                {{#hasCategories}}
-                <h3>Categories</h3>
-                <ul>
-                    {{#categories}}
-                    <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
-                    {{/categories}}
-                </ul>
-                {{/hasCategories}}
-            </aside>
-        </div>
-    </main>
+        </header>
 
-    <footer>
-        <p>&copy; {{currentYear}} {{copyright}}</p>
-        <p>Powered by <a href="https://github.com/ainame/Tuzuru">Tuzuru</a></p>
-    </footer>
+        <main>
+            <div class="container">
+                <div class="content">
+                    {{>*partialName}}
+                </div>
+                <aside class="sidebar">
+                    {{#hasYears}}
+                    <div class="sidebar-section">
+                        <h3>Years</h3>
+                        <ul>
+                            {{#years}}
+                                <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
+                            {{/years}}
+                        </ul>
+                    </div>
+                    {{/hasYears}}
+                    {{#hasCategories}}
+                    <div class="sidebar-section">
+                        <h3>Categories</h3>
+                        <ul>
+                            {{#categories}}
+                                <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
+                            {{/categories}}
+                        </ul>
+                    </div>
+                    {{/hasCategories}}
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; {{currentYear}} {{copyright}}</p>
+            <p>Powered by <a href="https://github.com/ainame/Tuzuru">Tuzuru</a></p>
+        </footer>
+    </div>
     </body>
 </html>
