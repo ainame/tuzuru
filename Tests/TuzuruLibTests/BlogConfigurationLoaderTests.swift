@@ -15,6 +15,7 @@ struct BlogConfigurationLoaderTests {
           "metadata" : {
             "blogName" : "My Tech Blog",
             "copyright" : "My Tech Blog",
+            "description" : "A blog about technology and programming",
             "locale" : "en_GB"
           },
           "output" : {
@@ -46,6 +47,7 @@ struct BlogConfigurationLoaderTests {
 
         #expect(config.metadata.blogName == "My Tech Blog")
         #expect(config.metadata.copyright == "My Tech Blog")
+        #expect(config.metadata.description == "A blog about technology and programming")
         #expect(config.metadata.locale.identifier == "en_GB")
         #expect(config.output.directory == "public")
         #expect(config.output.routingStyle == .subdirectory)
@@ -69,6 +71,7 @@ struct BlogConfigurationLoaderTests {
           "metadata" : {
             "blogName" : "Simple Blog",
             "copyright" : "Simple Blog",
+            "description" : "A simple blog",
             "locale" : "en_US"
           },
         }
@@ -86,6 +89,7 @@ struct BlogConfigurationLoaderTests {
         // Verify explicitly provided metadata
         #expect(config.metadata.blogName == "Simple Blog")
         #expect(config.metadata.copyright == "Simple Blog")
+        #expect(config.metadata.description == "A simple blog")
         #expect(config.metadata.locale.identifier == "en_US")
 
         // Verify default values are used for missing fields

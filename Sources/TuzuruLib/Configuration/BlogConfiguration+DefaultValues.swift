@@ -5,6 +5,7 @@ extension BlogConfiguration {
         metadata: BlogMetadata(
             blogName: "My Blog",
             copyright: "My Blog",
+            description: "My personal blog",
             locale: Locale(identifier: "en_GB"),
         ),
         output: .default,
