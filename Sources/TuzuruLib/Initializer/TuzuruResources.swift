@@ -4,13 +4,13 @@ enum TuzuruResources {
     private static let environmentVariableName = "TUZURU_RESOURCES"
 
     static func resourceBundle() throws -> Bundle {
-        // First try Bundle.module (standard SPM approach)
-        if Bundle.module.path(forResource: "templates", ofType: nil) != nil {
-            return Bundle.module
+        // Check environment variable first (for Homebrew distribution)
+        if ProcessInfo.processInfo.environment[environmentVariableName] != nil {
+            return try bundleFromEnvironment()
         }
-
-        // Fallback to environment variable approach for Homebrew distribution
-        return try bundleFromEnvironment()
+        
+        // Fall back to Bundle.module for development/normal SPM usage
+        return Bundle.module
     }
 
     private static func bundleFromEnvironment() throws -> Bundle {
