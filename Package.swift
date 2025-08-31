@@ -40,7 +40,8 @@ let package = Package(
                 .product(name: "Yams", package: "Yams"),
             ],
             resources: [
-                .copy("Resources"),
+                .copy("Resources/templates"),
+                .copy("Resources/assets"),
             ],
         ),
         .testTarget(
