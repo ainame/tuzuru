@@ -24,7 +24,14 @@ Tuzuru aims for the following policy
 
 ## Installation
 
-Right now there's no binary distribution. I'll prepare brew tap for macOS.
+### Homebrew (macOS)
+
+```bash
+brew tap ainame/tuzuru https://github.com/ainame/Tuzuru
+brew install tuzuru
+```
+
+### Manual Build
 
 ```bash
 swift build -c release

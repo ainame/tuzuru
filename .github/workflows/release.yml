@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2-DEVELOPMENT-SNAPSHOT-2024-11-13-a"
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build for release
+        run: |
+          swift build -c release --arch arm64 --arch x86_64
+
+      - name: Create universal binary
+        run: |
+          cp .build/apple/Products/Release/tuzuru tuzuru
+          chmod +x tuzuru
+
+      - name: Test binary
+        run: |
+          ./tuzuru --help
+
+      - name: Create tarball
+        run: |
+          tar -czf tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz tuzuru
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          SHA=$(shasum -a 256 tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz | cut -d ' ' -f 1)
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Update Homebrew Formula
+        run: |
+          sed -i '' "s|url \".*\"|url \"https://github.com/ainame/Tuzuru/releases/download/${{ steps.version.outputs.version }}/tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz\"|" Formula/tuzuru.rb
+          sed -i '' "s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.sha256 }}\"|" Formula/tuzuru.rb
+
+      - name: Commit Formula update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Formula/tuzuru.rb
+          git commit -m "Update Formula for version ${{ steps.version.outputs.version }}" || exit 0
+          git push origin HEAD:main || exit 0
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          files: |
+            tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
