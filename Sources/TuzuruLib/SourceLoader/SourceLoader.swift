@@ -79,15 +79,15 @@ struct SourceLoader: Sendable {
             // Get the relative path within the contents directory
             let contentsPath = configuration.sourceLayout.contents.string
             let postPath = post.path.string
-            
+
             // Remove the contents base path to get the relative path
             guard postPath.hasPrefix(contentsPath) else { continue }
             let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
             let pathComponents = relativePath.split(separator: "/")
-            
+
             // Skip posts directly in contents root (no directory)
             guard pathComponents.count > 1 else { continue }
-            
+
             let topLevelDirectory = String(pathComponents[0])
 
             // Skip imported directory (based on configuration)
@@ -95,7 +95,7 @@ struct SourceLoader: Sendable {
             if topLevelDirectory == importedDirName {
                 continue
             }
-            
+
             categorySet.insert(topLevelDirectory)
         }
         return categorySet.sorted()
@@ -159,14 +159,17 @@ struct SourceLoader: Sendable {
         // * Escape HTML tags in code blocks
         // * Convert Markdown to HTML
         // * Cite first 150 chars
+        // * Convert X post URLs to embed HTML before markdown processing
         let document = Document(parsing: markdownContent)
         var destructor = MarkdownDestructor()
+        var xPostConverter = XPostLinkConverter()
         var urlLinker = URLLinker()
         var escaper = CodeBlockHTMLEscaper()
         var htmlFormatter = HTMLFormatter()
         var excerptWalker = MarkdownExcerptWalker(maxLength: 150)
 
         destructor.visit(document)
+            .flatMap { xPostConverter.visit($0) }
             .flatMap { urlLinker.visit($0) }
             .flatMap { escaper.visit($0) }
             .flatMap {
