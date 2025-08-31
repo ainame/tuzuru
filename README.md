@@ -188,5 +188,5 @@ tuzuru import /path/to/import-target-dir --destination /path/to/import
 
 ## Build Requirements
 
-- Swift 6.2+
-- macOS v26+
+- Swift 6.1+
+- macOS v15+

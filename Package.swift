@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "tuzuru",
     platforms: [
-        .macOS(.v26),
+        .macOS(.v15),
     ],
     products: [
         .executable(name: "tuzuru", targets: ["Command"]),
@@ -28,9 +28,6 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Yams", package: "Yams"),
                 "TuzuruLib",
-            ],
-            swiftSettings: [
-                .defaultIsolation(MainActor.self),
             ],
         ),
         .target(

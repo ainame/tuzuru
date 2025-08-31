@@ -12,7 +12,7 @@ struct SourceLoader: Sendable {
         gitLogReader = GitLogReader()
     }
 
-    @concurrent
+    @Sendable
     func loadSources() async throws -> Source {
         let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
         var source = Source(metadata: configuration.metadata, templates: templates, posts: [], years: [], categories: [])

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tuzuru is a static site generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.2 with macOS v26+ minimum requirement.
+Tuzuru is a static site generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.1 with macOS v15+ minimum requirement.
 
 ## Essential Commands
 
@@ -51,7 +51,7 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 ## Swift Conventions
 
 ### Code Style
-- Swift 6.2 snapshot features enabled
+- Swift 6.1 features enabled
 - MainActor isolation for Command target
 - Public interfaces for library components
 - Dependency injection pattern (e.g., FileManager injection)
