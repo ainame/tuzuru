@@ -63,7 +63,7 @@ git commit -m "First post"
 ```
 
 When you make `git commit` becomes your post's published date.
-Specifically, the first commit's Author Date for a markdown file under `contents` is the published date and also, author name will be taken from Git's config. (You can always amend the Author Date and Author on the first commit by git command)
+Specifically, the first commit's Author Date for a markdown file under `contents` is the published date and also, author name will be taken from Git's config.
 
 Now it's time to build your blog.
 
@@ -186,6 +186,30 @@ You can import markdown files from a Hugo project. YAML front matter will be par
 ```bash
 tuzuru import /path/to/import-target-dir # import them to ./contents/imported by default
 tuzuru import /path/to/import-target-dir --destination /path/to/import
+```
+
+## Amend published date or author
+
+If you need to change the published date or author for an existing post without rewriting git history, you can use the `amend` command:
+
+```bash
+# Update published date
+tuzuru amend contents/my-post.md --published-at "2023-12-01"
+
+# Update author
+tuzuru amend contents/my-post.md --author "New Author"
+
+# Update both
+tuzuru amend contents/my-post.md --published-at "2023-12-01 10:30:00 +0900" --author "New Author"
+```
+
+The command supports flexible date formats:
+- `2023-12-01` (date only)  
+- `2023-12-01 10:30:00` (date and time)
+- `2023-12-01T10:30:00Z` (ISO 8601 UTC)
+- `2023-12-01 10:30:00 +0900` (with timezone)
+
+This creates a special marker commit that Tuzuru recognizes when determining the post's metadata, without disrupting your git history.
 ```
 
 ## Build Requirements

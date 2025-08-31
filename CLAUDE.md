@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tuzuru is a static site generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.1 with macOS v15+ minimum requirement.
+Tuzuru is a static blog generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.1 with macOS v15+ minimum requirement.
 
 ## Essential Commands
 
@@ -15,9 +15,10 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 - `swift test --parallel` - Run tests in parallel
 
 ### Tuzuru CLI Commands
-- `swift run tuzuru generate` - Generate static site (default command)
+- `swift run tuzuru generate` - Generate static blog (default command)
 - `swift run tuzuru init` - Init a blog project
 - `swift run tuzuru import` - Import posts from other project using Hugo or Jekyll
+- `swift run tuzuru amend` - Update publishedAt date and/or author for a markdown file by creating marker commits
 - `swift run tuzuru --help` - Show help
 
 ## Architecture
@@ -42,6 +43,7 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 - `Sources/TuzuruLib/Generator/`: HTML generation logic
 - `Sources/TuzuruLib/SourceLoader/`: Content loading and parsing
 - `Sources/TuzuruLib/Importer/`: Content import functionality
+- `Sources/TuzuruLib/Amender/`: File metadata amending functionality
 
 ### File Conventions
 - Source markdown files: `contents/` directory
@@ -79,3 +81,4 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 
 - Always use @Sources/TuzuruLib/Tuzuru.swift facade to implement a command
 - Don't use the term "site" instead use "blog"; ie static site generator -> static blog generator
+- The amend command creates marker commits with format `[tuzuru amend] Updated {field} for {filename}` that are processed by GitLogReader to override post metadata
