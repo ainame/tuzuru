@@ -9,7 +9,14 @@ class Tuzuru < Formula
   depends_on :macos
 
   def install
-    bin.install "tuzuru"
+    # Install the binary in libexec instead of bin
+    libexec.install "tuzuru"
+    
+    # Install bundle resources in pkgshare
+    pkgshare.install "tuzuru_TuzuruLib.bundle"
+    
+    # Create wrapper script in bin that sets TUZURU_RESOURCES environment variable
+    (bin/"tuzuru").write_env_script libexec/"tuzuru", TUZURU_RESOURCES: pkgshare
   end
 
   test do

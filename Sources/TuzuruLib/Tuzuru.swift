@@ -51,7 +51,8 @@ public struct Tuzuru {
         try configData.write(to: URL(fileURLWithPath: configPath.string))
 
         // Copy template and asset files from bundle
-        let initializer = BlogInitializer(fileManager: fileManager)
+        let bundle = try TuzuruResources.resourceBundle()
+        let initializer = BlogInitializer(fileManager: fileManager, bundle: bundle)
         
         let templatesDir = path.appending("templates")
         try initializer.copyTemplateFiles(to: templatesDir)

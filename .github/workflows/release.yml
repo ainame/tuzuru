@@ -44,10 +44,14 @@ jobs:
         run: |
           swift build -c release --arch arm64 --arch x86_64
 
-      - name: Create universal binary
+      - name: Create universal binary and bundle
         run: |
           cp .build/apple/Products/Release/tuzuru tuzuru
           chmod +x tuzuru
+          
+          # Copy bundle files from one of the architecture builds
+          # (both architectures will have the same bundle content)
+          cp -r .build/arm64-apple-macosx/release/tuzuru_TuzuruLib.bundle .
 
       - name: Test binary
         run: |
@@ -55,7 +59,7 @@ jobs:
 
       - name: Create tarball
         run: |
-          tar -czf tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz tuzuru
+          tar -czf tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz tuzuru tuzuru_TuzuruLib.bundle
 
       - name: Calculate SHA256
         id: sha
