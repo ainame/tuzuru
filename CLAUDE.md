@@ -37,7 +37,7 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 
 ### Core Components
 - `Sources/Command/Command.swift`: CLI command definitions using ArgumentParser
-- `Sources/TuzuruLib/Tuzuru.swift`: Main generator logic
+- `Sources/TuzuruLib/Tuzuru.swift`: Main facade that commands will interact with
 - `Sources/TuzuruLib/Configuration/`: Configuration management
 - `Sources/TuzuruLib/Generator/`: HTML generation logic
 - `Sources/TuzuruLib/SourceLoader/`: Content loading and parsing
@@ -74,3 +74,4 @@ Tuzuru is a static site generator CLI tool written in Swift that converts markdo
 
 - Use `./tmp` directory with git (tuzuru command depends on a git project)
 - Don't delete `./tmp`
+- Always use @Sources/TuzuruLib/Tuzuru.swift facade to implement a command
