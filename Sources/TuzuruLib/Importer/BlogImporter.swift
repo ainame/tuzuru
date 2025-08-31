@@ -1,42 +1,29 @@
 import Foundation
 
 /// Handles importing Hugo/Jekyll markdown files with YAML front matter to Tuzuru format
-public struct BlogImporter {
+struct BlogImporter {
     private let parser = YAMLFrontMatterParser()
     private let transformer = MarkdownTransformer()
     private let shortcodeProcessor = HugoShortcodeProcessor()
     private let gitCommitter = GitCommitter()
     
-    public struct ImportOptions: Sendable {
-        public let sourcePath: String
-        public let destinationPath: String
-        
-        public init(sourcePath: String, destinationPath: String) {
-            self.sourcePath = sourcePath
-            self.destinationPath = destinationPath
-        }
+    struct ImportOptions {
+        let sourcePath: String
+        let destinationPath: String
     }
     
-    public struct ImportResult: Sendable {
-        public let importedCount: Int
-        public let skippedCount: Int
-        public let errorCount: Int
-        
-        public init(importedCount: Int, skippedCount: Int, errorCount: Int) {
-            self.importedCount = importedCount
-            self.skippedCount = skippedCount
-            self.errorCount = errorCount
-        }
+    struct ImportResult {
+        let importedCount: Int
+        let skippedCount: Int
+        let errorCount: Int
     }
-    
-    public init() {}
     
     /// Imports markdown files from source directory to destination
     /// - Parameters:
     ///   - options: Import configuration options
     ///   - dryRun: If true, no files will be modified
     /// - Returns: ImportResult with counts of imported, skipped, and error files
-    public func importFiles(options: ImportOptions, dryRun: Bool = false) async throws -> ImportResult {
+    func importFiles(options: ImportOptions, dryRun: Bool = false) async throws -> ImportResult {
         let fileManager = FileManager.default
         let sourceDir = FilePath(options.sourcePath)
         let destinationDir = FilePath(options.destinationPath)

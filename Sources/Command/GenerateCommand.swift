@@ -12,11 +12,10 @@ struct GenerateCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         // Load configuration
-        let loader = BlogConfigurationLoader()
         let blogConfig: BlogConfiguration
         
         do {
-            blogConfig = try loader.load(from: config)
+            blogConfig = try Tuzuru.loadConfiguration(from: config)
         } catch let error as BlogConfigurationLoader.LoadError {
             print("❌ \(error.localizedDescription)")
             return
@@ -43,9 +42,8 @@ struct GenerateCommand: AsyncParsableCommand {
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(blogConfig.output.indexFileName) (list page)")
-        let pathGenerator = PathGenerator(configuration: blogConfig.output, contentsBasePath: blogConfig.sourceLayout.contents, unlistedBasePath: blogConfig.sourceLayout.unlisted)
-        for post in source.posts {
-            let postName = pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
+        let displayPaths = tuzuru.generateDisplayPaths(for: source)
+        for postName in displayPaths {
             print("  - \(postName)")
         }
     }

@@ -25,11 +25,10 @@ struct ImportCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         // Load configuration
-        let loader = BlogConfigurationLoader()
         let blogConfig: BlogConfiguration
         
         do {
-            blogConfig = try loader.load(from: config)
+            blogConfig = try Tuzuru.loadConfiguration(from: config)
         } catch let error as BlogConfigurationLoader.LoadError {
             print("❌ \(error.localizedDescription)")
             return
@@ -37,13 +36,9 @@ struct ImportCommand: AsyncParsableCommand {
 
         let destinationPath = unlisted ? blogConfig.sourceLayout.unlisted.string : destination
 
-        let options = BlogImporter.ImportOptions(
-            sourcePath: sourcePath,
-            destinationPath: destinationPath
-        )
-
-        let importer = BlogImporter()
-        let result = try await importer.importFiles(options: options, dryRun: dryRun)
+        // Initialize Tuzuru with configuration
+        let tuzuru = try Tuzuru(configuration: blogConfig)
+        let result = try await tuzuru.importFiles(from: sourcePath, to: destinationPath, dryRun: dryRun)
 
         // Summary
         print("\n📊 Import Summary:")
