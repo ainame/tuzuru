@@ -102,6 +102,18 @@ public struct Tuzuru {
         }
     }
     
+    // MARK: - Amend Methods
+    
+    public func amendFile(
+        filePath: String,
+        newDate: String? = nil,
+        newAuthor: String? = nil,
+        fileManager: FileManager = .default
+    ) async throws {
+        let amender = FileAmender(configuration: configuration, fileManager: fileManager)
+        try await amender.amendFile(filePath: filePath, newDate: newDate, newAuthor: newAuthor)
+    }
+    
 }
 
 extension Tuzuru {

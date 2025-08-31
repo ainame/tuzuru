@@ -7,7 +7,7 @@ struct GitLogReader: Sendable {
         return formatter
     }()
 
-    func logs(for filePath: FilePath) async -> [GitLog] {
+    func baseCommit(for filePath: FilePath) async -> GitLog? {
         do {
             let output = try await GitWrapper.run(arguments: [
                 "log",
@@ -15,9 +15,10 @@ struct GitLogReader: Sendable {
                 "--",
                 filePath.string
             ])
-            return parseGitLogs(from: output)
+            let allLogs = parseGitLogs(from: output)
+            return findBaseCommit(from: allLogs)
         } catch {
-            return []
+            return nil
         }
     }
 
@@ -52,5 +53,17 @@ struct GitLogReader: Sendable {
 
     private func parseGitDate(_ dateString: String) -> Date? {
         formatter.date(from: dateString)
+    }
+
+    /// Finds the appropriate base commit for metadata extraction
+    /// If a marker commit exists, use it; otherwise use the original first commit
+    private func findBaseCommit(from logs: [GitLog]) -> GitLog? {
+        // Find the first marker commit (most recent amend operation)
+        if let markerCommit = logs.first(where: { $0.commitMessage.hasPrefix("[tuzuru amend]") }) {
+            return markerCommit
+        }
+        
+        // No marker commits found, use the original first commit (last in chronological order)
+        return logs.last
     }
 }

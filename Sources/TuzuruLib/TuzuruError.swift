@@ -6,6 +6,7 @@ public enum TuzuruError: LocalizedError {
     case fileNotFound(String)
     case yearDirectoryConflict(String)
     case configurationAlreadyExists
+    case invalidDateFormat(String)
 
     public var errorDescription: String? {
         switch self {
@@ -19,6 +20,8 @@ public enum TuzuruError: LocalizedError {
             return "Year directory conflict: \(path)"
         case .configurationAlreadyExists:
             return "tuzuru.json already exists. Aborting initialization."
+        case .invalidDateFormat(let dateString):
+            return "Invalid date format: '\(dateString)'. Supported formats include: '2023-12-01', '2023-12-01 10:30:00', '2023-12-01T10:30:00Z', '2023-12-01 10:30:00 +0900'"
         }
     }
 }

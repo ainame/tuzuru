@@ -141,12 +141,11 @@ struct SourceLoader: Sendable {
     }
 
     private func processMarkdown(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
-        let gitLogs = await gitLogReader.logs(for: markdownPath)
+        let baseCommit = await gitLogReader.baseCommit(for: markdownPath)
 
-        // Get the first commit (initial commit) for publish date and author
-        let firstCommit = gitLogs.last // logs are in reverse chronological order
-        let author = firstCommit?.author ?? "Unknown"
-        let publishedAt = firstCommit?.date ?? Date()
+        // Get author and publish date from the base commit (either marker commit or original first commit)
+        let author = baseCommit?.author ?? "Unknown"
+        let publishedAt = baseCommit?.date ?? Date()
 
         // Read and process markdown content
         guard let markdownData = fileManager.contents(atPath: markdownPath.string),
