@@ -6,6 +6,8 @@ import TuzuruLib
 struct MainCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tuzuru",
+        abstract: "Simple static blog generator",
+        version: "0.0.1",
         subcommands: [
             InitCommand.self,
             GenerateCommand.self,
