@@ -15,7 +15,7 @@ struct SourceLoader: Sendable {
     @concurrent
     func loadSources() async throws -> Source {
         let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
-        var source = Source(metadata: configuration.metadata, templates: templates, posts: [])
+        var source = Source(metadata: configuration.metadata, templates: templates, posts: [], years: [], categories: [])
 
         // Find markdown files in contents directory (excluding unlisted subdirectory)
         let contentsFiles = try findMarkdowns(fileManager: FileManager(), in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)

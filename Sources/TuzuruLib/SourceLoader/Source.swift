@@ -8,7 +8,13 @@ public struct Source: Sendable {
     public var categories: [String]
     var templates: MustacheLibrary
 
-    init(metadata: BlogMetadata, templates: MustacheLibrary, posts: [Post], years: [String] = [], categories: [String] = []) {
+    init(
+        metadata: BlogMetadata,
+        templates: MustacheLibrary,
+        posts: [Post],
+        years: [String],
+        categories: [String]
+    ) {
         self.metadata = metadata
         self.templates = templates
         self.posts = posts
