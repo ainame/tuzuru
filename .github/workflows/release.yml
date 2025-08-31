@@ -11,15 +11,25 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: vapor/swiftly-action@v0.2
-        with:
-          toolchain: "6.1.2"
+      - name: Install Swiftly for Linux cross-compilation
+        run: |
+          # Install Swiftly using the official macOS method to user directory
+          curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
+          installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+          rm swiftly.pkg
+
+          # Add to PATH for current session
+          echo "$HOME/.swiftly/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.swiftly/bin:$PATH"
 
       - name: Get version
         id: version
@@ -67,12 +77,10 @@ jobs:
           git push origin HEAD:main || exit 0
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          files: |
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --title "Tuzuru ${{ steps.version.outputs.version }}" \
+            --generate-notes \
             tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz
-          generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
