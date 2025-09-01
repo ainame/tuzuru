@@ -205,13 +205,13 @@ tuzuru amend contents/my-post.md --published-at "2023-12-01 10:30:00 +0900" --au
 ```
 
 The command supports flexible date formats:
+
 - `2023-12-01` (date only)
 - `2023-12-01 10:30:00` (date and time)
 - `2023-12-01T10:30:00Z` (ISO 8601 UTC)
 - `2023-12-01 10:30:00 +0900` (with timezone)
 
 This creates a special marker commit that Tuzuru recognizes when determining the post's metadata, without disrupting your git history.
-```
 
 ## Build Requirements
 
