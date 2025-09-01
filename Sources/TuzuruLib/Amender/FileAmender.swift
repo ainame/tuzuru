@@ -26,8 +26,7 @@ struct FileAmender {
         // Parse and validate the date if provided
         var parsedDate: Date?
         if let dateString = newDate {
-            let parser = YAMLFrontMatterParser()
-            parsedDate = parser.parseDate(dateString)
+            parsedDate = DateUtils.parseDate(dateString)
             guard parsedDate != nil else {
                 throw TuzuruError.invalidDateFormat(dateString)
             }
