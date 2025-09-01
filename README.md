@@ -100,6 +100,15 @@ my-blog/
 └── tuzuru.json
 ```
 
+### Demo
+
+You can see Tuzuru in action with this demo blog hosted on GitHub Pages:
+
+- **Live Demo**: [https://ainame.tokyo/Tuzuru-Demo/](https://ainame.tokyo/Tuzuru-Demo/)
+- **Source Repository**: [https://github.com/ainame/Tuzuru-Demo](https://github.com/ainame/Tuzuru-Demo)
+
+This demo showcases the built-in layout and demonstrates how Tuzuru generates clean, lightweight blog pages from plain Markdown files.
+
 ## How it works
 
 ### Layout and customization
