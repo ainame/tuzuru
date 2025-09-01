@@ -1,6 +1,8 @@
 import Foundation
 
 struct GitLogReader: Sendable {
+    let workingDirectory: FilePath
+
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
@@ -9,12 +11,15 @@ struct GitLogReader: Sendable {
 
     func baseCommit(for filePath: FilePath) async -> GitLog? {
         do {
-            let output = try await GitWrapper.run(arguments: [
-                "log",
-                "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
-                "--",
-                filePath.string
-            ])
+            let output = try await GitWrapper.run(
+                arguments: [
+                    "log",
+                    "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
+                    "--",
+                    filePath.string
+                ],
+                workingDirectory: workingDirectory
+            )
             let allLogs = parseGitLogs(from: output)
             return findBaseCommit(from: allLogs)
         } catch {

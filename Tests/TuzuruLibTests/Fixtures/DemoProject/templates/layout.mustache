@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{description}}">
+    <title>{{pageTitle}}</title>
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="{{pageTitle}}">
+    <meta property="og:description" content="{{description}}">
+    <meta property="og:type" content="{{#content.title}}article{{/content.title}}{{^content.title}}website{{/content.title}}">
+    <meta property="og:url" content="{{currentPageUrl}}">
+    <meta property="og:site_name" content="{{blogName}}">
+    {{#content.title}}
+    <meta property="article:author" content="{{content.author}}">
+    <meta property="article:published_time" content="{{content.publishedAt}}">
+    {{/content.title}}
+
+    <!-- DNS prefetch for external CDN -->
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Critical CSS - load synchronously to avoid FOUC -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css">
+    <link rel="stylesheet" href="{{assetsUrl}}main.css?{{buildVersion}}">
+
+    <!-- Non-critical CSS - load asynchronously -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" media="(prefers-color-scheme: dark)">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+    </noscript>
+</head>
+<body>
+    <div class="markdown-body">
+        <header>
+            <div class="blogName">
+                <a href="{{homeUrl}}">{{blogName}}</a>
+            </div>
+        </header>
+
+        <main>
+            <div class="container">
+                <div class="content">
+                    {{>*partialName}}
+                </div>
+                <aside class="sidebar">
+                    {{#hasYears}}
+                    <div class="sidebar-section">
+                        <h3>Years</h3>
+                        <ul>
+                            {{#years}}
+                                <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
+                            {{/years}}
+                        </ul>
+                    </div>
+                    {{/hasYears}}
+                    {{#hasCategories}}
+                    <div class="sidebar-section">
+                        <h3>Categories</h3>
+                        <ul>
+                            {{#categories}}
+                                <li><a href="{{homeUrl}}{{.}}/">{{.}}</a></li>
+                            {{/categories}}
+                        </ul>
+                    </div>
+                    {{/hasCategories}}
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; {{currentYear}} {{copyright}}</p>
+            <p>Powered by <a href="https://github.com/ainame/Tuzuru">Tuzuru</a></p>
+        </footer>
+    </div>
+    </body>
+</html>

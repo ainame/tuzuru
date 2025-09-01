@@ -1,0 +1,23 @@
+{{#content}}
+<article>
+    <header>
+        <h1>{{title}}</h1>
+        <div>
+            By <strong>{{author}}</strong> / Published on {{publishedAt}}
+        </div>
+    </header>
+
+    <div>
+        {{{body}}}
+    </div>
+</article>
+{{/content}}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') {
+        hljs.highlightAll();
+    }
+});
+</script>

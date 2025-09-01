@@ -4,23 +4,35 @@ import Foundation
 struct FileAmender {
     private let configuration: BlogConfiguration
     private let fileManager: FileManager
-    
-    init(configuration: BlogConfiguration, fileManager: FileManager = .default) {
+    private let workingDirectory: FilePath
+
+    init(
+        configuration: BlogConfiguration,
+        fileManager: FileManager,
+        workingDirectory: FilePath,
+    ) {
         self.configuration = configuration
         self.fileManager = fileManager
+        self.workingDirectory = workingDirectory
     }
     
     func amendFile(
-        filePath: String,
+        filePath: FilePath,
         newDate: String? = nil,
         newAuthor: String? = nil
     ) async throws {
-        // Use the file path as provided (it may already be absolute or include contents/)
-        let fullFilePath = FilePath(filePath)
-        
+        // We can't rely on "shared" currentDirectoryPath on async env.
+        // If workingDirectory doesn't match currentDirectoryPath, fileManager can't find a file with relative path.
+        // In that case, extend the relative path with workingDirectory.
+        let filePath = if fileManager.currentDirectoryPath != workingDirectory.string {
+            workingDirectory.appending(filePath.string)
+        } else {
+            filePath
+        }
+
         // Verify file exists
-        guard fileManager.fileExists(atPath: fullFilePath.string) else {
-            throw TuzuruError.fileNotFound(fullFilePath.string)
+        guard fileManager.fileExists(atPath: filePath.string) else {
+            throw TuzuruError.fileNotFound(filePath.string)
         }
 
         // Parse and validate the date if provided
@@ -33,28 +45,29 @@ struct FileAmender {
         }
 
         try await createMarkerCommit(
-            filePath: fullFilePath,
-            fileName: filePath,
+            filePath: filePath,
             newDate: parsedDate,
             newAuthor: newAuthor
         )
     }
-    
+
     private func createMarkerCommit(
         filePath: FilePath,
-        fileName: String,
         newDate: Date?,
         newAuthor: String?
     ) async throws {
         // Append an empty line to the file (minimal, invisible change)
-        let fileHandle = try FileHandle(forWritingTo: URL(filePath: filePath.string))
+        let fileHandle = try FileHandle(forWritingTo: URL(filePath: filePath.string, relativeTo: URL(string: workingDirectory.string)))
         defer { fileHandle.closeFile() }
         
         fileHandle.seekToEndOfFile()
         fileHandle.write("\n".data(using: .utf8)!)
 
         // Stage the file
-        try await GitWrapper.run(arguments: ["add", filePath.string])
+        try await GitWrapper.run(
+            arguments: ["add", filePath.string],
+            workingDirectory: workingDirectory,
+        )
 
         // Build commit message
         var updates: [String] = []
@@ -65,7 +78,7 @@ struct FileAmender {
             updates.append("author")
         }
         let updateString = updates.joined(separator: " and ")
-        let commitMessage = "[tuzuru amend] Updated \(updateString) for \(fileName)"
+        let commitMessage = "[tuzuru amend] Updated \(updateString) for \(filePath.string)"
 
         // Build git commit arguments
         var commitArgs = ["commit", "-m", commitMessage]
@@ -85,6 +98,9 @@ struct FileAmender {
         }
 
         // Create the commit
-        try await GitWrapper.run(arguments: commitArgs)
+        try await GitWrapper.run(
+            arguments: commitArgs,
+            workingDirectory: workingDirectory,
+        )
     }
 }

@@ -1,0 +1,25 @@
+{
+  "metadata" : {
+    "baseUrl" : "https://ainame.tokyo/tuzuru-demo",
+    "blogName" : "Tuzuru demo blog",
+    "copyright" : "ainame",
+    "description" : "A demo blog for Tuzuru (https://github.com/ainame/Tuzuru) project",
+    "locale" : "en_GB"
+  },
+  "output" : {
+    "directory" : "blog",
+    "homePageStyle" : "all",
+    "routingStyle" : "subdirectory"
+  },
+  "sourceLayout" : {
+    "assets" : "assets",
+    "contents" : "contents",
+    "imported" : "contents/imported",
+    "templates" : {
+      "layout" : "templates/layout.mustache",
+      "list" : "templates/list.mustache",
+      "post" : "templates/post.mustache"
+    },
+    "unlisted" : "contents/unlisted"
+  }
+}

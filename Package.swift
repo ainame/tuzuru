@@ -50,6 +50,9 @@ let package = Package(
                 "TuzuruLib",
                 .product(name: "Markdown", package: "swift-markdown"),
             ],
+            resources: [
+                .copy("Fixtures"),
+            ],
         ),
     ],
 )

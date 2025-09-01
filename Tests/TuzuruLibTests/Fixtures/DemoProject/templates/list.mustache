@@ -1,0 +1,32 @@
+{{#content}}
+<div>
+    <h1>
+    {{#title}}
+    {{! This is top-level directory title that is automatically determined }}
+    {{.}}
+    {{/title}}
+    {{^title}}
+    {{! This is the home page title that you can customize here }}
+    Recent Posts
+    {{/title}}
+    </h1>
+    <ul class="posts">
+        {{#posts}}
+        <li>
+            <h3>
+                <a href="{{url}}">{{title}}</a>
+            </h3>
+            <p>
+                By {{author}} on {{publishedAt}}
+            </p>
+            {{#excerpt}}
+            <p>{{excerpt}}</p>
+            {{/excerpt}}
+        </li>
+        {{/posts}}
+    </ul>
+    {{^posts}}
+    <p>No posts available.</p>
+    {{/posts}}
+</div>
+{{/content}}

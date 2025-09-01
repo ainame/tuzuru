@@ -9,11 +9,12 @@ struct GitWrapper {
     /// - Returns: Trimmed standard output from the git command
     /// - Throws: GitCommitterError if the command fails
     @discardableResult
-    static func run(arguments: [String]) async throws -> String {
+    static func run(arguments: [String], workingDirectory: FilePath? = nil) async throws -> String {
         do {
             let result = try await Subprocess.run(
                 .name("git"),
                 arguments: Arguments(arguments),
+                workingDirectory: workingDirectory,
                 output: .string(limit: .max),
                 error: .string(limit: .max)
             )

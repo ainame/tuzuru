@@ -110,8 +110,8 @@ public struct Tuzuru {
         newAuthor: String? = nil,
         fileManager: FileManager = .default
     ) async throws {
-        let amender = FileAmender(configuration: configuration, fileManager: fileManager)
-        try await amender.amendFile(filePath: filePath, newDate: newDate, newAuthor: newAuthor)
+        let amender = FileAmender(configuration: configuration, fileManager: fileManager, workingDirectory: FilePath(fileManager.currentDirectoryPath))
+        try await amender.amendFile(filePath: FilePath(filePath), newDate: newDate, newAuthor: newAuthor)
     }
     
 }

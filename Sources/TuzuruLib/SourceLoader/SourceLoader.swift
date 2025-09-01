@@ -7,9 +7,14 @@ struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
     private let gitLogReader: GitLogReader
 
-    init(configuration: BlogConfiguration) {
+    init(
+        configuration: BlogConfiguration,
+        fileManager: FileManager = .default,
+    ) {
         self.configuration = configuration
-        gitLogReader = GitLogReader()
+        gitLogReader = GitLogReader(
+            workingDirectory: FilePath(fileManager.currentDirectoryPath),
+        )
     }
 
     @Sendable
