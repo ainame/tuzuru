@@ -10,18 +10,16 @@ This means you can focus on what you're writing, not on remembering syntax. It's
 
 ## Motivation
 
-I've built a blog with Hugo a few years ago and then stopped updating it at some point.
-When I wanted to restart recently, it was tough for me to remember/re-learn how to use Hugo.
+Years ago, I built a blog with Hugo, but eventually stopped updating it. When I recently wanted to start again, I found it tough to remember and re-learn how to use it.
 
-I really wanted to use a simple and intuitive blogging tool.
-I tried some but none of them convinced me. I ended up creating my own.
+I wanted a simple, intuitive blogging tool, but none I tried felt quite right. So, I decided to build my own.
 
-Tuzuru aims for the following policy
+Tuzuru is designed with these core principles:
 
-* Plain markdown (No YAML front matter)
-* Simple routing that suits blogs
-* No JavaScript framework
-* Signle binary installation (No node/npm version management, cargo install, go get...)
+* Plain Markdown: No YAML front matter.
+* Simple Routing: A routing system built specifically for blogs.
+* No JavaScript Framework: Lightweight and fast.
+* Single Binary Installation: Avoids environment setup for tools that you may not use day-to-day
 
 ## Installation
 
@@ -52,7 +50,8 @@ git init
 # This adds `assets`, `contents`, `templates` directories and `tuzuru.json`
 tuzuru init
 
-git add . && git commit -m "init commit"
+git add .
+git commit -m "init commit"
 ```
 
 Then create a markdown file under the `contents` directory and do `git commit`.
@@ -77,8 +76,8 @@ Or you can preview it with local HTTP server like `python3 -m http.server 8000 -
 
 ### Built-in layout
 
-The built-in layout is good enough to start (hopefully) and easy to customize.
-It adopted [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) already to write tech blog posts.
+The built-in layout is a great starting point and is easy to customize. It already includes [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) to make writing tech blog posts a breeze.
+
 
 ![screenshot](.github/assets/screenshot.png)
 
@@ -110,31 +109,31 @@ Tuzuru supports two types of pages.
 1. Post - a blog article
 2. List - a listing page generated automatically
 
-You can customize those page layouts in three files written with Mustache.
+You can customize these layouts using three Mustache files:
 
 * templates/layout.mustache - Base layout
 * templates/post.mustache - main part of post page
 * templates/list.mustache - main part of list page
 
-Read this page about Mustache syntax.
+For more on syntax, see the documentation.
 https://docs.hummingbird.codes/2.0/documentation/hummingbird/mustachesyntax/
 
-### Listing pages and unlisted pages
+### Listing and Unlisted Pages
 
-By default, a markdown file under `contents` will be listed on the following pages automatically.
+By default, any Markdown file in the `contents` directory is automatically listed on:
 
-* Home page at `/` depending on your configuration
-* Yearly archive pages - pages grouped by year on published date at `/2025`, `/2024`, etc..
-* Category pages - when you put a markdown file in a directory under `contents`; e.g. `contents/tech/swift.md` will be listed on `/tech`
+* The home page (`/`) based on your configuration.
+* Yearly archive pages (e.g., `/2025`, `/2024`).
+* Category pages for files in subdirectories (e.g., `contents/tech/swift.md` is listed on `/tech`).
 
-You can also add a markdown as an unlisted page by adding it to `contents/unlisted/`. In that case, such a markdown file won't be listed on any pages automatically. Instead, you can link it from the template file manually.
+You can add an unlisted page by placing it in `contents/unlisted/`. These pages won't be listed anywhere automatically, but you can link to them manually from your templates.
 
 ### Assets
 
-`tuzuru init` creates an `assets` directory that contains `main.css`.
-Any files under the `assets` directory will be copied to `blog/assets` by `tuzuru generate`.
+The `tuzuru init` command creates an assets directory containing `main.css`. The tuzuru generate command copies all files from this directory to `blog/assets`.
 
-To avoid browser cache issues for assets (cache busting), you can use the `{{buildVersion}}` variable in your template like below.
+To prevent browser cache issues, use the `{{buildVersion}}` variable in your templates.
+
 
 ```mustache
 <link rel="stylesheet" href="{{assetsUrl}}main.css?{{buildVersion}}">
@@ -142,30 +141,26 @@ To avoid browser cache issues for assets (cache busting), you can use the `{{bui
 
 ### tuzuru.json
 
-tuzuru.json is the main configuration file.
-You can actually omit most of it if you just use default values.
+`tuzuru.json` is the main configuration file, though you can omit most settings if you stick to the defaults.
+
 
 ```javascript
 {
-  // "metadata" is the mandatory setting and others can be removed
+  // `metadata` is the only mandatory section.
   "metadata" : {
     "blogName" : "My Blog",
     "copyright" : "My Blog",
-    "description" : "My personal blog", // description for meta tag
-    "baseUrl" : "https://example.com",  // URL for production deploy
-    "locale" : "en_GB" // This will affect the published date's format
+    "description" : "My personal blog", // Meta description for SEO
+    "baseUrl" : "https://example.com/",  // Production URL
+    "locale" : "en_GB" // Affects the published date format
   },
-  // "output" to configure output options
+  // `output` for configuring output options
   "output" : {
-    // the artifact directory
-    "directory" : "blog",
-    // "all", "pastYear", or a number in string (last X posts)
-    "homePageStyle" : "all",
-    // "subdirectory" or "direct"; "subdirectory" routes "contents/hello-world.md" to "/hello-world",
-    // whilst "direct" routes it to "/hello-world.html"
-    "routingStyle" : "subdirectory"
+    "directory" : "blog", // The output directory
+    "homePageStyle" : "all", // "all", "pastYear", or a number (last X posts)
+    "routingStyle" : "subdirectory" // "subdirectory" (e.g., /hello-world) or "direct" (e.g., /hello-world.html)
   },
-  // "sourceLayout" to customize directory structures from the default values but you typically don't need to do this
+  // `sourceLayout` to customize the default directory structure (typically not needed)
   "sourceLayout" : {
     "assets" : "assets",
     "contents" : "contents",
@@ -182,7 +177,7 @@ You can actually omit most of it if you just use default values.
 
 ## Import posts from Hugo project
 
-You can import markdown files from a Hugo project. YAML front matter will be parsed to grab title, author and published date when available, and then it will be removed. Each markdown file will appear in an individual git commit.
+You can import Markdown files from a Hugo project. Tuzuru will parse the YAML front matter to get the title, author, and date, then remove it. Each imported Markdown file will be added as an individual Git commit.
 
 ```bash
 tuzuru import /path/to/import-target-dir # import them to ./contents/imported by default
@@ -191,7 +186,7 @@ tuzuru import /path/to/import-target-dir --destination /path/to/import
 
 ## Amend published date or author
 
-If you need to change the published date or author for an existing post without rewriting git history, you can use the `amend` command:
+Need to change a post's published date or author without rewriting your Git history? Use the amend command.
 
 ```bash
 # Update published date
@@ -211,7 +206,7 @@ The command supports flexible date formats:
 - `2023-12-01T10:30:00Z` (ISO 8601 UTC)
 - `2023-12-01 10:30:00 +0900` (with timezone)
 
-This creates a special marker commit that Tuzuru recognizes when determining the post's metadata, without disrupting your git history.
+This command creates a special marker commit that Tuzuru recognizes for post metadata, leaving your history clean.
 
 ## Build Requirements
 
