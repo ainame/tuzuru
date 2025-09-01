@@ -1,11 +1,12 @@
 # Tuzuru
 
-Tuzuru (綴る) is dead-simple static **blog** generator CLI written in Swift. It's similar to static site generators but focuses on simple blog.
-
 ![logo](.github/assets/logo.png)
 
-In Tuzuru, Git is the way to manage metadata. You just write **plain** markdown and save them to Git.
-Tuzuru will get published date and author info for each post from Git. You don't need to remember "YAML front matter" syntax/rules.
+Tuzuru (綴る) is dead-simple static **blog** generator CLI that uses Git to manage your blog's metadata.
+
+Instead of writing YAML front matter, you just write and save your plain Markdown files to Git. Tuzuru automatically pulls metadata like the publication date and author information from the Git commit history.
+
+This means you can focus on what you're writing, not on remembering syntax. It's a simpler, more lightweight way to manage your blog.
 
 ## Motivation
 
@@ -204,7 +205,7 @@ tuzuru amend contents/my-post.md --published-at "2023-12-01 10:30:00 +0900" --au
 ```
 
 The command supports flexible date formats:
-- `2023-12-01` (date only)  
+- `2023-12-01` (date only)
 - `2023-12-01 10:30:00` (date and time)
 - `2023-12-01T10:30:00Z` (ISO 8601 UTC)
 - `2023-12-01 10:30:00 +0900` (with timezone)
