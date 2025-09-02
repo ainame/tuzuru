@@ -104,8 +104,8 @@ my-blog/
 
 You can see Tuzuru in action with this demo blog hosted on GitHub Pages:
 
-- **Live Demo**: [https://ainame.tokyo/Tuzuru-Demo/](https://ainame.tokyo/Tuzuru-Demo/)
-- **Source Repository**: [https://github.com/ainame/Tuzuru-Demo](https://github.com/ainame/Tuzuru-Demo)
+- **Live Demo**: [https://ainame.tokyo/tuzuru-demo/](https://ainame.github.io/tuzuru-demo/)
+- **Source Repository**: [https://github.com/ainame/tuzuru-demo](https://github.com/ainame/tuzuru-demo)
 
 This demo showcases the built-in layout and demonstrates how Tuzuru generates clean, lightweight blog pages from plain Markdown files.
 
