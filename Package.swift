@@ -28,6 +28,7 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Yams", package: "Yams"),
                 "TuzuruLib",
+                "TinyHttpServer",
             ],
         ),
         .target(
@@ -43,6 +44,9 @@ let package = Package(
                 .copy("Resources/templates"),
                 .copy("Resources/assets"),
             ],
+        ),
+        .target(
+            name: "TinyHttpServer"
         ),
         .testTarget(
             name: "TuzuruLibTests",
