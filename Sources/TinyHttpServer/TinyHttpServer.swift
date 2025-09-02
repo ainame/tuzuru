@@ -2,6 +2,8 @@ import Foundation
 
 #if canImport(Darwin)
 import Darwin
+#elseif canImport(Musl)
+import Musl
 #elseif canImport(Glibc)
 import Glibc
 #endif
@@ -32,6 +34,8 @@ public class TinyHttpServer {
     public func start() async throws {
         #if canImport(Darwin)
         let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
+        #elseif canImport(Musl)
+        let serverSocket = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
         #elseif canImport(Glibc)
         let serverSocket = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
         #endif
@@ -163,6 +167,8 @@ public class TinyHttpServer {
         _ = data.withUnsafeBytes {
             #if canImport(Darwin)
             Darwin.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
+            #elseif canImport(Musl)
+            Musl.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #elseif canImport(Glibc)
             Glibc.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #endif
@@ -175,6 +181,8 @@ public class TinyHttpServer {
         _ = data.withUnsafeBytes {
             #if canImport(Darwin)
             Darwin.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
+            #elseif canImport(Musl)
+            Musl.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #elseif canImport(Glibc)
             Glibc.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #endif
@@ -229,6 +237,8 @@ public class TinyHttpServer {
         _ = data.withUnsafeBytes {
             #if canImport(Darwin)
             Darwin.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
+            #elseif canImport(Musl)
+            Musl.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #elseif canImport(Glibc)
             Glibc.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #endif
@@ -241,6 +251,8 @@ public class TinyHttpServer {
         _ = data.withUnsafeBytes {
             #if canImport(Darwin)
             Darwin.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
+            #elseif canImport(Musl)
+            Musl.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #elseif canImport(Glibc)
             Glibc.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
             #endif
