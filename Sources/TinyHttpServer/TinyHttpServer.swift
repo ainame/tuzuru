@@ -35,7 +35,7 @@ public class TinyHttpServer {
         #if canImport(Darwin)
         let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
         #elseif canImport(Musl)
-        let serverSocket = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
+        let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
         #elseif canImport(Glibc)
         let serverSocket = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
         #endif
