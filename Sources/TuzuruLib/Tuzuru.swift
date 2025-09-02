@@ -8,11 +8,11 @@ public struct Tuzuru {
     private let configuration: BlogConfiguration
 
     public init(
-        fileManager: FileManager = .default,
+        fileManager: FileManagerWrapper,
         configuration: BlogConfiguration,
     ) throws {
-        sourceLoader = SourceLoader(configuration: configuration)
-        blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
+        sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
+        blogGenerator = try BlogGenerator(configuration: configuration, fileManager: FileManager.default)
         self.configuration = configuration
     }
 

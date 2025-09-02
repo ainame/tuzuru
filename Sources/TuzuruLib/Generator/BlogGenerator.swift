@@ -4,7 +4,7 @@ import Mustache
 /// Handles template processing and site generation
 struct BlogGenerator {
     private let configuration: BlogConfiguration
-    private let fileManager: FileManager
+    private let fileManager: FileManagerWrapper
     private let buildVersion: String
     private let calendar: Calendar
     private let dateProvider: () -> Date
@@ -13,7 +13,7 @@ struct BlogGenerator {
 
     init(
         configuration: BlogConfiguration,
-        fileManager: FileManager = .default,
+        fileManager: FileManagerWrapper,
         calendar: Calendar = .current,
         dateProvider: @escaping () -> Date = { let now = Date(); return { now } }(),
     ) throws {
@@ -38,7 +38,7 @@ struct BlogGenerator {
         let pageRenderer = PageRenderer(templates: source.templates)
 
         // Create site directory if it doesn't exist
-        try fileManager.createDirectory(atPath: blogRoot.string, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: blogRoot, withIntermediateDirectories: true)
 
         // Copy assets directory if it exists
         try copyAssetsIfExists(to: blogRoot)
@@ -105,10 +105,10 @@ struct BlogGenerator {
         // Create subdirectory if needed (for subdirectory style)
         let outputDirectory = outputPath.removingLastComponent()
         if outputDirectory != blogRoot {
-            try fileManager.createDirectory(atPath: outputDirectory.string, withIntermediateDirectories: true)
+            try fileManager.createDirectory(atPath: outputDirectory, withIntermediateDirectories: true)
         }
 
-        fileManager.createFile(atPath: outputPath.string, contents: Data(finalHTML.utf8))
+        _ = fileManager.createFile(atPath: outputPath, contents: Data(finalHTML.utf8))
     }
 
     private func generateListPage(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
@@ -159,7 +159,7 @@ struct BlogGenerator {
 
         // Write index.html
         let indexPath = blogRoot.appending(configuration.output.indexFileName)
-        fileManager.createFile(atPath: indexPath.string, contents: Data(finalHTML.utf8))
+        _ = fileManager.createFile(atPath: indexPath, contents: Data(finalHTML.utf8))
     }
 
     private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
@@ -210,10 +210,10 @@ struct BlogGenerator {
 
             // Create year directory and write index.html
             let yearDirectory = blogRoot.appending("\(year)")
-            try fileManager.createDirectory(atPath: yearDirectory.string, withIntermediateDirectories: true)
+            try fileManager.createDirectory(atPath: yearDirectory, withIntermediateDirectories: true)
 
             let yearIndexPath = yearDirectory.appending(configuration.output.indexFileName)
-            fileManager.createFile(atPath: yearIndexPath.string, contents: Data(finalHTML.utf8))
+            _ = fileManager.createFile(atPath: yearIndexPath, contents: Data(finalHTML.utf8))
         }
     }
 
@@ -291,10 +291,10 @@ struct BlogGenerator {
 
             // Create directory and write index.html
             let directoryPath = blogRoot.appending(directory)
-            try fileManager.createDirectory(atPath: directoryPath.string, withIntermediateDirectories: true)
+            try fileManager.createDirectory(atPath: directoryPath, withIntermediateDirectories: true)
 
             let dirIndexPath = directoryPath.appending(configuration.output.indexFileName)
-            fileManager.createFile(atPath: dirIndexPath.string, contents: Data(finalHTML.utf8))
+            _ = fileManager.createFile(atPath: dirIndexPath, contents: Data(finalHTML.utf8))
         }
     }
 
@@ -302,19 +302,19 @@ struct BlogGenerator {
         let assetsPath = configuration.sourceLayout.assets
 
         // Check if assets directory exists
-        guard fileManager.fileExists(atPath: assetsPath.string) else {
+        guard fileManager.fileExists(atPath: assetsPath) else {
             return // No assets directory, nothing to copy
         }
 
         let destinationPath = blogRoot.appending("assets")
 
         // Remove existing assets directory if it exists
-        if fileManager.fileExists(atPath: destinationPath.string) {
-            try fileManager.removeItem(atPath: destinationPath.string)
+        if fileManager.fileExists(atPath: destinationPath) {
+            try fileManager.removeItem(atPath: destinationPath)
         }
 
         // Copy the entire assets directory
-        try fileManager.copyItem(atPath: assetsPath.string, toPath: destinationPath.string)
+        try fileManager.copyItem(atPath: assetsPath, toPath: destinationPath)
     }
 
     private func getCurrentYear() -> String {

@@ -5,42 +5,40 @@ import Mustache
 /// Handles loading and processing source content from markdown files
 struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
+    private let fileManager: FileManagerWrapper
     private let gitLogReader: GitLogReader
 
     init(
         configuration: BlogConfiguration,
-        fileManager: FileManager = .default,
+        fileManager: FileManagerWrapper,
     ) {
         self.configuration = configuration
-        gitLogReader = GitLogReader(
-            workingDirectory: FilePath(fileManager.currentDirectoryPath),
-        )
+        self.fileManager = fileManager
+        gitLogReader = GitLogReader(workingDirectory: fileManager.workingDirectory)
     }
 
     @Sendable
     func loadSources() async throws -> Source {
-        let templates = try loadTemplates(fileManager: FileManager(), templates: configuration.sourceLayout.templates)
+        let templates = try loadTemplates(templates: configuration.sourceLayout.templates)
         var source = Source(metadata: configuration.metadata, templates: templates, posts: [], years: [], categories: [])
 
         // Find markdown files in contents directory (excluding unlisted subdirectory)
-        let contentsFiles = try findMarkdowns(fileManager: FileManager(), in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
+        let contentsFiles = try findMarkdowns(in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
         // Find markdown files in unlisted directory
-        let unlistedFiles = try findMarkdowns(fileManager: FileManager(), in: configuration.sourceLayout.unlisted)
+        let unlistedFiles = try findMarkdowns(in: configuration.sourceLayout.unlisted)
 
         source.posts = try await withThrowingTaskGroup(of: Post?.self) { group in
             // Process regular content files
             for markdownPath in contentsFiles {
                 group.addTask {
-                    let fileManager = FileManager()
-                    return try await processMarkdown(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: false)
+                    try await processMarkdown(markdownPath: markdownPath, isUnlisted: false)
                 }
             }
 
             // Process unlisted content files
             for markdownPath in unlistedFiles {
                 group.addTask {
-                    let fileManager = FileManager()
-                    return try await processMarkdown(fileManager: fileManager, markdownPath: markdownPath, isUnlisted: true)
+                    try await processMarkdown(markdownPath: markdownPath, isUnlisted: true)
                 }
             }
 
@@ -106,20 +104,20 @@ struct SourceLoader: Sendable {
         return categorySet.sorted()
     }
 
-    private func findMarkdowns(fileManager: FileManager, in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
+    private func findMarkdowns(in directory: FilePath, excludePath: FilePath? = nil) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
 
         // Check if directory exists, if not, return empty array
-        guard fileManager.fileExists(atPath: directory.string) else {
+        guard fileManager.fileExists(atPath: directory) else {
             return markdownFiles
         }
 
         // Check for year-based directory conflicts only in contents directory
         if directory == configuration.sourceLayout.contents {
-            try checkForYearDirectoryConflicts(fileManager: fileManager, in: directory)
+            try checkForYearDirectoryConflicts(in: directory)
         }
 
-        let enumerator = fileManager.enumerator(atPath: directory.string)
+        let enumerator = fileManager.enumerator(atPath: directory)
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
                 let fullPath = directory.appending(file)
@@ -145,7 +143,7 @@ struct SourceLoader: Sendable {
         return markdownFiles
     }
 
-    private func processMarkdown(fileManager: FileManager, markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
+    private func processMarkdown(markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
         let baseCommit = await gitLogReader.baseCommit(for: markdownPath)
 
         // Get author and publish date from the base commit (either marker commit or original first commit)
@@ -153,7 +151,7 @@ struct SourceLoader: Sendable {
         let publishedAt = baseCommit?.date ?? Date()
 
         // Read and process markdown content
-        guard let markdownData = fileManager.contents(atPath: markdownPath.string),
+        guard let markdownData = fileManager.contents(atPath: markdownPath),
               let markdownContent = String(data: markdownData, encoding: .utf8)
         else {
             throw TuzuruError.fileNotFound(markdownPath.string)
@@ -199,44 +197,33 @@ struct SourceLoader: Sendable {
         )
     }
 
-    private func checkForYearDirectoryConflicts(fileManager: FileManager, in directory: FilePath) throws {
-        guard let contents = try? fileManager.contentsOfDirectory(atPath: directory.string) else {
+    private func checkForYearDirectoryConflicts(in directory: FilePath) throws {
+        guard let contents = try? fileManager.contentsOfDirectory(atPath: directory) else {
             return // Directory doesn't exist or is empty, no conflict possible
         }
 
         for item in contents {
-            #if canImport(Darwin)
-            var isDirectory: ObjCBool = false
-            #else
+            let itemPath = directory.appending(item.string)
             var isDirectory = false
-            #endif
-
-            let itemPath = directory.appending(item)
-            let fileExists = fileManager.fileExists(atPath: itemPath.string, isDirectory: &isDirectory)
-            #if canImport(Darwin)
-            let isDirectoryBool = isDirectory.boolValue
-            #else
-            let isDirectoryBool = isDirectory
-            #endif
-
-            if fileExists && isDirectoryBool {
-                if item.wholeMatch(of: /\d\d\d\d/) != nil {
+            let fileExists = fileManager.fileExists(atPath: itemPath, isDirectory: &isDirectory)
+            if fileExists && isDirectory {
+                if item.string.wholeMatch(of: /\d\d\d\d/) != nil {
                     throw TuzuruError.yearDirectoryConflict("Directory '\(item)' conflicts with yearly list generation. Year-based directories are reserved for automatically generated yearly index pages.")
                 }
             }
         }
     }
 
-    private func loadTemplates(fileManager: FileManager, templates: BlogTemplates) throws -> MustacheLibrary {
+    private func loadTemplates(templates: BlogTemplates) throws -> MustacheLibrary {
         var library = MustacheLibrary()
-        try loadTemplate(fileManager: fileManager, filePath: templates.layout, for: "layout", into: &library)
-        try loadTemplate(fileManager: fileManager, filePath: templates.post, for: "post", into: &library)
-        try loadTemplate(fileManager: fileManager, filePath: templates.list, for: "list", into: &library)
+        try loadTemplate(filePath: templates.layout, for: "layout", into: &library)
+        try loadTemplate(filePath: templates.post, for: "post", into: &library)
+        try loadTemplate(filePath: templates.list, for: "list", into: &library)
         return library
     }
 
-    private func loadTemplate(fileManager: FileManager, filePath: FilePath, for name: String, into library: inout MustacheLibrary) throws {
-        guard let data = fileManager.contents(atPath: filePath.string) else {
+    private func loadTemplate(filePath: FilePath, for name: String, into library: inout MustacheLibrary) throws {
+        guard let data = fileManager.contents(atPath: filePath) else {
             throw TuzuruError.templateNotFound(filePath.string)
         }
         try library.register(MustacheTemplate(string: String(decoding: data, as: UTF8.self)), named: name)
