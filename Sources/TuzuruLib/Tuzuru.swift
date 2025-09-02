@@ -33,7 +33,7 @@ public struct Tuzuru {
         let processedPosts = try await withThrowingTaskGroup(of: Post.self) { group in
             for rawPost in rawSource.posts {
                 group.addTask {
-                    try await processor.process(rawPost)
+                    try processor.process(rawPost)
                 }
             }
             

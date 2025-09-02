@@ -6,7 +6,7 @@ import Foundation
 struct MarkdownProcessorTests {
     
     @Test("Process markdown with H1 title")
-    func testProcessMarkdownWithH1Title() async throws {
+    func testProcessMarkdownWithH1Title() throws {
         let processor = MarkdownProcessor()
         let rawPost = RawPost(
             path: FilePath("/test/post.md"),
@@ -16,7 +16,7 @@ struct MarkdownProcessorTests {
             isUnlisted: false
         )
         
-        let processedPost = try await processor.process(rawPost)
+        let processedPost = try processor.process(rawPost)
         
         #expect(processedPost.title == "Actual Title")
         #expect(processedPost.htmlContent.contains("<p>This is the content of the post.</p>"))
@@ -26,7 +26,7 @@ struct MarkdownProcessorTests {
     }
     
     @Test("Process markdown without H1 title throws error")
-    func testProcessMarkdownWithoutH1Title() async throws {
+    func testProcessMarkdownWithoutH1Title() throws {
         let processor = MarkdownProcessor()
         let rawPost = RawPost(
             path: FilePath("/test/post.md"),
@@ -37,13 +37,13 @@ struct MarkdownProcessorTests {
         )
         
         // Should throw an error when no H1 title is found
-        await #expect(throws: TuzuruError.self) {
-            try await processor.process(rawPost)
+        #expect(throws: TuzuruError.self) {
+            try processor.process(rawPost)
         }
     }
     
     @Test("Process markdown with URL conversion")
-    func testProcessMarkdownWithURLs() async throws {
+    func testProcessMarkdownWithURLs() throws {
         let processor = MarkdownProcessor()
         let rawPost = RawPost(
             path: FilePath("/test/post.md"),
@@ -53,14 +53,14 @@ struct MarkdownProcessorTests {
             isUnlisted: false
         )
         
-        let processedPost = try await processor.process(rawPost)
+        let processedPost = try processor.process(rawPost)
         
         #expect(processedPost.htmlContent.contains("<a href=\"https://example.com\">https://example.com</a>"))
         #expect(processedPost.title == "Test")
     }
     
     @Test("Process markdown with code blocks")
-    func testProcessMarkdownWithCodeBlocks() async throws {
+    func testProcessMarkdownWithCodeBlocks() throws {
         let processor = MarkdownProcessor()
         let rawPost = RawPost(
             path: FilePath("/test/post.md"),
@@ -70,7 +70,7 @@ struct MarkdownProcessorTests {
             isUnlisted: false
         )
         
-        let processedPost = try await processor.process(rawPost)
+        let processedPost = try processor.process(rawPost)
         
         #expect(processedPost.htmlContent.contains("<code"))
         #expect(processedPost.htmlContent.contains("&lt;p&gt;test&lt;/p&gt;")) // HTML should be escaped in code blocks
@@ -78,7 +78,7 @@ struct MarkdownProcessorTests {
     }
     
     @Test("Process generates excerpt")
-    func testProcessGeneratesExcerpt() async throws {
+    func testProcessGeneratesExcerpt() throws {
         let processor = MarkdownProcessor()
         let longContent = "# Test\n\n" + String(repeating: "This is a long paragraph with many words that should be truncated. ", count: 10)
         let rawPost = RawPost(
@@ -89,7 +89,7 @@ struct MarkdownProcessorTests {
             isUnlisted: false
         )
         
-        let processedPost = try await processor.process(rawPost)
+        let processedPost = try processor.process(rawPost)
         
         #expect(!processedPost.excerpt.isEmpty)
         #expect(processedPost.excerpt.count <= 150) // Should be limited to 150 characters
@@ -97,7 +97,7 @@ struct MarkdownProcessorTests {
     }
     
     @Test("Process preserves original post metadata")
-    func testProcessPreservesMetadata() async throws {
+    func testProcessPreservesMetadata() throws {
         let processor = MarkdownProcessor()
         let testDate = Date()
         let rawPost = RawPost(
@@ -108,7 +108,7 @@ struct MarkdownProcessorTests {
             isUnlisted: true
         )
         
-        let processedPost = try await processor.process(rawPost)
+        let processedPost = try processor.process(rawPost)
         
         #expect(processedPost.path == FilePath("/test/nested/post.md"))
         #expect(processedPost.author == "Original Author")

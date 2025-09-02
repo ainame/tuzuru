@@ -12,14 +12,7 @@ struct GenerateCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         // Load configuration
-        let blogConfig: BlogConfiguration
-        
-        do {
-            blogConfig = try Tuzuru.loadConfiguration(from: config)
-        } catch let error as BlogConfigurationLoader.LoadError {
-            print("❌ \(error.localizedDescription)")
-            return
-        }
+        let blogConfig = try Tuzuru.loadConfiguration(from: config)
 
         // Initialize Tuzuru with configuration
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)

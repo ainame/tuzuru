@@ -25,14 +25,7 @@ struct ImportCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         // Load configuration
-        let blogConfig: BlogConfiguration
-        
-        do {
-            blogConfig = try Tuzuru.loadConfiguration(from: config)
-        } catch let error as BlogConfigurationLoader.LoadError {
-            print("❌ \(error.localizedDescription)")
-            return
-        }
+        let blogConfig = try Tuzuru.loadConfiguration(from: config)
 
         let destinationPath = unlisted ? blogConfig.sourceLayout.unlisted.string : destination
 

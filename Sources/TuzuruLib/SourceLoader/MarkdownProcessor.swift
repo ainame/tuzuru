@@ -2,10 +2,8 @@ import Foundation
 import Markdown
 
 /// Handles processing raw markdown content to HTML with various transformations
-struct MarkdownProcessor: Sendable {
-    
-    @Sendable
-    func process(_ rawPost: RawPost) async throws -> Post {
+struct MarkdownProcessor {
+    func process(_ rawPost: RawPost) throws -> Post {
         // Parse markdown document
         let document = Document(parsing: rawPost.content)
         var destructor = MarkdownDestructor()
@@ -25,14 +23,13 @@ struct MarkdownProcessor: Sendable {
         let documentToProcess = processedDocument!
         
         // Process the document through the remaining pipeline
-        _ = xPostConverter.visit(documentToProcess)
+        xPostConverter.visit(documentToProcess)
             .flatMap { urlLinker.visit($0) }
             .flatMap { escaper.visit($0) }
             .flatMap {
                 // Walk for the same document
                 htmlFormatter.visit($0)
                 excerptWalker.visit($0)
-                return $0
             }
 
         // Return processed post with HTML content and extracted metadata
