@@ -31,10 +31,13 @@ struct GitCommitter {
     }
 
     private func addFileToGit(_ filePath: FilePath) async throws {
-        try await GitWrapper.run(arguments: [
-            "add",
-            filePath.string
-        ])
+        try await GitWrapper.run(
+            arguments: [
+                "add",
+                filePath.string
+            ],
+            workingDirectory: workingDirectory
+        )
     }
 
     private func commitWithAuthor(message: String, date: String, author: String) async throws {

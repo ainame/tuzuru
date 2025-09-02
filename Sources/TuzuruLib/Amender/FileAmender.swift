@@ -45,9 +45,8 @@ struct FileAmender {
         newAuthor: String?
     ) async throws {
         // Append an empty line to the file (minimal, invisible change)
-        let fileHandle = try FileHandle(
-            forWritingTo: URL(filePath: filePath.string, relativeTo: URL(string: fileManager.workingDirectory.string)),
-        )
+        let fullFilePath = fileManager.workingDirectory.appending(filePath.string)
+        let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: fullFilePath.string))
         defer { fileHandle.closeFile() }
         
         fileHandle.seekToEndOfFile()

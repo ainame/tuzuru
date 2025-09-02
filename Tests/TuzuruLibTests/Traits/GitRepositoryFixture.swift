@@ -40,18 +40,31 @@ final class GitRepositoryFixture: @unchecked Sendable {
             arguments: ["checkout", "-b", "main"],
             workingDirectory: path,
         )
+        
+        // Create initial commit to establish repository state
+        let _ = fileManager.createFile(atPath: FilePath(".gitkeep"), contents: Data())
+        try await GitWrapper.run(
+            arguments: ["add", ".gitkeep"],
+            workingDirectory: path
+        )
+        try await GitWrapper.run(
+            arguments: ["commit", "-m", "Initial repository setup"],
+            workingDirectory: path
+        )
     }
 
     func copyFixtures(from sourcePath: FilePath) throws {
-        let enumerator = fileManager.enumerator(atPath: sourcePath)
+        // Use FileManager.default for source operations since sourcePath is absolute
+        let sourceManager = FileManager.default
+        let enumerator = sourceManager.enumerator(atPath: sourcePath.string)
 
         while let relativePath = enumerator?.nextObject() as? String {
             let sourceFile = sourcePath.appending(relativePath)
-            let destFile = path.appending(relativePath)
+            let destFile = FilePath(relativePath)
 
-            var isDirectory = false
-            if fileManager.fileExists(atPath: sourceFile, isDirectory: &isDirectory) {
-                if isDirectory {
+            var isDirectory: ObjCBool = false
+            if sourceManager.fileExists(atPath: sourceFile.string, isDirectory: &isDirectory) {
+                if isDirectory.boolValue {
                     try fileManager.createDirectory(
                         atPath: destFile,
                         withIntermediateDirectories: true
@@ -62,7 +75,8 @@ final class GitRepositoryFixture: @unchecked Sendable {
                         atPath: destDir,
                         withIntermediateDirectories: true
                     )
-                    try fileManager.copyItem(atPath: sourceFile, toPath: destFile)
+                    // Copy from absolute source path to relative dest path
+                    try sourceManager.copyItem(atPath: sourceFile.string, toPath: fileManager.workingDirectory.appending(destFile.string).string)
                 }
             }
         }
@@ -87,11 +101,12 @@ final class GitRepositoryFixture: @unchecked Sendable {
 
     func createMarkerCommit(for fileName: String, field: String) async throws {
         // Add a minimal change to the file (like FileAmender does)
-        let fullPath = path.appending(fileName)
-        if fileManager.fileExists(atPath: fullPath) {
-            let existingContent = try String(contentsOfFile: fullPath.string, encoding: .utf8)
-            let newContent = existingContent + "\n"
-            try newContent.write(toFile: fullPath.string, atomically: true, encoding: .utf8)
+        let filePath = FilePath(fileName)
+        if fileManager.fileExists(atPath: filePath) {
+            let existingContent = fileManager.contents(atPath: filePath) ?? Data()
+            let existingString = String(data: existingContent, encoding: .utf8) ?? ""
+            let newContent = existingString + "\n"
+            let _ = fileManager.createFile(atPath: filePath, contents: newContent.data(using: .utf8) ?? Data())
         }
 
         let message = "[tuzuru amend] Updated \(field) for \(fileName)"
