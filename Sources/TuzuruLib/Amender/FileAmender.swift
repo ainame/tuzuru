@@ -3,17 +3,14 @@ import Foundation
 /// Handles amending file metadata by creating marker commits
 struct FileAmender {
     private let configuration: BlogConfiguration
-    private let fileManager: FileManager
-    private let workingDirectory: FilePath
+    private let fileManager: FileManagerWrapper
 
     init(
         configuration: BlogConfiguration,
-        fileManager: FileManager,
-        workingDirectory: FilePath,
+        fileManager: FileManagerWrapper,
     ) {
         self.configuration = configuration
         self.fileManager = fileManager
-        self.workingDirectory = workingDirectory
     }
     
     func amendFile(
@@ -21,17 +18,8 @@ struct FileAmender {
         newDate: String? = nil,
         newAuthor: String? = nil
     ) async throws {
-        // We can't rely on "shared" currentDirectoryPath on async env.
-        // If workingDirectory doesn't match currentDirectoryPath, fileManager can't find a file with relative path.
-        // In that case, extend the relative path with workingDirectory.
-        let filePath = if fileManager.currentDirectoryPath != workingDirectory.string {
-            workingDirectory.appending(filePath.string)
-        } else {
-            filePath
-        }
-
         // Verify file exists
-        guard fileManager.fileExists(atPath: filePath.string) else {
+        guard fileManager.fileExists(atPath: filePath) else {
             throw TuzuruError.fileNotFound(filePath.string)
         }
 
@@ -57,7 +45,9 @@ struct FileAmender {
         newAuthor: String?
     ) async throws {
         // Append an empty line to the file (minimal, invisible change)
-        let fileHandle = try FileHandle(forWritingTo: URL(filePath: filePath.string, relativeTo: URL(string: workingDirectory.string)))
+        let fileHandle = try FileHandle(
+            forWritingTo: URL(filePath: filePath.string, relativeTo: URL(string: fileManager.workingDirectory.string)),
+        )
         defer { fileHandle.closeFile() }
         
         fileHandle.seekToEndOfFile()
@@ -66,7 +56,7 @@ struct FileAmender {
         // Stage the file
         try await GitWrapper.run(
             arguments: ["add", filePath.string],
-            workingDirectory: workingDirectory,
+            workingDirectory: fileManager.workingDirectory,
         )
 
         // Build commit message
@@ -100,7 +90,7 @@ struct FileAmender {
         // Create the commit
         try await GitWrapper.run(
             arguments: commitArgs,
-            workingDirectory: workingDirectory,
+            workingDirectory: fileManager.workingDirectory,
         )
     }
 }

@@ -5,6 +5,7 @@ import Mustache
 public struct Tuzuru {
     private let sourceLoader: SourceLoader
     private let blogGenerator: BlogGenerator
+    private let amender: FileAmender
     private let configuration: BlogConfiguration
 
     public init(
@@ -12,7 +13,8 @@ public struct Tuzuru {
         configuration: BlogConfiguration,
     ) throws {
         sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
-        blogGenerator = try BlogGenerator(configuration: configuration, fileManager: FileManager.default)
+        blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
+        amender = FileAmender(configuration: configuration, fileManager: fileManager)
         self.configuration = configuration
     }
 
@@ -111,7 +113,6 @@ public struct Tuzuru {
         newAuthor: String? = nil,
         fileManager: FileManager = .default
     ) async throws {
-        let amender = FileAmender(configuration: configuration, fileManager: fileManager, workingDirectory: FilePath(fileManager.currentDirectoryPath))
         try await amender.amendFile(filePath: FilePath(filePath), newDate: newDate, newAuthor: newAuthor)
     }
     
