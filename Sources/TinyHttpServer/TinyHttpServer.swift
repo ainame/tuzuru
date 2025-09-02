@@ -61,10 +61,10 @@ public class TinyHttpServer {
             throw TinyHttpServerError.listenFailed
         }
 
+        print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
+        print("")
         print("🚀 Starting server on http://localhost:\(port)")
         print("📂 Serving directory: \(servePath)")
-        print("⚠️  This is a basic development server - not for production use")
-        print("🐛 Report issues at: https://github.com/ainame/Tuzuru/issues")
         print("🛑 Press Ctrl+C to stop")
 
         signal(SIGINT) { _ in exit(0) }
