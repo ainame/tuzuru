@@ -22,7 +22,7 @@ struct GitRepositoryFixtureTrait: TestTrait, SuiteTrait, TestScoping {
         performing function: @Sendable () async throws -> Void
     ) async throws {
         // Create a unique git repository for each test invocation
-        let repository = try await GitRepositoryFixture(fileManager: FileManager())
+        let repository = try await GitRepositoryFixture()
         defer { repository.clear() }
 
         try await Environment.$gitRepositoryFixture.withValue(repository) {

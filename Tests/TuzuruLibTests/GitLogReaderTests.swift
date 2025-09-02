@@ -147,7 +147,7 @@ struct GitLogReaderTests {
 
         // Test GitLogReader with non-existent file
         let gitLogReader = GitLogReader(
-            workingDirectory: FilePath(fixture.fileManager.currentDirectoryPath),
+            workingDirectory: fixture.fileManager.workingDirectory
         )
         let filePath = FilePath("non-existent.md")
         let baseCommit = await gitLogReader.baseCommit(for: filePath)

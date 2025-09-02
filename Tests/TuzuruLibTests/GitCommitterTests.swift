@@ -4,7 +4,7 @@ import Foundation
 
 @Suite
 struct GitCommitterTests {
-    let gitCommitter = GitCommitter()
+    let gitCommitter = GitCommitter(workingDirectory: FilePath("/tmp"))
     
     @Test("Generate import commit message")
     func generateImportCommitMessage() {

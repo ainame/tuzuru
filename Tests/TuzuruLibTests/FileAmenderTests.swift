@@ -17,8 +17,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: gitRepository.fileManager,
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         // Test amending with new date
@@ -51,8 +50,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: gitRepository.fileManager,
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         // Test amending with new author
@@ -85,8 +83,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: gitRepository.fileManager,
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         // Test amending with both new date and author
@@ -121,8 +118,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: gitRepository.fileManager,
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         // Test amending with invalid date format
@@ -143,8 +139,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: FileManager(),
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         // Test amending non-existent file
@@ -169,8 +164,7 @@ struct FileAmenderTests {
         let config = BlogConfiguration.default
         let fileAmender = FileAmender(
             configuration: config,
-            fileManager: gitRepository.fileManager,
-            workingDirectory: gitRepository.path,
+            fileManager: gitRepository.fileManager
         )
 
         let testFilePath = FilePath("contents/technology/swift-basics-for-beginners.md")

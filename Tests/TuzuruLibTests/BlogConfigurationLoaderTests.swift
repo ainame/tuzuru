@@ -6,9 +6,10 @@ import Testing
 struct BlogConfigurationLoaderTests {
     @Test
     func testLoadFullTuzuruJson() throws {
-        let loader = BlogConfigurationLoader()
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        let fileManager = FileManagerWrapper(workingDirectory: tempDir.path)
+        let loader = BlogConfigurationLoader(fileManager: fileManager)
+        try fileManager.createDirectory(atPath: FilePath(tempDir.path), withIntermediateDirectories: true)
         
         let fullConfig = """
         {
@@ -41,10 +42,10 @@ struct BlogConfigurationLoaderTests {
         try fullConfig.write(toFile: configPath, atomically: true, encoding: .utf8)
 
         defer {
-            try? FileManager.default.removeItem(at: tempDir)
+            try? fileManager.removeItem(atPath: FilePath(tempDir.path))
         }
 
-        let config = try loader.load(from: configPath)
+        let config = try loader.load(from: "tuzuru.json")
 
         #expect(config.metadata.blogName == "My Tech Blog")
         #expect(config.metadata.copyright == "My Tech Blog")
@@ -64,9 +65,10 @@ struct BlogConfigurationLoaderTests {
 
     @Test
     func testLoadMinimumTuzuruJsonWithDefaults() throws {
-        let loader = BlogConfigurationLoader()
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        let fileManager = FileManagerWrapper(workingDirectory: tempDir.path)
+        let loader = BlogConfigurationLoader(fileManager: fileManager)
+        try fileManager.createDirectory(atPath: FilePath(tempDir.path), withIntermediateDirectories: true)
 
         let minimumConfig = """
         {
@@ -84,10 +86,10 @@ struct BlogConfigurationLoaderTests {
         try minimumConfig.write(toFile: configPath, atomically: true, encoding: .utf8)
 
         defer {
-            try? FileManager.default.removeItem(at: tempDir)
+            try? fileManager.removeItem(atPath: FilePath(tempDir.path))
         }
 
-        let config = try loader.load(from: configPath)
+        let config = try loader.load(from: "tuzuru.json")
 
         // Verify explicitly provided metadata
         #expect(config.metadata.blogName == "Simple Blog")

@@ -5,21 +5,20 @@ import Testing
 
 final class GitRepositoryFixture: @unchecked Sendable {
     let path: FilePath
-    let fileManager: FileManager
+    let fileManager: FileManagerWrapper
 
-    init(fileManager: FileManager) async throws {
-        self.fileManager = fileManager
-
-        let tempDir = fileManager.temporaryDirectory
+    init() async throws {
+        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         let uniqueDir = tempDir.appendingPathComponent(UUID().uuidString)
         self.path = FilePath(uniqueDir.path)
+        self.fileManager = FileManagerWrapper(workingDirectory: self.path)
 
-        try fileManager.createDirectory(at: uniqueDir, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: self.path, withIntermediateDirectories: true)
         try await setupGitRepository()
     }
 
     func clear() {
-        try? fileManager.removeItem(atPath: path.string)
+        try? fileManager.removeItem(atPath: path)
     }
 
     private func setupGitRepository() async throws {
@@ -44,26 +43,26 @@ final class GitRepositoryFixture: @unchecked Sendable {
     }
 
     func copyFixtures(from sourcePath: FilePath) throws {
-        let enumerator = fileManager.enumerator(atPath: sourcePath.string)
+        let enumerator = fileManager.enumerator(atPath: sourcePath)
 
         while let relativePath = enumerator?.nextObject() as? String {
             let sourceFile = sourcePath.appending(relativePath)
             let destFile = path.appending(relativePath)
 
-            var isDirectory: ObjCBool = false
-            if fileManager.fileExists(atPath: sourceFile.string, isDirectory: &isDirectory) {
-                if isDirectory.boolValue {
+            var isDirectory = false
+            if fileManager.fileExists(atPath: sourceFile, isDirectory: &isDirectory) {
+                if isDirectory {
                     try fileManager.createDirectory(
-                        atPath: destFile.string,
-                        withIntermediateDirectories: true,
+                        atPath: destFile,
+                        withIntermediateDirectories: true
                     )
                 } else {
                     let destDir = destFile.removingLastComponent()
                     try fileManager.createDirectory(
-                        atPath: destDir.string,
-                        withIntermediateDirectories: true,
+                        atPath: destDir,
+                        withIntermediateDirectories: true
                     )
-                    try fileManager.copyItem(atPath: sourceFile.string, toPath: destFile.string)
+                    try fileManager.copyItem(atPath: sourceFile, toPath: destFile)
                 }
             }
         }
@@ -89,7 +88,7 @@ final class GitRepositoryFixture: @unchecked Sendable {
     func createMarkerCommit(for fileName: String, field: String) async throws {
         // Add a minimal change to the file (like FileAmender does)
         let fullPath = path.appending(fileName)
-        if fileManager.fileExists(atPath: fullPath.string) {
+        if fileManager.fileExists(atPath: fullPath) {
             let existingContent = try String(contentsOfFile: fullPath.string, encoding: .utf8)
             let newContent = existingContent + "\n"
             try newContent.write(toFile: fullPath.string, atomically: true, encoding: .utf8)
@@ -102,7 +101,7 @@ final class GitRepositoryFixture: @unchecked Sendable {
     func writeFile(at relativePath: String, content: String) throws {
         let fullPath = path.appending(relativePath)
         let directory = fullPath.removingLastComponent()
-        try fileManager.createDirectory(atPath: directory.string, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
         try content.write(toFile: fullPath.string, atomically: true, encoding: .utf8)
     }
 
