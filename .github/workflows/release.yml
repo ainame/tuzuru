@@ -14,76 +14,149 @@ on:
 permissions:
   contents: write
 
+env:
+  PRODUCT_NAME: tuzuru
+
 jobs:
   build-and-release:
-    runs-on: macos-latest
+    name: Build Universal Binaries and Release
+    runs-on: macos-15
+
     steps:
-      - uses: actions/checkout@v5
+    - name: Checkout
+      uses: actions/checkout@v5
 
-      - name: Install Swiftly for Linux cross-compilation
-        run: |
-          # Install Swiftly using the official macOS method to user directory
-          curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
-          installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
-          rm swiftly.pkg
+    - name: Setup Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
 
-          # Add to PATH for current session
-          echo "$HOME/.swiftly/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.swiftly/bin:$PATH"
+    - name: Get version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
 
-      - name: Get version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+    - name: Install Swiftly for Linux cross-compilation
+      run: |
+        # Install Swiftly using the official macOS method to user directory
+        curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
+        installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+        rm swiftly.pkg
+        
+        # Add to PATH for current session
+        echo "$HOME/.swiftly/bin" >> $GITHUB_PATH
+        export PATH="$HOME/.swiftly/bin:$PATH"
+        
+        # Initialize swiftly
+        swiftly init --assume-yes
+        
+        # Install Swift 6.1.2 for cross-compilation
+        swiftly install 6.1.2
+        swiftly use 6.1.2
 
-      - name: Build for release
-        run: |
-          swift build -c release --arch arm64 --arch x86_64
+    - name: Build Linux binaries
+      run: |
+        export PATH="$HOME/.swiftly/bin:$PATH"
+        
+        # Create build directories
+        mkdir -p build/linux/x86_64
+        mkdir -p build/linux/aarch64
+        
+        # Try to build for Linux x86_64 with static Swift stdlib only
+        # Remove full static linking due to cross-compilation issues with C dependencies
+        swift build -c release \
+          --static-swift-stdlib \
+          --triple x86_64-unknown-linux-gnu
+        cp .build/x86_64-unknown-linux-gnu/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        
+        # Clean build for next architecture
+        rm -rf .build
+        
+        # Build for Linux aarch64 with static Swift stdlib only
+        swift build -c release \
+          --static-swift-stdlib \
+          --triple aarch64-unknown-linux-gnu
+        cp .build/aarch64-unknown-linux-gnu/release/tuzuru build/linux/aarch64/${{ env.PRODUCT_NAME }}
+        
+        # Package Linux binaries
+        cd build/linux
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz -C x86_64 ${{ env.PRODUCT_NAME }}
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz -C aarch64 ${{ env.PRODUCT_NAME }}
+        
+        # Generate checksums for Linux binaries
+        shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
 
-      - name: Create universal binary and bundle
-        run: |
-          cp .build/apple/Products/Release/tuzuru tuzuru
-          chmod +x tuzuru
-          
-          # Copy bundle files from universal build (fixed structure)
-          cp -r .build/apple/Products/Release/tuzuru_TuzuruLib.bundle .
+    - name: Clean build directory before macOS build
+      run: rm -rf .build
 
-      - name: Test binary
-        run: |
-          ./tuzuru --help
+    - name: Build macOS binaries
+      run: |
+        # Create build directory
+        mkdir -p build/macos/universal
+        
+        # Build universal binary for macOS
+        swift build -c release --arch arm64 --arch x86_64
+        
+        # Copy binary and bundle
+        cp .build/apple/Products/Release/${{ env.PRODUCT_NAME }} build/macos/universal/${{ env.PRODUCT_NAME }}
+        chmod +x build/macos/universal/${{ env.PRODUCT_NAME }}
+        
+        # Copy bundle files from universal build
+        cp -r .build/apple/Products/Release/tuzuru_TuzuruLib.bundle build/macos/universal/
+        
+        # Package macOS binary
+        cd build/macos
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-universal.tar.gz -C universal ${{ env.PRODUCT_NAME }} tuzuru_TuzuruLib.bundle
+        
+        # Generate checksums for macOS binary
+        shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-checksums.txt
 
-      - name: Create tarball
-        run: |
-          tar -czf tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz tuzuru tuzuru_TuzuruLib.bundle
+    - name: Test Binaries
+      run: |
+        # Test macOS binary
+        build/macos/universal/${{ env.PRODUCT_NAME }} --version || echo "Version command not available"
+        build/macos/universal/${{ env.PRODUCT_NAME }} --help
+        
+        # Test Linux binaries (basic file check)
+        chmod +x build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        chmod +x build/linux/aarch64/${{ env.PRODUCT_NAME }}
+        file build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        file build/linux/aarch64/${{ env.PRODUCT_NAME }}
 
-      - name: Calculate SHA256
-        id: sha
-        run: |
-          SHA=$(shasum -a 256 tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz | cut -d ' ' -f 1)
-          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+    - name: Update Homebrew Formula
+      run: |
+        SHA=$(shasum -a 256 build/macos/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-universal.tar.gz | cut -d ' ' -f 1)
+        sed -i '' "s|url \".*\"|url \"https://github.com/ainame/Tuzuru/releases/download/${{ steps.version.outputs.version }}/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-universal.tar.gz\"|" Formula/tuzuru.rb
+        sed -i '' "s|sha256 \".*\"|sha256 \"$SHA\"|" Formula/tuzuru.rb
 
-      - name: Update Homebrew Formula
-        run: |
-          sed -i '' "s|url \".*\"|url \"https://github.com/ainame/Tuzuru/releases/download/${{ steps.version.outputs.version }}/tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz\"|" Formula/tuzuru.rb
-          sed -i '' "s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.sha256 }}\"|" Formula/tuzuru.rb
+    - name: Commit Formula Update
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add Formula/tuzuru.rb
+        git commit -m "chore: update Formula for ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+        git push origin HEAD:main || echo "Failed to push changes"
 
-      - name: Commit Formula update
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add Formula/tuzuru.rb
-          git commit -m "Update Formula for version ${{ steps.version.outputs.version }}" || exit 0
-          git push origin HEAD:main || exit 0
+    - name: Create Release and Upload All Assets
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Determine if prerelease
+        PRERELEASE_FLAG=""
+        if [[ "${{ steps.version.outputs.version }}" == *"alpha"* ]] || [[ "${{ steps.version.outputs.version }}" == *"beta"* ]] || [[ "${{ steps.version.outputs.version }}" == *"rc"* ]]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
 
-      - name: Create Release
-        run: |
-          gh release create "${{ steps.version.outputs.version }}" \
-            --title "Tuzuru ${{ steps.version.outputs.version }}" \
-            --generate-notes \
-            tuzuru-${{ steps.version.outputs.version }}-macos-universal.tar.gz
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Create release with all assets (macOS + Linux)
+        gh release create "${{ steps.version.outputs.version }}" \
+          --title "Tuzuru ${{ steps.version.outputs.version }}" \
+          --generate-notes \
+          $PRERELEASE_FLAG \
+          build/macos/universal/${{ env.PRODUCT_NAME }} \
+          build/macos/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-universal.tar.gz \
+          build/macos/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-checksums.txt \
+          build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz \
+          build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz \
+          build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
