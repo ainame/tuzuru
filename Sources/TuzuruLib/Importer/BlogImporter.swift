@@ -2,11 +2,6 @@ import Foundation
 
 /// Handles importing Hugo/Jekyll markdown files with YAML front matter to Tuzuru format
 struct BlogImporter {
-    private let parser = YAMLFrontMatterParser()
-    private let transformer = MarkdownTransformer()
-    private let shortcodeProcessor = HugoShortcodeProcessor()
-    private let gitCommitter = GitCommitter()
-    
     struct ImportOptions {
         let sourcePath: String
         let destinationPath: String
@@ -17,30 +12,40 @@ struct BlogImporter {
         let skippedCount: Int
         let errorCount: Int
     }
-    
+
+    private let fileManager: FileManagerWrapper
+    private let parser = YAMLFrontMatterParser()
+    private let transformer = MarkdownTransformer()
+    private let shortcodeProcessor = HugoShortcodeProcessor()
+    private let gitCommitter: GitCommitter
+
+    init(fileManager: FileManagerWrapper) {
+        self.fileManager = fileManager
+        self.gitCommitter = GitCommitter(workingDirectory: fileManager.workingDirectory)
+    }
+
     /// Imports markdown files from source directory to destination
     /// - Parameters:
     ///   - options: Import configuration options
     ///   - dryRun: If true, no files will be modified
     /// - Returns: ImportResult with counts of imported, skipped, and error files
     func importFiles(options: ImportOptions, dryRun: Bool = false) async throws -> ImportResult {
-        let fileManager = FileManager.default
         let sourceDir = FilePath(options.sourcePath)
         let destinationDir = FilePath(options.destinationPath)
         
         // Validate source directory
-        guard fileManager.fileExists(atPath: sourceDir.string) else {
+        guard fileManager.fileExists(atPath: sourceDir) else {
             throw ImportError.sourceDirectoryNotFound(options.sourcePath)
         }
         
         // Create destination directory if needed
         if !dryRun {
-            try fileManager.createDirectory(atPath: destinationDir.string, withIntermediateDirectories: true)
+            try fileManager.createDirectory(atPath: destinationDir, withIntermediateDirectories: true)
         }
         
         // Find markdown files
-        let markdownFiles = try findMarkdownFiles(in: sourceDir, fileManager: fileManager)
-        
+        let markdownFiles = try findMarkdownFiles(in: sourceDir)
+
         if markdownFiles.isEmpty {
             print("📝 No markdown files found in \(options.sourcePath)")
             return ImportResult(importedCount: 0, skippedCount: 0, errorCount: 0)
@@ -62,7 +67,6 @@ struct BlogImporter {
                 let success = try await processFile(
                     sourcePath: markdownFile,
                     destinationDir: destinationDir,
-                    fileManager: fileManager,
                     options: options,
                     dryRun: dryRun
                 )
@@ -83,10 +87,10 @@ struct BlogImporter {
     
     // MARK: - Private Methods
     
-    private func findMarkdownFiles(in directory: FilePath, fileManager: FileManager) throws -> [FilePath] {
+    private func findMarkdownFiles(in directory: FilePath) throws -> [FilePath] {
         var markdownFiles: [FilePath] = []
         
-        let enumerator = fileManager.enumerator(atPath: directory.string)
+        let enumerator = fileManager.enumerator(atPath: directory)
         while let file = enumerator?.nextObject() as? String {
             if file.lowercased().hasSuffix(".md") || file.lowercased().hasSuffix(".markdown") {
                 markdownFiles.append(directory.appending(file))
@@ -99,12 +103,11 @@ struct BlogImporter {
     private func processFile(
         sourcePath: FilePath,
         destinationDir: FilePath,
-        fileManager: FileManager,
         options: ImportOptions,
         dryRun: Bool
     ) async throws -> Bool {
         // Read source file
-        guard let sourceData = fileManager.contents(atPath: sourcePath.string),
+        guard let sourceData = fileManager.contents(atPath: sourcePath),
               let sourceContent = String(data: sourceData, encoding: .utf8) else {
             throw ImportError.cannotReadFile(sourcePath.string)
         }
@@ -132,7 +135,7 @@ struct BlogImporter {
         let destinationPath = destinationDir.appending(sourceFilename)
         
         // Check if destination file already exists
-        if !dryRun && fileManager.fileExists(atPath: destinationPath.string) {
+        if !dryRun && fileManager.fileExists(atPath: destinationPath) {
             print("⚠️  File already exists: \(destinationPath.string)")
             throw ImportError.destinationFileExists(destinationPath.string)
         }

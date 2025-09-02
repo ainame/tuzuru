@@ -3,6 +3,11 @@ import Foundation
 /// Handles git operations for creating commits with custom dates
 struct GitCommitter {
     private let iso8601DateFormatter = ISO8601DateFormatter()
+    private let workingDirectory: FilePath
+
+    init(workingDirectory: FilePath) {
+        self.workingDirectory = workingDirectory
+    }
 
     /// Creates a git commit for a file with a custom date
     /// - Parameters:
@@ -33,20 +38,26 @@ struct GitCommitter {
     }
 
     private func commitWithAuthor(message: String, date: String, author: String) async throws {
-        try await GitWrapper.run(arguments: [
-            "commit",
-            "-m", message,
-            "--date", date,
-            "--author", author
-        ])
+        try await GitWrapper.run(
+            arguments: [
+                "commit",
+                "-m", message,
+                "--date", date,
+                "--author", author
+            ],
+            workingDirectory: workingDirectory,
+        )
     }
 
     private func commitWithoutAuthor(message: String, date: String) async throws {
-        try await GitWrapper.run(arguments: [
-            "commit",
-            "-m", message,
-            "--date", date
-        ])
+        try await GitWrapper.run(
+            arguments: [
+                "commit",
+                "-m", message,
+                "--date", date
+            ],
+            workingDirectory: workingDirectory,
+        )
     }
 
     /// Creates multiple commits for a batch of files
@@ -69,13 +80,16 @@ struct GitCommitter {
     /// - Returns: Author string in "Name <email>" format
     /// - Throws: GitCommitterError if the operation fails
     private func getCurrentAuthor(filePath: FilePath) async throws -> String {
-        let output = try await GitWrapper.run(arguments: [
-            "log",
-            "-1",
-            "--format=%an <%ae>",
-            "--",
-            filePath.string
-        ])
+        let output = try await GitWrapper.run(
+            arguments: [
+                "log",
+                "-1",
+                "--format=%an <%ae>",
+                "--",
+                filePath.string
+            ],
+            workingDirectory: workingDirectory,
+        )
 
         guard !output.isEmpty else {
             throw GitCommitterError.commandFailed("git log", "No commit found for file")

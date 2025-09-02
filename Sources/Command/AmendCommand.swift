@@ -26,7 +26,8 @@ struct AmendCommand: AsyncParsableCommand {
         }
 
         let blogConfig = try Tuzuru.loadConfiguration(from: config)
-        let tuzuru = try Tuzuru(configuration: blogConfig)
+        let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
 
         try await tuzuru.amendFile(
             filePath: filePath,

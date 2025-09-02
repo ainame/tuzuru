@@ -22,7 +22,8 @@ struct GenerateCommand: AsyncParsableCommand {
         }
 
         // Initialize Tuzuru with configuration
-        let tuzuru = try Tuzuru(configuration: blogConfig)
+        let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
 
         print("🔍 Scanning for markdown files in \(blogConfig.sourceLayout.contents.string)/...")
 

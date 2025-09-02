@@ -37,7 +37,8 @@ struct ImportCommand: AsyncParsableCommand {
         let destinationPath = unlisted ? blogConfig.sourceLayout.unlisted.string : destination
 
         // Initialize Tuzuru with configuration
-        let tuzuru = try Tuzuru(configuration: blogConfig)
+        let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
         let result = try await tuzuru.importFiles(from: sourcePath, to: destinationPath, dryRun: dryRun)
 
         // Summary

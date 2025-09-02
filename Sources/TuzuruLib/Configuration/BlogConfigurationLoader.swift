@@ -25,9 +25,7 @@ public struct BlogConfigurationLoader {
     /// - Parameter configPath: Optional path to configuration file. If nil, uses "tuzuru.json" in current directory
     /// - Returns: Loaded BlogConfiguration
     /// - Throws: LoadError if file not found or invalid
-    public func load(from configPath: String? = nil) throws -> BlogConfiguration {
-        let finalPath: String
-        
+    public func load(from configPath: String? = nil) throws -> BlogConfiguration {        
         let configPath = configPath ?? "tuzuru.json"
         guard fileManager.fileExists(atPath: FilePath(configPath)) else {
             throw LoadError.configFileNotFound(configPath)

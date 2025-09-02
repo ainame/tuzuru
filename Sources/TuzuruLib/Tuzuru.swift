@@ -6,7 +6,9 @@ public struct Tuzuru {
     private let sourceLoader: SourceLoader
     private let blogGenerator: BlogGenerator
     private let amender: FileAmender
+    private let importer: BlogImporter
     private let configuration: BlogConfiguration
+    private let fileManager: FileManagerWrapper
 
     public init(
         fileManager: FileManagerWrapper,
@@ -15,7 +17,9 @@ public struct Tuzuru {
         sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
         blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
         amender = FileAmender(configuration: configuration, fileManager: fileManager)
+        importer = BlogImporter(fileManager: fileManager)
         self.configuration = configuration
+        self.fileManager = fileManager
     }
 
     public func loadSources(_: BlogSourceLayout) async throws -> Source {
@@ -29,7 +33,8 @@ public struct Tuzuru {
     // MARK: - Static Configuration Methods
     
     public static func loadConfiguration(from path: String?) throws -> BlogConfiguration {
-        let loader = BlogConfigurationLoader()
+        let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
+        let loader = BlogConfigurationLoader(fileManager: fileManager)
         return try loader.load(from: path)
     }
     
@@ -82,7 +87,6 @@ public struct Tuzuru {
             destinationPath: destinationPath
         )
         
-        let importer = BlogImporter()
         let result = try await importer.importFiles(options: options, dryRun: dryRun)
         return ImportResult(
             importedCount: result.importedCount,
