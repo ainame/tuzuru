@@ -4,6 +4,7 @@ import Foundation
 struct FileAmender {
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
+    private let gitLogReader: GitLogReader
 
     init(
         configuration: BlogConfiguration,
@@ -11,6 +12,7 @@ struct FileAmender {
     ) {
         self.configuration = configuration
         self.fileManager = fileManager
+        self.gitLogReader = GitLogReader(workingDirectory: fileManager.workingDirectory)
     }
     
     func amendFile(
@@ -44,6 +46,23 @@ struct FileAmender {
         newDate: Date?,
         newAuthor: String?
     ) async throws {
+        // Get previous marker commit to inherit unchanged metadata
+        let previousCommit = await gitLogReader.baseCommit(for: filePath)
+        
+        // Determine final author and date, inheriting from previous marker commit when unchanged
+        let finalAuthor: String?
+        let finalDate: Date?
+        
+        if let previousCommit = previousCommit, previousCommit.commitMessage.hasPrefix("[tuzuru amend]") {
+            // Previous marker commit exists, inherit unchanged values
+            finalAuthor = newAuthor ?? previousCommit.author
+            finalDate = newDate ?? previousCommit.date
+        } else {
+            // No previous marker commit, use provided values only
+            finalAuthor = newAuthor
+            finalDate = newDate
+        }
+        
         // Append an empty line to the file (minimal, invisible change)
         let fullFilePath = fileManager.workingDirectory.appending(filePath.string)
         let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: fullFilePath.string))
@@ -72,17 +91,17 @@ struct FileAmender {
         // Build git commit arguments
         var commitArgs = ["commit", "-m", commitMessage]
         
-        // Add custom author if provided
-        if let newAuthor = newAuthor {
-            commitArgs.append("--author=\(newAuthor) <\(newAuthor.lowercased().replacingOccurrences(of: " ", with: ""))@tuzuru.amend>")
+        // Add author if we have one (either new or inherited)
+        if let finalAuthor = finalAuthor {
+            commitArgs.append("--author=\(finalAuthor) <\(finalAuthor.lowercased().replacingOccurrences(of: " ", with: ""))@tuzuru.amend>")
         }
         
-        // Add custom date if provided
-        if let newDate = newDate {
+        // Add date if we have one (either new or inherited)
+        if let finalDate = finalDate {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
             formatter.timeZone = TimeZone.current
-            let dateString = formatter.string(from: newDate)
+            let dateString = formatter.string(from: finalDate)
             commitArgs.append("--date=\(dateString)")
         }
 

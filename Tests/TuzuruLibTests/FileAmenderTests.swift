@@ -190,4 +190,66 @@ struct FileAmenderTests {
         #expect(baseCommit?.commitMessage.contains("author") == true)
         #expect(baseCommit?.author == "Updated Author")
     }
+
+    @Test
+    func testAmendOnlyDateInheritsAuthorFromPreviousMarkerCommit() async throws {
+        let gitRepository = Environment.gitRepositoryFixture!
+        try gitRepository.copyFixtures(from: Environment.fixturePath)
+
+        // Create initial commit (uses git config: "Test User")
+        try await gitRepository.createCommit(message: "Initial commit with demo content")
+
+        let config = BlogConfiguration.default
+        let fileAmender = FileAmender(
+            configuration: config,
+            fileManager: gitRepository.fileManager
+        )
+
+        let testFilePath = FilePath("contents/technology/swift-basics-for-beginners.md")
+
+        // First amend - change both author and date (author=Satoshi2, date=2025-10-02)
+        try await fileAmender.amendFile(
+            filePath: testFilePath,
+            newDate: "2025-10-02",
+            newAuthor: "Satoshi2"
+        )
+
+        // Verify first marker commit was created correctly
+        let gitLogReader = GitLogReader(workingDirectory: gitRepository.path)
+        var baseCommit = await gitLogReader.baseCommit(for: testFilePath)
+        
+        #expect(baseCommit != nil)
+        #expect(baseCommit?.commitMessage.hasPrefix("[tuzuru amend]") == true)
+        #expect(baseCommit?.commitMessage.contains("publishedAt and author") == true)
+        #expect(baseCommit?.author == "Satoshi2")
+
+        // Second amend - change ONLY the date to 2025-10-03
+        // This should inherit author=Satoshi2 from the previous marker commit
+        // NOT fall back to git config ("Test User")
+        try await fileAmender.amendFile(
+            filePath: testFilePath,
+            newDate: "2025-10-03"
+        )
+
+        // Verify second marker commit preserves the author from previous marker commit
+        baseCommit = await gitLogReader.baseCommit(for: testFilePath)
+        
+        #expect(baseCommit != nil)
+        #expect(baseCommit?.commitMessage.hasPrefix("[tuzuru amend]") == true)
+        #expect(baseCommit?.commitMessage.contains("publishedAt") == true)
+        #expect(baseCommit?.commitMessage.contains("author") == false) // Only date was updated
+        
+        // CRITICAL TEST: Author should be inherited from previous marker commit (Satoshi2)
+        // NOT from git config (Test User)
+        #expect(baseCommit?.author == "Satoshi2", "Author should be inherited from previous marker commit, not git config")
+        
+        // Verify date was updated correctly
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let expectedDate = dateFormatter.date(from: "2025-10-03")!
+        
+        // Allow some tolerance for date comparison (within same day)
+        let calendar = Calendar.current
+        #expect(calendar.isDate(baseCommit!.date, inSameDayAs: expectedDate))
+    }
 }
