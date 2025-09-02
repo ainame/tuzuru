@@ -65,6 +65,20 @@ Tuzuru is a static blog generator CLI tool written in Swift that converts markdo
 - Properties/Methods: camelCase with descriptive names
 - Use descriptive method names like `loadSources(_:)`, `generate(_:)`
 
+### File operations
+
+To support swift-testing or modern APIs using async/await; ie `Subprocess`, this project got `FileManagerWrapper`.
+`FileManagerWrapper` is a thin wrapper that prevernts us from using unsafe APIs in concurrent context.
+It also offers FilePath as currency type instead of URL or String path.
+
+Please try to inject `FileManagerWrapper` from the upstream code when possible.
+Never use `FileManager.default` directly.
+
+Especially, when you need to work with Subprocess or GitWrapper,
+you must give `FileManagerWrapper.workingDirectory` to ensure you run command at right place.
+This is for testing purpose due to swift-testing's parallel execution.
+`GitRepositoryFixtureTrait` works on top of that way.
+
 ## Testing
 
 ### Unit testing
