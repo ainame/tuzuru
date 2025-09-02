@@ -1,8 +1,7 @@
 import Foundation
-import Markdown
 import Mustache
 
-/// Handles loading and processing source content from markdown files
+/// Handles loading raw source content from markdown files (without processing)
 struct SourceLoader: Sendable {
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
@@ -18,31 +17,31 @@ struct SourceLoader: Sendable {
     }
 
     @Sendable
-    func loadSources() async throws -> Source {
+    func loadSources() async throws -> RawSource {
         let templates = try loadTemplates(templates: configuration.sourceLayout.templates)
-        var source = Source(metadata: configuration.metadata, templates: templates, posts: [], years: [], categories: [])
+        var source = RawSource(metadata: configuration.metadata, templates: templates, posts: [], years: [], categories: [])
 
         // Find markdown files in contents directory (excluding unlisted subdirectory)
         let contentsFiles = try findMarkdowns(in: configuration.sourceLayout.contents, excludePath: configuration.sourceLayout.unlisted)
         // Find markdown files in unlisted directory
         let unlistedFiles = try findMarkdowns(in: configuration.sourceLayout.unlisted)
 
-        source.posts = try await withThrowingTaskGroup(of: Post?.self) { group in
+        source.posts = try await withThrowingTaskGroup(of: RawPost?.self) { group in
             // Process regular content files
             for markdownPath in contentsFiles {
                 group.addTask {
-                    try await processMarkdown(markdownPath: markdownPath, isUnlisted: false)
+                    try await process(markdownPath: markdownPath, isUnlisted: false)
                 }
             }
 
             // Process unlisted content files
             for markdownPath in unlistedFiles {
                 group.addTask {
-                    try await processMarkdown(markdownPath: markdownPath, isUnlisted: true)
+                    try await process(markdownPath: markdownPath, isUnlisted: true)
                 }
             }
 
-            var posts = [Post]()
+            var posts = [RawPost]()
             for try await result in group {
                 if let result {
                     posts.append(result)
@@ -52,9 +51,9 @@ struct SourceLoader: Sendable {
         }
 
         // Sort pages by publish date (newest first)
-        source.posts.sort { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+        source.posts.sort { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.path.string > $1.path.string }
 
-        // Extract years and categories from posts
+        // Extract years and categories from posts (using raw posts)
         source.years = extractYears(from: source.posts)
         source.categories = extractCategories(from: source.posts)
 
@@ -63,7 +62,7 @@ struct SourceLoader: Sendable {
 
     // MARK: - Private Methods
 
-    private func extractYears(from posts: [Post]) -> [String] {
+    private func extractYears(from posts: [RawPost]) -> [String] {
         // Extract years from listed posts only
         let listedPosts = posts.filter { !$0.isUnlisted }
         let calendar = Calendar.current
@@ -73,7 +72,7 @@ struct SourceLoader: Sendable {
         return yearSet.sorted(by: >)
     }
 
-    private func extractCategories(from posts: [Post]) -> [String] {
+    private func extractCategories(from posts: [RawPost]) -> [String] {
         // Extract top-level directories from listed posts only
         let listedPosts = posts.filter { !$0.isUnlisted }
         var categorySet = Set<String>()
@@ -143,56 +142,25 @@ struct SourceLoader: Sendable {
         return markdownFiles
     }
 
-    private func processMarkdown(markdownPath: FilePath, isUnlisted: Bool) async throws -> Post? {
+    private func process(markdownPath: FilePath, isUnlisted: Bool) async throws -> RawPost? {
         let baseCommit = await gitLogReader.baseCommit(for: markdownPath)
 
         // Get author and publish date from the base commit (either marker commit or original first commit)
         let author = baseCommit?.author ?? "Unknown"
         let publishedAt = baseCommit?.date ?? Date()
 
-        // Read and process markdown content
+        // Read raw markdown content
         guard let markdownData = fileManager.contents(atPath: markdownPath),
               let markdownContent = String(data: markdownData, encoding: .utf8)
         else {
             throw TuzuruError.fileNotFound(markdownPath.string)
         }
 
-        // * Extract title from markdown file (first # header or filename)
-        // * Escape HTML tags in code blocks
-        // * Convert Markdown to HTML
-        // * Cite first 150 chars
-        // * Convert X post URLs to embed HTML before markdown processing
-        let document = Document(parsing: markdownContent)
-        var destructor = MarkdownDestructor()
-        var xPostConverter = XPostLinkConverter()
-        var urlLinker = URLLinker()
-        var escaper = CodeBlockHTMLEscaper()
-        var htmlFormatter = HTMLFormatter()
-        var excerptWalker = MarkdownExcerptWalker(maxLength: 150)
-
-        destructor.visit(document)
-            .flatMap { xPostConverter.visit($0) }
-            .flatMap { urlLinker.visit($0) }
-            .flatMap { escaper.visit($0) }
-            .flatMap {
-                // Walk for the same document
-                htmlFormatter.visit($0)
-                excerptWalker.visit($0)
-            }
-
-        guard let title = destructor.title else {
-            print("title is missing in \(markdownPath.string) ")
-            return nil
-        }
-
-        return Post(
+        return RawPost(
             path: markdownPath,
-            title: title,
             author: author,
             publishedAt: publishedAt,
-            excerpt: excerptWalker.result,
             content: markdownContent,
-            htmlContent: htmlFormatter.result,
             isUnlisted: isUnlisted
         )
     }

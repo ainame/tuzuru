@@ -27,23 +27,29 @@ struct GenerateCommand: AsyncParsableCommand {
 
         print("🔍 Scanning for markdown files in \(blogConfig.sourceLayout.contents.string)/...")
 
-        // Load sources (scan markdown files and get git info)
-        let source = try await tuzuru.loadSources(blogConfig.sourceLayout)
+        // Phase 1: Load sources (scan markdown files and get git info)
+        let rawSource = try await tuzuru.loadSources(blogConfig.sourceLayout)
 
-        print("📝 Found \(source.posts.count) posts")
-        for post in source.posts {
+        print("📝 Found \(rawSource.posts.count) posts")
+
+        print("🔄 Processing markdown content...")
+
+        // Phase 2: Process contents (convert markdown to HTML)
+        let processedSource = try await tuzuru.processContents(rawSource)
+
+        for post in processedSource.posts {
             print("  - \(post.title) by \(post.author)")
         }
 
         print("🚀 Generating site...")
 
-        // Generate the site - now returns simple FilePath
-        let outputDirectory = try await tuzuru.generate(source)
+        // Phase 3: Generate the site
+        let outputDirectory = try await tuzuru.generate(processedSource)
 
         print("✅ Site generated successfully in \(outputDirectory.string)/")
         print("📄 Generated:")
         print("  - \(blogConfig.output.indexFileName) (list page)")
-        let displayPaths = tuzuru.generateDisplayPaths(for: source)
+        let displayPaths = tuzuru.generateDisplayPaths(for: processedSource)
         for postName in displayPaths {
             print("  - \(postName)")
         }

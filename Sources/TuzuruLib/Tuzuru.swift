@@ -4,6 +4,7 @@ import Mustache
 
 public struct Tuzuru {
     private let sourceLoader: SourceLoader
+    private let markdownProcessor: MarkdownProcessor
     private let blogGenerator: BlogGenerator
     private let amender: FileAmender
     private let importer: BlogImporter
@@ -15,6 +16,7 @@ public struct Tuzuru {
         configuration: BlogConfiguration,
     ) throws {
         sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
+        markdownProcessor = MarkdownProcessor()
         blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
         amender = FileAmender(configuration: configuration, fileManager: fileManager)
         importer = BlogImporter(fileManager: fileManager)
@@ -22,8 +24,34 @@ public struct Tuzuru {
         self.fileManager = fileManager
     }
 
-    public func loadSources(_: BlogSourceLayout) async throws -> Source {
+    public func loadSources(_: BlogSourceLayout) async throws -> RawSource {
         try await sourceLoader.loadSources()
+    }
+
+    public func processContents(_ rawSource: RawSource) async throws -> Source {
+        let processor = markdownProcessor
+        let processedPosts = try await withThrowingTaskGroup(of: Post.self) { group in
+            for rawPost in rawSource.posts {
+                group.addTask {
+                    try await processor.process(rawPost)
+                }
+            }
+            
+            var processedPosts = [Post]()
+            for try await processedPost in group {
+                processedPosts.append(processedPost)
+            }
+            return processedPosts
+        }
+        
+        // Create processed Source with the same metadata and templates
+        return Source(
+            metadata: rawSource.metadata,
+            templates: rawSource.templates,
+            posts: processedPosts,
+            years: rawSource.years,
+            categories: rawSource.categories
+        )
     }
 
     public func generate(_ source: Source) async throws -> FilePath {
