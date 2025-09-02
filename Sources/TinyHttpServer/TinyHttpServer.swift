@@ -6,6 +6,20 @@ import Darwin
 import Glibc
 #endif
 
+/// A very basic HTTP server for local development and testing purposes only.
+///
+/// WARNING: This is NOT a production-ready HTTP server and should never be used
+/// in production environments. It lacks many essential features including:
+/// - Security measures and input validation
+/// - Proper error handling and recovery
+/// - HTTP/1.1 compliance beyond basic GET requests
+/// - Support for request headers, cookies, authentication
+/// - Connection pooling and resource management
+/// - Performance optimizations
+///
+/// This server is intended solely for serving static files during local development
+/// of the Tuzuru static blog generator.
+
 public class TinyHttpServer {
     private let port: Int
     private let servePath: String
@@ -43,6 +57,8 @@ public class TinyHttpServer {
             throw TinyHttpServerError.listenFailed
         }
 
+        print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
+        print("")
         print("🚀 Starting server on http://localhost:\(port)")
         print("📂 Serving directory: \(servePath)")
         print("🛑 Press Ctrl+C to stop")
@@ -62,7 +78,7 @@ public class TinyHttpServer {
                 }
 
                 guard clientSocket != -1 else { continue }
-                
+
                 group.addTask {
                     TinyHttpServer.handleClientStatic(clientSocket, servePath: servePath)
                 }
