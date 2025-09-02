@@ -1,7 +1,8 @@
 import Foundation
 
 public struct BlogConfigurationLoader {
-    
+    private let fileManager: FileManagerWrapper
+
     public enum LoadError: Error, LocalizedError {
         case configFileNotFound(String)
         case invalidConfigurationData(Error)
@@ -16,8 +17,10 @@ public struct BlogConfigurationLoader {
         }
     }
     
-    public init() {}
-    
+    public init(fileManager: FileManagerWrapper) {
+        self.fileManager = fileManager
+    }
+
     /// Loads BlogConfiguration from the specified path, or from default "tuzuru.json" in current directory
     /// - Parameter configPath: Optional path to configuration file. If nil, uses "tuzuru.json" in current directory
     /// - Returns: Loaded BlogConfiguration
@@ -25,19 +28,14 @@ public struct BlogConfigurationLoader {
     public func load(from configPath: String? = nil) throws -> BlogConfiguration {
         let finalPath: String
         
-        if let configPath = configPath {
-            finalPath = configPath
-        } else {
-            let currentPath = FilePath(FileManager.default.currentDirectoryPath)
-            finalPath = currentPath.appending("tuzuru.json").string
-        }
-        
-        guard FileManager.default.fileExists(atPath: finalPath) else {
-            throw LoadError.configFileNotFound(finalPath)
+        let configPath = configPath ?? "tuzuru.json"
+        guard fileManager.fileExists(atPath: FilePath(configPath)) else {
+            throw LoadError.configFileNotFound(configPath)
         }
         
         do {
-            let configData = try Data(contentsOf: URL(fileURLWithPath: finalPath))
+            let url = URL(fileURLWithPath: fileManager.workingDirectory.appending(configPath).string)
+            let configData = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             return try decoder.decode(BlogConfiguration.self, from: configData)
         } catch {
