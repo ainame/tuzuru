@@ -8,13 +8,12 @@ struct InitCommand: AsyncParsableCommand {
     )
 
     mutating func run() async throws {
-        let currentPath = FilePath(FileManager.default.currentDirectoryPath)
-        let fileManager = FileManager.default
+        let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
 
         print("🚀 Initializing new Tuzuru site...")
 
         do {
-            try await Tuzuru.initializeBlog(at: currentPath, fileManager: fileManager)
+            try await Tuzuru.initializeBlog(fileManager: fileManager)
             
             print("⚙️ Generated tuzuru.json")
             print("  ✅ Created tuzuru.json")

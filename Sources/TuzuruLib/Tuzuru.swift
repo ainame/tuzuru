@@ -37,10 +37,11 @@ public struct Tuzuru {
     
     // MARK: - Initialization Methods
     
-    public static func initializeBlog(at path: FilePath, fileManager: FileManager = .default) async throws {
+    public static func initializeBlog(fileManager: FileManagerWrapper) async throws {
         // Check if tuzuru.json already exists
+        let path = fileManager.workingDirectory
         let configPath = path.appending("tuzuru.json")
-        if fileManager.fileExists(atPath: configPath.string) {
+        if fileManager.fileExists(atPath: configPath) {
             throw TuzuruError.configurationAlreadyExists
         }
 
@@ -67,7 +68,7 @@ public struct Tuzuru {
         ]
 
         for directory in directories {
-            try fileManager.createDirectory(atPath: directory.string, withIntermediateDirectories: true)
+            try fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
         }
     }
     

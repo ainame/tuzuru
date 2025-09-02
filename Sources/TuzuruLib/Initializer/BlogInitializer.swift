@@ -1,10 +1,10 @@
 import Foundation
 
 public struct BlogInitializer {
-    private let fileManager: FileManager
+    private let fileManager: FileManagerWrapper
     private let bundle: Bundle
     
-    public init(fileManager: FileManager = .default, bundle: Bundle? = nil) {
+    public init(fileManager: FileManagerWrapper, bundle: Bundle? = nil) {
         self.fileManager = fileManager
         self.bundle = bundle ?? Bundle.module
     }
@@ -22,8 +22,6 @@ public struct BlogInitializer {
             throw TuzuruError.templateNotFound("\(directoryName) directory")
         }
 
-        let bundleDirectoryURL = URL(fileURLWithPath: bundleDirectoryPath)
-        let destinationURL = URL(fileURLWithPath: destinationDirectory.string)
-        try fileManager.copyItem(at: bundleDirectoryURL, to: destinationURL)
+        try fileManager.copyItem(atPath: FilePath(bundleDirectoryPath), toPath: destinationDirectory)
     }
 }
