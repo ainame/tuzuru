@@ -30,7 +30,7 @@ public class TinyHttpServer {
     }
 
     public func start() async throws {
-        let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
+        let serverSocket = socket(AF_INET, Int32(SOCK_STREAM), 0)
         guard serverSocket != -1 else { throw TinyHttpServerError.socketCreationFailed }
 
         var reuseAddr: Int32 = 1
@@ -57,10 +57,10 @@ public class TinyHttpServer {
             throw TinyHttpServerError.listenFailed
         }
 
-        print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
-        print("")
         print("🚀 Starting server on http://localhost:\(port)")
         print("📂 Serving directory: \(servePath)")
+        print("⚠️  This is a basic development server - not for production use")
+        print("🐛 Report issues at: https://github.com/ainame/Tuzuru/issues")
         print("🛑 Press Ctrl+C to stop")
 
         signal(SIGINT) { _ in exit(0) }
@@ -78,7 +78,7 @@ public class TinyHttpServer {
                 }
 
                 guard clientSocket != -1 else { continue }
-
+                
                 group.addTask {
                     TinyHttpServer.handleClientStatic(clientSocket, servePath: servePath)
                 }
