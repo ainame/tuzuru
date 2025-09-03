@@ -2,7 +2,7 @@ class Tuzuru < Formula
   desc "Simple static blog generator"
   homepage "https://github.com/ainame/Tuzuru"
   url "https://github.com/ainame/Tuzuru/releases/download/0.0.12/tuzuru-0.0.12-macos-universal.tar.gz"
-  sha256 "201033f8866cc843796c317144c4d6d11ffcb7d41f133bce4cda303c771d0ccf"
+  sha256 "bd704e58943c1fe3ecd140d9e9b0649e882225f2f5451a5a3d0920b5fecc9092"
   license "MIT"
   head "https://github.com/ainame/Tuzuru.git", branch: "main"
 
