@@ -22,7 +22,7 @@ import Glibc
 /// This server is intended solely for serving static files during local development
 /// of the Tuzuru static blog generator.
 
-public class TinyHttpServer {
+public class ToyHttpServer {
     private let port: Int
     private let servePath: String
 
@@ -88,7 +88,7 @@ public class TinyHttpServer {
                 guard clientSocket != -1 else { continue }
                 
                 group.addTask {
-                    TinyHttpServer.handleClientStatic(clientSocket, servePath: servePath)
+                    ToyHttpServer.handleClientStatic(clientSocket, servePath: servePath)
                 }
             }
         }

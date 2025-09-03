@@ -1,7 +1,7 @@
 import Foundation
 import ArgumentParser
 import TuzuruLib
-import TinyHttpServer
+import ToyHttpServer
 
 struct ServeCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
@@ -29,7 +29,7 @@ struct ServeCommand: AsyncParsableCommand {
             throw ExitCode.failure
         }
         
-        let server = TinyHttpServer(port: port, servePath: servePath.string)
+        let server = ToyHttpServer(port: port, servePath: servePath.string)
         try await server.start()
     }
 }
