@@ -84,8 +84,8 @@ jobs:
 
         # Package Linux binaries
         cd build/linux
-        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz -C x86_64 ${{ env.PRODUCT_NAME }}
-        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz -C aarch64 ${{ env.PRODUCT_NAME }}
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz -C x86_64 ${{ env.PRODUCT_NAME }} tuzuru_TuzuruLib.resources
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz -C aarch64 ${{ env.PRODUCT_NAME }} tuzuru_TuzuruLib.resources
 
         # Generate checksums for Linux binaries
         shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
