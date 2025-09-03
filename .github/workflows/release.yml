@@ -51,10 +51,14 @@ jobs:
 
         # Initialize swiftly
         swiftly init --assume-yes
+        hash -r
 
         # Install Swift 6.1.2 for cross-compilation
         swiftly install 6.1.2
         swiftly use 6.1.2
+
+        # Install Static Linux SDK
+        swift sdk install https://download.swift.org/swift-6.1.2-release/static-sdk/swift-6.1.2-RELEASE/swift-6.1.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum df0b40b9b582598e7e3d70c82ab503fd6fbfdff71fd17e7f1ab37115a0665b3b
 
     - name: Build Linux binaries
       run: |
@@ -66,19 +70,15 @@ jobs:
 
         # Try to build for Linux x86_64 with static Swift stdlib only
         # Remove full static linking due to cross-compilation issues with C dependencies
-        swift build -c release \
-          --static-swift-stdlib \
-          --triple x86_64-unknown-linux-gnu
-        cp .build/x86_64-unknown-linux-gnu/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        swift build -c release --swift-sdk x86_64-swift-linux-musl
+        cp .build/x86_64-swift-linux-musl/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
 
         # Clean build for next architecture
         rm -rf .build
 
         # Build for Linux aarch64 with static Swift stdlib only
-        swift build -c release \
-          --static-swift-stdlib \
-          --triple aarch64-unknown-linux-gnu
-        cp .build/aarch64-unknown-linux-gnu/release/tuzuru build/linux/aarch64/${{ env.PRODUCT_NAME }}
+        swift build -c release --swift-sdk aarch64-swift-linux-musl
+        cp .build/aarch64-swift-linux-musl/release/tuzuru build/linux/aarch64/${{ env.PRODUCT_NAME }}
 
         # Package Linux binaries
         cd build/linux
