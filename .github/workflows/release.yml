@@ -72,6 +72,7 @@ jobs:
         # Remove full static linking due to cross-compilation issues with C dependencies
         swift build -c release --swift-sdk x86_64-swift-linux-musl
         cp .build/x86_64-swift-linux-musl/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        cp -r .build/x86_64-swift-linux-musl/release/tuzuru_TuzuruLib.resources build/linux/x86_64/
 
         # Clean build for next architecture
         rm -rf .build
@@ -79,6 +80,7 @@ jobs:
         # Build for Linux aarch64 with static Swift stdlib only
         swift build -c release --swift-sdk aarch64-swift-linux-musl
         cp .build/aarch64-swift-linux-musl/release/tuzuru build/linux/aarch64/${{ env.PRODUCT_NAME }}
+        cp -r .build/aarch64-swift-linux-musl/release/tuzuru_TuzuruLib.resources build/linux/aarch64/
 
         # Package Linux binaries
         cd build/linux
