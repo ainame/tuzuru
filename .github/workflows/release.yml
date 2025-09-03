@@ -18,10 +18,67 @@ env:
   PRODUCT_NAME: tuzuru
 
 jobs:
-  build-and-release:
-    name: Build Universal Binaries and Release
-    runs-on: macos-15
+  build-linux:
+    name: Build Linux Binaries
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+    
+    - name: Get version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Install Swiftly for Linux
+      run: |
+        curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
+        tar zxf swiftly-$(uname -m).tar.gz && \
+        ./swiftly init --quiet-shell-followup && \
+        . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
+        hash -r
+        
+        # Install Swift 6.1.2
+        swiftly install 6.1.2
+        swiftly use 6.1.2
+    
+    - name: Build Linux x86_64 binary
+      run: |
+        # Source Swiftly environment
+        . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh"
+        
+        # Create build directory
+        mkdir -p build/linux/x86_64
+        
+        # Build for Linux x86_64 with static Swift stdlib
+        swift build -c release --static-swift-stdlib
+        cp .build/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
+        
+        # Package Linux x86_64 binary
+        cd build/linux
+        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz -C x86_64 ${{ env.PRODUCT_NAME }}
+        
+        # Generate checksum for Linux binary
+        shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
+    
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-binaries
+        path: build/linux/
 
+  build-macos:
+    name: Build macOS Binaries
+    runs-on: macos-15
+    needs: build-linux
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v5
@@ -32,64 +89,7 @@ jobs:
     - name: Get version
       id: version
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-        else
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Install Swiftly for Linux cross-compilation
-      run: |
-        # Install Swiftly using the official macOS method to user directory
-        curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
-        installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
-        rm swiftly.pkg
-        
-        # Add to PATH for current session
-        echo "$HOME/.swiftly/bin" >> $GITHUB_PATH
-        export PATH="$HOME/.swiftly/bin:$PATH"
-        
-        # Initialize swiftly
-        swiftly init --assume-yes
-        
-        # Install Swift 6.1.2 for cross-compilation
-        swiftly install 6.1.2
-        swiftly use 6.1.2
-
-    - name: Build Linux binaries
-      run: |
-        export PATH="$HOME/.swiftly/bin:$PATH"
-        
-        # Create build directories
-        mkdir -p build/linux/x86_64
-        mkdir -p build/linux/aarch64
-        
-        # Try to build for Linux x86_64 with static Swift stdlib only
-        # Remove full static linking due to cross-compilation issues with C dependencies
-        swift build -c release \
-          --static-swift-stdlib \
-          --triple x86_64-unknown-linux-gnu
-        cp .build/x86_64-unknown-linux-gnu/release/tuzuru build/linux/x86_64/${{ env.PRODUCT_NAME }}
-        
-        # Clean build for next architecture
-        rm -rf .build
-        
-        # Build for Linux aarch64 with static Swift stdlib only
-        swift build -c release \
-          --static-swift-stdlib \
-          --triple aarch64-unknown-linux-gnu
-        cp .build/aarch64-unknown-linux-gnu/release/tuzuru build/linux/aarch64/${{ env.PRODUCT_NAME }}
-        
-        # Package Linux binaries
-        cd build/linux
-        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz -C x86_64 ${{ env.PRODUCT_NAME }}
-        tar -czf ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz -C aarch64 ${{ env.PRODUCT_NAME }}
-        
-        # Generate checksums for Linux binaries
-        shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
-
-    - name: Clean build directory before macOS build
-      run: rm -rf .build
+        echo "version=${{ needs.build-linux.outputs.version }}" >> $GITHUB_OUTPUT
 
     - name: Build macOS binaries
       run: |
@@ -113,6 +113,12 @@ jobs:
         # Generate checksums for macOS binary
         shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-checksums.txt
 
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: linux-binaries
+        path: build/linux/
+
     - name: Test Binaries
       run: |
         # Test macOS binary
@@ -121,9 +127,7 @@ jobs:
         
         # Test Linux binaries (basic file check)
         chmod +x build/linux/x86_64/${{ env.PRODUCT_NAME }}
-        chmod +x build/linux/aarch64/${{ env.PRODUCT_NAME }}
         file build/linux/x86_64/${{ env.PRODUCT_NAME }}
-        file build/linux/aarch64/${{ env.PRODUCT_NAME }}
 
     - name: Update Homebrew Formula
       run: |
@@ -158,5 +162,4 @@ jobs:
           build/macos/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-universal.tar.gz \
           build/macos/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-checksums.txt \
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz \
-          build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz \
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
