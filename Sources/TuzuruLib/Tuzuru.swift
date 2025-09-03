@@ -36,14 +36,14 @@ public struct Tuzuru: @unchecked Sendable {
                     try processor.process(rawPost)
                 }
             }
-            
+
             var processedPosts = [Post]()
             for try await processedPost in group {
                 processedPosts.append(processedPost)
             }
             return processedPosts
         }
-        
+
         // Create processed Source with the same metadata and templates
         return Source(
             metadata: rawSource.metadata,
@@ -59,19 +59,19 @@ public struct Tuzuru: @unchecked Sendable {
     }
 
     // MARK: - Static Configuration Methods
-    
+
     public static func loadConfiguration(from path: String?) throws -> BlogConfiguration {
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
         let loader = BlogConfigurationLoader(fileManager: fileManager)
         return try loader.load(from: path)
     }
-    
+
     public static func createDefaultConfiguration() -> BlogConfiguration {
         return BlogConfiguration.default
     }
-    
+
     // MARK: - Initialization Methods
-    
+
     public static func initializeBlog(fileManager: FileManagerWrapper) async throws {
         // Check if tuzuru.json already exists
         let path = fileManager.workingDirectory
@@ -89,7 +89,7 @@ public struct Tuzuru: @unchecked Sendable {
         // Copy template and asset files from bundle
         let bundle = try TuzuruResources.resourceBundle()
         let initializer = BlogInitializer(fileManager: fileManager, bundle: bundle)
-        
+
         let templatesDir = path.appending("templates")
         try initializer.copyTemplateFiles(to: templatesDir)
 
@@ -106,15 +106,15 @@ public struct Tuzuru: @unchecked Sendable {
             try fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
         }
     }
-    
+
     // MARK: - Import Methods
-    
+
     public func importFiles(from sourcePath: String, to destinationPath: String, dryRun: Bool = false) async throws -> ImportResult {
         let options = BlogImporter.ImportOptions(
             sourcePath: sourcePath,
             destinationPath: destinationPath
         )
-        
+
         let result = try await importer.importFiles(options: options, dryRun: dryRun)
         return ImportResult(
             importedCount: result.importedCount,
@@ -122,74 +122,142 @@ public struct Tuzuru: @unchecked Sendable {
             errorCount: result.errorCount,
         )
     }
-    
+
     // MARK: - Path Generation Methods
-    
+
     public func generateDisplayPaths(for source: Source) -> [String] {
         let pathGenerator = PathGenerator(
             configuration: configuration.output,
             contentsBasePath: configuration.sourceLayout.contents,
             unlistedBasePath: configuration.sourceLayout.unlisted
         )
-        
+
         return source.posts.map { post in
             pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
         }
     }
-    
+
     // MARK: - Auto-regeneration Methods
-    
+
     public func createPathMapping(for source: Source) -> [String: FilePath] {
         let pathGenerator = PathGenerator(
             configuration: configuration.output,
             contentsBasePath: configuration.sourceLayout.contents,
             unlistedBasePath: configuration.sourceLayout.unlisted
         )
-        
+
         var mapping: [String: FilePath] = [:]
-        
+
         for post in source.posts {
             let requestPath = "/" + pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
             mapping[requestPath] = post.path
         }
-        
+
         // Add index page mapping
         mapping["/"] = configuration.sourceLayout.contents.appending("index.html")
         mapping["/index.html"] = configuration.sourceLayout.contents.appending("index.html")
-        
+
         return mapping
     }
-    
+
     public func shouldRegenerate(
-        requestPath: String, 
-        lastRequestTime: Date, 
+        requestPath: String,
+        lastRequestTime: Date,
         pathMapping: [String: FilePath]
     ) -> Bool {
-        guard let sourcePath = pathMapping[requestPath] else {
-            return false
+        // Check if any source files in contents directory have changed (additions/deletions/modifications)
+        if hasSourceFilesChanged(since: lastRequestTime) {
+            return true
         }
-        
-        do {
-            let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
-            if let modificationDate = attributes[.modificationDate] as? Date {
-                return modificationDate > lastRequestTime
+
+        // Check if any asset files have changed
+        if hasAssetFilesChanged(since: lastRequestTime) {
+            return true
+        }
+
+        // Check if the specific mapped file has changed (for targeted updates)
+        if let sourcePath = pathMapping[requestPath] {
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
+                if let modificationDate = attributes[.modificationDate] as? Date {
+                    return modificationDate > lastRequestTime
+                }
+            } catch {
+                print("Warning: Could not get modification date for \(sourcePath): \(error)")
             }
-        } catch {
-            print("Warning: Could not get modification date for \(sourcePath): \(error)")
         }
-        
+
         return false
     }
-    
+
+    private func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
+        let contentsPaths = [
+            configuration.sourceLayout.contents,
+            configuration.sourceLayout.unlisted
+        ]
+
+        for contentsPath in contentsPaths {
+            if hasDirectoryChanged(contentsPath, since: lastRequestTime) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private func hasAssetFilesChanged(since lastRequestTime: Date) -> Bool {
+        let assetsPath = fileManager.workingDirectory.appending("assets")
+        return hasDirectoryChanged(assetsPath, since: lastRequestTime)
+    }
+
+    private func hasDirectoryChanged(_ directoryPath: FilePath, since lastRequestTime: Date) -> Bool {
+        guard fileManager.fileExists(atPath: directoryPath) else {
+            return false
+        }
+
+        // Check directory modification time first (indicates file additions/deletions)
+        do {
+            let dirAttributes = try fileManager.attributesOfItem(atPath: directoryPath)
+            if let dirModificationDate = dirAttributes[.modificationDate] as? Date,
+               dirModificationDate > lastRequestTime {
+                return true
+            }
+        } catch {
+            print("Warning: Could not get modification date for directory \(directoryPath): \(error)")
+        }
+
+        // Recursively check all files in the directory
+        guard let enumerator = fileManager.enumerator(atPath: directoryPath) else {
+            return false
+        }
+
+        for case let filePathString as String in enumerator {
+            let fullPath = directoryPath.appending(filePathString)
+
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: fullPath)
+                if let modificationDate = attributes[.modificationDate] as? Date,
+                   modificationDate > lastRequestTime {
+                    return true
+                }
+            } catch {
+                // File might have been deleted during enumeration, continue
+                continue
+            }
+        }
+
+        return false
+    }
+
     public func regenerateIfNeeded() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)
         let processedSource = try await processContents(rawSource)
         _ = try blogGenerator.generate(processedSource)
         return processedSource
     }
-    
+
     // MARK: - Amend Methods
-    
+
     public func amendFile(
         filePath: String,
         newDate: String? = nil,
@@ -198,7 +266,7 @@ public struct Tuzuru: @unchecked Sendable {
     ) async throws {
         try await amender.amendFile(filePath: FilePath(filePath), newDate: newDate, newAuthor: newAuthor)
     }
-    
+
 }
 
 extension Tuzuru {
