@@ -89,6 +89,10 @@ public struct FileManagerWrapper: @unchecked Sendable {
         try fileManager.contentsOfDirectory(atPath: normalizePath(path)).map { FilePath($0) }
     }
 
+    public func attributesOfItem(atPath path: FilePath) throws -> [FileAttributeKey: Any] {
+        try fileManager.attributesOfItem(atPath: normalizePath(path))
+    }
+
     private func normalizePath(_ path: FilePath) -> String {
         // expected workingDirectory can be different from FileManager.currentDirectoryPath,
         // when running unit tests using file resources in parallel. It has to isolate each other test case
