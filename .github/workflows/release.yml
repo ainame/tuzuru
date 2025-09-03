@@ -114,7 +114,7 @@ jobs:
         shasum -a 256 *.tar.gz > ${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-macos-checksums.txt
 
     - name: Download Linux artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: linux-binaries
         path: build/linux/
