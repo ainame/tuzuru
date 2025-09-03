@@ -3,6 +3,18 @@ import ArgumentParser
 import TuzuruLib
 import ToyHttpServer
 
+@MainActor
+private class RegenerationState {
+    var currentSource: Source
+    var pathMapping: [String: FilePath]
+    var lastRequestTime: Date = Date()
+    
+    init(source: Source, pathMapping: [String: FilePath]) {
+        self.currentSource = source
+        self.pathMapping = pathMapping
+    }
+}
+
 struct ServeCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "serve",
@@ -29,7 +41,61 @@ struct ServeCommand: AsyncParsableCommand {
             throw ExitCode.failure
         }
         
-        let server = ToyHttpServer(port: port, servePath: servePath.string)
+        // Load configuration and create Tuzuru instance
+        let configuration = try Tuzuru.loadConfiguration(from: config)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: configuration)
+        
+        // Generate initial blog to get source and path mapping
+        let rawSource = try await tuzuru.loadSources(configuration.sourceLayout)
+        let currentSource = try await tuzuru.processContents(rawSource)
+        _ = try await tuzuru.generate(currentSource)
+        
+        let pathMapping = tuzuru.createPathMapping(for: currentSource)
+        let state = await RegenerationState(source: currentSource, pathMapping: pathMapping)
+        
+        print("📋 Auto-regeneration enabled - files will be regenerated on request if modified")
+        
+        // Create hooks for auto-regeneration
+        let beforeResponseHook: RequestHook = { context in
+            let shouldRegenerate = await MainActor.run {
+                tuzuru.shouldRegenerate(
+                    requestPath: context.path,
+                    lastRequestTime: state.lastRequestTime,
+                    pathMapping: state.pathMapping
+                )
+            }
+            
+            if shouldRegenerate {
+                print("🔄 Regenerating blog due to file changes for: \(context.path)")
+                do {
+                    let newSource = try await tuzuru.regenerateIfNeeded()
+                    let newPathMapping = tuzuru.createPathMapping(for: newSource)
+                    await MainActor.run {
+                        state.currentSource = newSource
+                        state.pathMapping = newPathMapping
+                    }
+                    print("✅ Blog regenerated successfully")
+                } catch {
+                    print("❌ Error regenerating blog: \(error)")
+                    throw error
+                }
+            }
+            
+            await MainActor.run {
+                state.lastRequestTime = context.timestamp
+            }
+        }
+        
+        let afterResponseHook: ResponseHook = { context, statusCode in
+            // Optional: Could add logging or other post-response actions here
+        }
+        
+        let server = ToyHttpServer(
+            port: port, 
+            servePath: servePath.string,
+            beforeResponseHook: beforeResponseHook,
+            afterResponseHook: afterResponseHook
+        )
         try await server.start()
     }
 }

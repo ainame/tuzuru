@@ -2,7 +2,7 @@ import Foundation
 import Markdown
 import Mustache
 
-public struct Tuzuru {
+public struct Tuzuru: @unchecked Sendable {
     private let sourceLoader: SourceLoader
     private let markdownProcessor: MarkdownProcessor
     private let blogGenerator: BlogGenerator
@@ -135,6 +135,57 @@ public struct Tuzuru {
         return source.posts.map { post in
             pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
         }
+    }
+    
+    // MARK: - Auto-regeneration Methods
+    
+    public func createPathMapping(for source: Source) -> [String: FilePath] {
+        let pathGenerator = PathGenerator(
+            configuration: configuration.output,
+            contentsBasePath: configuration.sourceLayout.contents,
+            unlistedBasePath: configuration.sourceLayout.unlisted
+        )
+        
+        var mapping: [String: FilePath] = [:]
+        
+        for post in source.posts {
+            let requestPath = "/" + pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
+            mapping[requestPath] = post.path
+        }
+        
+        // Add index page mapping
+        mapping["/"] = configuration.sourceLayout.contents.appending("index.html")
+        mapping["/index.html"] = configuration.sourceLayout.contents.appending("index.html")
+        
+        return mapping
+    }
+    
+    public func shouldRegenerate(
+        requestPath: String, 
+        lastRequestTime: Date, 
+        pathMapping: [String: FilePath]
+    ) -> Bool {
+        guard let sourcePath = pathMapping[requestPath] else {
+            return false
+        }
+        
+        do {
+            let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
+            if let modificationDate = attributes[.modificationDate] as? Date {
+                return modificationDate > lastRequestTime
+            }
+        } catch {
+            print("Warning: Could not get modification date for \(sourcePath): \(error)")
+        }
+        
+        return false
+    }
+    
+    public func regenerateIfNeeded() async throws -> Source {
+        let rawSource = try await loadSources(configuration.sourceLayout)
+        let processedSource = try await processContents(rawSource)
+        _ = try blogGenerator.generate(processedSource)
+        return processedSource
     }
     
     // MARK: - Amend Methods

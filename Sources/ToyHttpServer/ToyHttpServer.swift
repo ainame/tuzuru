@@ -8,6 +8,23 @@ import Musl
 import Glibc
 #endif
 
+public struct HttpRequestContext: Sendable {
+    public let method: String
+    public let path: String
+    public let fullPath: String
+    public let timestamp: Date
+
+    public init(method: String, path: String, fullPath: String, timestamp: Date = Date()) {
+        self.method = method
+        self.path = path
+        self.fullPath = fullPath
+        self.timestamp = timestamp
+    }
+}
+
+public typealias RequestHook = @Sendable (HttpRequestContext) async throws -> Void
+public typealias ResponseHook = @Sendable (HttpRequestContext, Int) async -> Void
+
 /// A very basic HTTP server for local development and testing purposes only.
 ///
 /// WARNING: This is NOT a production-ready HTTP server and should never be used
@@ -25,10 +42,19 @@ import Glibc
 public class ToyHttpServer {
     private let port: Int
     private let servePath: String
+    private let beforeResponseHook: RequestHook?
+    private let afterResponseHook: ResponseHook?
 
-    public init(port: Int, servePath: String) {
+    public init(
+        port: Int, 
+        servePath: String,
+        beforeResponseHook: RequestHook? = nil,
+        afterResponseHook: ResponseHook? = nil
+    ) {
         self.port = port
         self.servePath = servePath
+        self.beforeResponseHook = beforeResponseHook
+        self.afterResponseHook = afterResponseHook
     }
 
     public func start() async throws {
@@ -73,7 +99,6 @@ public class ToyHttpServer {
 
         signal(SIGINT) { _ in exit(0) }
 
-        let servePath = self.servePath
         await withTaskGroup(of: Void.self) { group in
             while true {
                 var clientAddr = sockaddr_in()
@@ -87,14 +112,28 @@ public class ToyHttpServer {
 
                 guard clientSocket != -1 else { continue }
                 
-                group.addTask {
-                    ToyHttpServer.handleClientStatic(clientSocket, servePath: servePath)
+                group.addTask { @Sendable [
+                    servePath = self.servePath,
+                    beforeHook = self.beforeResponseHook,
+                    afterHook = self.afterResponseHook
+                ] in
+                    await ToyHttpServer.handleClientInstance(
+                        clientSocket,
+                        servePath: servePath,
+                        beforeHook: beforeHook,
+                        afterHook: afterHook
+                    )
                 }
             }
         }
     }
 
-    private static func handleClientStatic(_ clientSocket: Int32, servePath: String) {
+    private static func handleClientInstance(
+        _ clientSocket: Int32, 
+        servePath: String,
+        beforeHook: RequestHook?,
+        afterHook: ResponseHook?
+    ) async {
         defer { close(clientSocket) }
 
         var buffer = [UInt8](repeating: 0, count: 1024)
@@ -116,14 +155,30 @@ public class ToyHttpServer {
         let fullPath = requestComponents[1]
         let path = fullPath.components(separatedBy: "?").first ?? fullPath
 
+        let requestContext = HttpRequestContext(
+            method: method,
+            path: path,
+            fullPath: fullPath,
+            timestamp: Date()
+        )
+
+        do {
+            try await beforeHook?(requestContext)
+        } catch {
+            print("Error in beforeResponseHook: \(error)")
+        }
+
         guard method == "GET" else {
             logRequestStatic(method, fullPath, 405)
             sendStringStatic(clientSocket, "HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
+            await afterHook?(requestContext, 405)
             return
         }
 
         let statusCode = serveFileStatic(clientSocket, path: path, servePath: servePath)
         logRequestStatic(method, fullPath, statusCode)
+        
+        await afterHook?(requestContext, statusCode)
     }
 
     private func serveFile(_ clientSocket: Int32, path: String) -> Int {
@@ -265,6 +320,7 @@ public class ToyHttpServer {
         let timestamp = formatter.string(from: Date())
         print("\(timestamp) \(method) \(path) \(statusCode)")
     }
+
 }
 
 public enum TinyHttpServerError: Error {
