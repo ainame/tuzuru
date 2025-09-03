@@ -117,15 +117,22 @@ struct BlogGenerator {
         case .all:
             posts
         case .pastYear:
-            posts.filter { oneYearAgo < $0.publishedAt && $0.publishedAt < dateProvider() }
+            posts.filter {
+                oneYearAgo < $0.publishedAt &&
+                // If a file is not commited yet, publishedAt and dateProvider()'s now will be the almost same
+                // but `dateProvider`'s time is fixed when BlogGenerator is initialized and a new post's publishedAt is later.
+                // Add 10 seconds allow us to bring the draft page for `serve`'s preview whilst guarding displaying future pages.
+                $0.publishedAt <= dateProvider().addingTimeInterval(10)
+            }
         case .last(let number):
             Array(posts.prefix(number))
         }
+        let sortedPosts = filteredPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
 
         // Prepare posts data for list template
         let list = ListData(
             title: nil, // Let users name title in layout.mustache
-            posts: filteredPosts.map { post in
+            posts: sortedPosts.map { post in
                 ListItemData(
                     title: post.title,
                     author: post.author,
