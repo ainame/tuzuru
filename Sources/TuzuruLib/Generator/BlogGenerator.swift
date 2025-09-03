@@ -36,6 +36,13 @@ struct BlogGenerator {
     func generate(_ source: Source) throws -> FilePath {
         let blogRoot = FilePath(configuration.output.directory)
         let pageRenderer = PageRenderer(templates: source.templates)
+        
+        // Initialize integrity manager
+        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        
+        // Load existing manifest and check if cleanup is needed
+        let existingManifest = try integrityManager.loadExistingManifest()
+        let cleanupNeeded = try integrityManager.isCleanupNeeded()
 
         // Create site directory if it doesn't exist
         try fileManager.createDirectory(atPath: blogRoot, withIntermediateDirectories: true)
@@ -50,19 +57,44 @@ struct BlogGenerator {
         let availableYears = source.years
         let availableCategories = source.categories
 
+        // Track all generated files for manifest
+        var generatedFiles: [FilePath] = []
+        
+        // Generate index page (first so we can track it)
+        try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        generatedFiles.append(blogRoot.appending(configuration.output.indexFileName))
+
         // Generate yearly list pages (only from listed posts)
-        try generateYearlyListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        let yearlyFiles = try generateYearlyListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        generatedFiles.append(contentsOf: yearlyFiles)
 
         // Generate directory list pages (only from listed posts)
-        try generateDirectoryListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        let directoryFiles = try generateDirectoryListPages(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        generatedFiles.append(contentsOf: directoryFiles)
 
         // Generate individual post pages for ALL posts (including unlisted)
         for post in source.posts {
             try generatePostPage(pageRenderer: pageRenderer, post: post, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+            let outputPath = pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
+            generatedFiles.append(blogRoot.appending(outputPath))
         }
-
-        // Generate list page (index.html) with only listed posts
-        try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
+        
+        // Generate sitemap.xml
+        let sitemapGenerator = SitemapGenerator(
+            pathGenerator: pathGenerator,
+            baseUrl: configuration.metadata.baseUrl,
+            fileManager: fileManager
+        )
+        try sitemapGenerator.generateAndSave(from: source, to: blogRoot)
+        generatedFiles.append(blogRoot.appending("sitemap.xml"))
+        
+        // Perform integrity cleanup if needed
+        if cleanupNeeded, let manifest = existingManifest {
+            try integrityManager.performCleanup(with: manifest, newGeneratedFiles: generatedFiles)
+        }
+        
+        // Save new manifest
+        try integrityManager.saveNewManifest(generatedFiles: generatedFiles)
 
         return blogRoot
     }
@@ -169,12 +201,14 @@ struct BlogGenerator {
         _ = fileManager.createFile(atPath: indexPath, contents: Data(finalHTML.utf8))
     }
 
-    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
+    private func generateYearlyListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws -> [FilePath] {
         // Group posts by publication year
         let calendar = Calendar.current
         let postsByYear = Dictionary(grouping: posts) { post in
             calendar.component(.year, from: post.publishedAt)
         }
+        
+        var generatedFiles: [FilePath] = []
 
         // Generate a list page for each year that has posts
         for (year, yearPosts) in postsByYear {
@@ -221,10 +255,13 @@ struct BlogGenerator {
 
             let yearIndexPath = yearDirectory.appending(configuration.output.indexFileName)
             _ = fileManager.createFile(atPath: yearIndexPath, contents: Data(finalHTML.utf8))
+            generatedFiles.append(yearIndexPath)
         }
+        
+        return generatedFiles
     }
 
-    private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws {
+    private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws -> [FilePath] {
         // Group posts by their top-level directory
         var directoryPosts: [String: [Post]] = [:]
 
@@ -254,6 +291,8 @@ struct BlogGenerator {
             }
             directoryPosts[topLevelDirectory]?.append(post)
         }
+
+        var generatedFiles: [FilePath] = []
 
         // Generate a list page for each directory that has posts
         for (directory, dirPosts) in directoryPosts {
@@ -302,7 +341,10 @@ struct BlogGenerator {
 
             let dirIndexPath = directoryPath.appending(configuration.output.indexFileName)
             _ = fileManager.createFile(atPath: dirIndexPath, contents: Data(finalHTML.utf8))
+            generatedFiles.append(dirIndexPath)
         }
+        
+        return generatedFiles
     }
 
     private func copyAssetsIfExists(to blogRoot: FilePath) throws {
