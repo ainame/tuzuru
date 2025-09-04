@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
+
 public struct SitemapGenerator: Sendable {
     private let pathGenerator: PathGenerator
     private let baseUrl: String
