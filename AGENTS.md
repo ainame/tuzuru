@@ -5,6 +5,7 @@ This file provides guidance to AI coding agents (e.g., Claude Code, GitHub Copil
 ## Project Overview
 
 Tuzuru is a static blog generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.1 with macOS v15+ minimum requirement.
+Note: The codebase also includes conditional support for Linux (Glibc/Musl) in the local HTTP server component.
 
 ## Essential Commands
 
@@ -24,10 +25,33 @@ Tuzuru is a static blog generator CLI tool written in Swift that converts markdo
 
 #### Serve Command Options
 - `-p, --port <port>` - Port to serve on (default: 8000)
-- `-d, --directory <directory>` - Directory to serve (default: blog)
 - `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
 
+The output directory is determined by `output.directory` in `tuzuru.json` (default: `blog`). There is no `--directory` option in the current implementation.
+
 The serve command includes auto-regeneration capability that automatically rebuilds the blog when source files are modified, providing a live development experience.
+It uses the internal `ToyHttpServer` target and is intended only for local development, not production use.
+
+#### Generate Command Options
+- `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
+
+#### Init Command Options
+- (none)
+
+#### Import Command Options
+- `<sourcePath>` (argument) - Source directory containing markdown files to import
+- `-d, --destination <path>` - Destination directory (default: `contents/imported/` or `sourceLayout.imported`)
+- `-u, --unlisted` - Import as unlisted content (uses `sourceLayout.unlisted`)
+- `-n, --dry-run` - Show actions without making changes
+- `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
+
+#### Amend Command Options
+- `<filePath>` (argument) - Path to markdown file (relative to `contents`)
+- `-d, --published-at <date>` - New published date (flexible formats supported)
+- `-a, --author <name>` - New author name
+- `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
+
+At least one of `--published-at` or `--author` must be provided.
 
 ## Architecture
 
@@ -35,6 +59,7 @@ The serve command includes auto-regeneration capability that automatically rebui
 - **Command target**: CLI interface using ArgumentParser with MainActor isolation
 - **TuzuruLib target**: Core library containing business logic
 - **Resources**: Template files (Mustache) and static assets
+ - **ToyHttpServer target**: Minimal HTTP server for local development (used by `serve`)
 
 ### Key Dependencies
 - swift-argument-parser: CLI parsing
@@ -43,6 +68,7 @@ The serve command includes auto-regeneration capability that automatically rebui
 - swift-system: File system operations
 - swift-subprocess: Process execution
 - Yams: YAML parsing
+ - (internal) ToyHttpServer: local dev server used by `serve`
 
 ### Core Components
 - `Sources/Command/Command.swift`: CLI command definitions using ArgumentParser
@@ -52,6 +78,9 @@ The serve command includes auto-regeneration capability that automatically rebui
 - `Sources/TuzuruLib/SourceLoader/`: Content loading and parsing
 - `Sources/TuzuruLib/Importer/`: Content import functionality
 - `Sources/TuzuruLib/Amender/`: File metadata amending functionality
+ - `Sources/TuzuruLib/Initializer/`: Blog bootstrap and resource copy logic
+ - `Sources/TuzuruLib/Utils/`: Utilities including `FileManagerWrapper`, `GitWrapper`, `ChangeDetector`
+ - `Sources/ToyHttpServer/`: Local HTTP server implementation
 
 ### File Conventions
 - Source markdown files: `contents/` directory
@@ -76,8 +105,8 @@ The serve command includes auto-regeneration capability that automatically rebui
 ### File operations
 
 To support swift-testing or modern APIs using async/await; ie `Subprocess`, this project got `FileManagerWrapper`.
-`FileManagerWrapper` is a thin wrapper that prevernts us from using unsafe APIs in concurrent context.
-It also offers FilePath as currency type instead of URL or String path.
+`FileManagerWrapper` is a thin wrapper that prevents us from using unsafe APIs in concurrent context.
+It also offers `FilePath` as the primary type instead of URL or String path.
 
 Please try to inject `FileManagerWrapper` from the upstream code when possible.
 Never use `FileManager.default` directly.
@@ -104,4 +133,3 @@ This is for testing purpose due to swift-testing's parallel execution.
 - Always use @Sources/TuzuruLib/Tuzuru.swift facade to implement a command
 - Don't use the term "site" instead use "blog"; ie static site generator -> static blog generator
 - The amend command creates marker commits with format `[tuzuru amend] Updated {field} for {filename}` that are processed by GitLogReader to override post metadata
-
