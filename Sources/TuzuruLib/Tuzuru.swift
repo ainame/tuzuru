@@ -183,89 +183,14 @@ public struct Tuzuru: Sendable {
         lastRequestTime: Date,
         pathMapping: [String: FilePath]
     ) -> Bool {
-        // Check if any source files in contents directory have changed (additions/deletions/modifications)
-        if hasSourceFilesChanged(since: lastRequestTime) {
-            return true
-        }
-
-        // Check if any asset files have changed
-        if hasAssetFilesChanged(since: lastRequestTime) {
-            return true
-        }
-
-        // Check if the specific mapped file has changed (for targeted updates)
-        if let sourcePath = pathMapping[requestPath] {
-            do {
-                let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
-                if let modificationDate = attributes[.modificationDate] as? Date {
-                    return modificationDate > lastRequestTime
-                }
-            } catch {
-                print("Warning: Could not get modification date for \(sourcePath): \(error)")
-            }
-        }
-
-        return false
+        let changeDetector = ChangeDetector(fileManager: fileManager, configuration: configuration)
+        return changeDetector.shouldRegenerate(
+            requestPath: requestPath,
+            lastRequestTime: lastRequestTime,
+            pathMapping: pathMapping
+        )
     }
 
-    private func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
-        let contentsPaths = [
-            configuration.sourceLayout.contents,
-            configuration.sourceLayout.unlisted
-        ]
-
-        for contentsPath in contentsPaths {
-            if hasDirectoryChanged(contentsPath, since: lastRequestTime) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private func hasAssetFilesChanged(since lastRequestTime: Date) -> Bool {
-        let assetsPath = fileManager.workingDirectory.appending("assets")
-        return hasDirectoryChanged(assetsPath, since: lastRequestTime)
-    }
-
-    private func hasDirectoryChanged(_ directoryPath: FilePath, since lastRequestTime: Date) -> Bool {
-        guard fileManager.fileExists(atPath: directoryPath) else {
-            return false
-        }
-
-        // Check directory modification time first (indicates file additions/deletions)
-        do {
-            let dirAttributes = try fileManager.attributesOfItem(atPath: directoryPath)
-            if let dirModificationDate = dirAttributes[.modificationDate] as? Date,
-               dirModificationDate > lastRequestTime {
-                return true
-            }
-        } catch {
-            print("Warning: Could not get modification date for directory \(directoryPath): \(error)")
-        }
-
-        // Recursively check all files in the directory
-        guard let enumerator = fileManager.enumerator(atPath: directoryPath) else {
-            return false
-        }
-
-        for case let filePathString as String in enumerator {
-            let fullPath = directoryPath.appending(filePathString)
-
-            do {
-                let attributes = try fileManager.attributesOfItem(atPath: fullPath)
-                if let modificationDate = attributes[.modificationDate] as? Date,
-                   modificationDate > lastRequestTime {
-                    return true
-                }
-            } catch {
-                // File might have been deleted during enumeration, continue
-                continue
-            }
-        }
-
-        return false
-    }
 
     public func regenerateIfNeeded() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)

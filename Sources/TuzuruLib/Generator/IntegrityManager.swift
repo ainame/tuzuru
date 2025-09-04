@@ -3,10 +3,12 @@ import Foundation
 struct IntegrityManager: Sendable {
     private let fileManager: FileManagerWrapper
     private let blogConfiguration: BlogConfiguration
+    private let sourceDirectoryProvider: SourceDirectoryProvider
 
     init(fileManager: FileManagerWrapper, blogConfiguration: BlogConfiguration) {
         self.fileManager = fileManager
         self.blogConfiguration = blogConfiguration
+        self.sourceDirectoryProvider = SourceDirectoryProvider(fileManager: fileManager, configuration: blogConfiguration)
     }
 
 
@@ -17,11 +19,7 @@ struct IntegrityManager: Sendable {
 
     /// Get source directories to track for changes
     var sourceDirectoriesToTrack: [FilePath] {
-        return [
-            fileManager.workingDirectory.appending(blogConfiguration.sourceLayout.contents.string),
-            fileManager.workingDirectory.appending(blogConfiguration.sourceLayout.unlisted.string),
-            fileManager.workingDirectory.appending(blogConfiguration.sourceLayout.assets.string)
-        ].filter { fileManager.fileExists(atPath: $0) }
+        return sourceDirectoryProvider.getTrackedDirectories()
     }
 
     /// Load existing manifest if it exists
