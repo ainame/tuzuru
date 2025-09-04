@@ -2,12 +2,9 @@ import Foundation
 import Markdown
 import Mustache
 
-public struct Tuzuru: @unchecked Sendable {
+public struct Tuzuru: Sendable {
     private let sourceLoader: SourceLoader
     private let markdownProcessor: MarkdownProcessor
-    private let blogGenerator: BlogGenerator
-    private let amender: FileAmender
-    private let importer: BlogImporter
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
 
@@ -17,9 +14,6 @@ public struct Tuzuru: @unchecked Sendable {
     ) throws {
         sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
         markdownProcessor = MarkdownProcessor()
-        blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
-        amender = FileAmender(configuration: configuration, fileManager: fileManager)
-        importer = BlogImporter(fileManager: fileManager)
         self.configuration = configuration
         self.fileManager = fileManager
     }
@@ -55,7 +49,8 @@ public struct Tuzuru: @unchecked Sendable {
     }
 
     public func generate(_ source: Source) async throws -> FilePath {
-        try blogGenerator.generate(source)
+        let blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
+        return try blogGenerator.generate(source)
     }
 
     // MARK: - Static Configuration Methods
@@ -137,6 +132,7 @@ public struct Tuzuru: @unchecked Sendable {
             destinationPath: destinationPath
         )
 
+        let importer = BlogImporter(fileManager: fileManager)
         let result = try await importer.importFiles(options: options, dryRun: dryRun)
         return ImportResult(
             importedCount: result.importedCount,
@@ -274,6 +270,7 @@ public struct Tuzuru: @unchecked Sendable {
     public func regenerateIfNeeded() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)
         let processedSource = try await processContents(rawSource)
+        let blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
         _ = try blogGenerator.generate(processedSource)
         return processedSource
     }
@@ -286,6 +283,7 @@ public struct Tuzuru: @unchecked Sendable {
         newAuthor: String? = nil,
         fileManager: FileManager = .default
     ) async throws {
+        let amender = FileAmender(configuration: configuration, fileManager: self.fileManager)
         try await amender.amendFile(filePath: FilePath(filePath), newDate: newDate, newAuthor: newAuthor)
     }
 
