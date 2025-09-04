@@ -96,6 +96,28 @@ public struct Tuzuru: @unchecked Sendable {
         let assetsDir = path.appending("assets")
         try initializer.copyAssetFiles(to: assetsDir)
 
+        // Handle .gitignore file
+        let gitignorePath = path.appending(".gitignore")
+
+        if fileManager.fileExists(atPath: gitignorePath) {
+            // Append to existing .gitignore
+            let existingContent = try String(contentsOf: URL(fileURLWithPath: gitignorePath.string), encoding: .utf8)
+            let updatedContent = existingContent + "\n# Added by Tuzuru\n.build/\nblog\n"
+            try updatedContent.write(to: URL(fileURLWithPath: gitignorePath.string), atomically: true, encoding: .utf8)
+            print("Updated existing .gitignore")
+        } else {
+            // Create new .gitignore with common OS files and Tuzuru-specific ones
+            let defaultGitignoreContent = """
+                .DS_Store
+
+                # Tuzuru
+                .build/
+                blog/
+                """
+            try defaultGitignoreContent.write(to: URL(fileURLWithPath: gitignorePath.string), atomically: true, encoding: .utf8)
+            print("Created .gitignore with common OS files and Tuzuru ignore patterns")
+        }
+
         // Create directory structure
         let directories = [
             path.appending("contents"),
