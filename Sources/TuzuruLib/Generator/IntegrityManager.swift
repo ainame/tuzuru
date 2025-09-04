@@ -1,22 +1,22 @@
 import Foundation
 
-public struct IntegrityManager: Sendable {
+struct IntegrityManager: Sendable {
     private let fileManager: FileManagerWrapper
     private let blogConfiguration: BlogConfiguration
 
-    public init(fileManager: FileManagerWrapper, blogConfiguration: BlogConfiguration) {
+    init(fileManager: FileManagerWrapper, blogConfiguration: BlogConfiguration) {
         self.fileManager = fileManager
         self.blogConfiguration = blogConfiguration
     }
 
 
     /// Get the path to the manifest file in .build
-    public var manifestPath: FilePath {
+    var manifestPath: FilePath {
         return fileManager.workingDirectory.appending(".build/manifest.json")
     }
 
     /// Get source directories to track for changes
-    public var sourceDirectoriesToTrack: [FilePath] {
+    var sourceDirectoriesToTrack: [FilePath] {
         return [
             fileManager.workingDirectory.appending(blogConfiguration.sourceLayout.contents.string),
             fileManager.workingDirectory.appending(blogConfiguration.sourceLayout.unlisted.string),
@@ -25,12 +25,12 @@ public struct IntegrityManager: Sendable {
     }
 
     /// Load existing manifest if it exists
-    public func loadExistingManifest() throws -> GenerateManifest? {
+    func loadExistingManifest() throws -> GenerateManifest? {
         return try GenerateManifest.load(from: manifestPath, fileManager: fileManager)
     }
 
     /// Check if integrity cleanup is needed based on manifest staleness
-    public func isCleanupNeeded() throws -> Bool {
+    func isCleanupNeeded() throws -> Bool {
         guard let manifest = try loadExistingManifest() else {
             // No manifest exists, no cleanup needed (first run)
             return false
@@ -41,7 +41,7 @@ public struct IntegrityManager: Sendable {
     }
 
     /// Perform integrity cleanup by removing orphaned files
-    public func performCleanup(with existingManifest: GenerateManifest, newGeneratedFiles: [FilePath]) throws {
+    func performCleanup(with existingManifest: GenerateManifest, newGeneratedFiles: [FilePath]) throws {
         let blogRoot = FilePath(blogConfiguration.output.directory)
         let newFileList = newGeneratedFiles.map(\.string)
         let orphanedFiles = existingManifest.getOrphanedFiles(currentFiles: newFileList)
@@ -79,7 +79,7 @@ public struct IntegrityManager: Sendable {
     }
 
     /// Create and save a new manifest after successful generation
-    public func saveNewManifest(generatedFiles: [FilePath]) throws {
+    func saveNewManifest(generatedFiles: [FilePath]) throws {
         let sourceDirs = sourceDirectoriesToTrack
         let manifest = try GenerateManifest(
             sourceDirs: sourceDirs,
