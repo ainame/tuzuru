@@ -72,7 +72,14 @@ tuzuru generate
 ```
 
 You can now see the `blog` directory that can be deployed to GitHub Pages or your favorite HTTP server.
-Or you can preview it with local HTTP server like `python3 -m http.server 8000 -d blog` and open `http://localhost:8000`.
+
+For local development, use the built-in serve command:
+
+``` bash
+tuzuru serve
+```
+
+This starts a local HTTP server at `http://localhost:8000` with auto-regeneration enabled. When you modify source files, the blog will be automatically rebuilt on the next request.
 
 ### Built-in layout
 
@@ -216,6 +223,34 @@ The command supports flexible date formats:
 - `2023-12-01 10:30:00 +0900` (with timezone)
 
 This command creates a special marker commit that Tuzuru recognizes for post metadata, leaving your history clean.
+
+## Local Development Server
+
+Tuzuru includes a built-in HTTP server for local development:
+
+```bash
+# Basic usage (serves on port 8000)
+tuzuru serve
+
+# Custom port
+tuzuru serve --port 3000
+
+# Custom directory (default is 'blog')
+tuzuru serve --directory my-output
+
+# Custom config file
+tuzuru serve --config my-config.json
+```
+
+### Auto-regeneration
+
+The serve command automatically watches for changes in your source files and regenerates the blog when needed:
+
+- **Content files**: Watches `contents/` and `contents/unlisted/` directories
+- **Asset files**: Watches the `assets/` directory  
+- **Templates**: Watches template files for changes
+
+When files are modified, the blog is regenerated on the next HTTP request, providing a seamless development experience without manual rebuilds.
 
 ## Build Requirements
 

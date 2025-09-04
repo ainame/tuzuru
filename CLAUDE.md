@@ -19,7 +19,15 @@ Tuzuru is a static blog generator CLI tool written in Swift that converts markdo
 - `swift run tuzuru init` - Init a blog project
 - `swift run tuzuru import` - Import posts from other project using Hugo or Jekyll
 - `swift run tuzuru amend` - Update publishedAt date and/or author for a markdown file by creating marker commits
+- `swift run tuzuru serve` - Start a local HTTP server to serve the generated blog with auto-regeneration
 - `swift run tuzuru --help` - Show help
+
+#### Serve Command Options
+- `-p, --port <port>` - Port to serve on (default: 8000)
+- `-d, --directory <directory>` - Directory to serve (default: blog)
+- `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
+
+The serve command includes auto-regeneration capability that automatically rebuilds the blog when source files are modified, providing a live development experience.
 
 ## Architecture
 
