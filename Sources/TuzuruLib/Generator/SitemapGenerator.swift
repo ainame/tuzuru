@@ -4,19 +4,19 @@ import Foundation
 import FoundationXML
 #endif
 
-public struct SitemapGenerator: Sendable {
+struct SitemapGenerator: Sendable {
     private let pathGenerator: PathGenerator
     private let baseUrl: String
     private let fileManager: FileManagerWrapper
 
-    public init(pathGenerator: PathGenerator, baseUrl: String, fileManager: FileManagerWrapper) {
+    init(pathGenerator: PathGenerator, baseUrl: String, fileManager: FileManagerWrapper) {
         self.pathGenerator = pathGenerator
         self.baseUrl = baseUrl
         self.fileManager = fileManager
     }
 
     /// Generate sitemap.xml content from Source data
-    public func generateSitemap(from source: Source) throws -> String {
+    func generateSitemap(from source: Source) throws -> String {
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
@@ -89,7 +89,7 @@ public struct SitemapGenerator: Sendable {
     }
 
     /// Generate and save sitemap.xml to the blog directory
-    public func generateAndSave(from source: Source, to blogRoot: FilePath) throws {
+    func generateAndSave(from source: Source, to blogRoot: FilePath) throws {
         let sitemapXml = try generateSitemap(from: source)
         let sitemapPath = blogRoot.appending("sitemap.xml")
 
