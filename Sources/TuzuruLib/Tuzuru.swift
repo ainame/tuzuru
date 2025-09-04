@@ -184,15 +184,11 @@ public struct Tuzuru: Sendable {
         pathMapping: [String: FilePath]
     ) -> Bool {
         let changeDetector = ChangeDetector(fileManager: fileManager, configuration: configuration)
-        return changeDetector.shouldRegenerate(
-            requestPath: requestPath,
-            lastRequestTime: lastRequestTime,
-            pathMapping: pathMapping
-        )
+        return changeDetector.checkIfChangesMade(at: requestPath, since: lastRequestTime, in: pathMapping)
     }
 
 
-    public func regenerateIfNeeded() async throws -> Source {
+    public func regenerate() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)
         let processedSource = try await processContents(rawSource)
         let blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)

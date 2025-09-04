@@ -1,5 +1,7 @@
 import Foundation
 
+/// IntegrityManager keeps the output directory `blog/` in sync wtih `contents/` by monitoring
+/// timestamps on each source directory. When renaming or deletion of files occur, this will perform cleanup.
 struct IntegrityManager: Sendable {
     private let fileManager: FileManagerWrapper
     private let blogConfiguration: BlogConfiguration
@@ -14,17 +16,17 @@ struct IntegrityManager: Sendable {
 
     /// Get the path to the manifest file in .build
     var manifestPath: FilePath {
-        return fileManager.workingDirectory.appending(".build/manifest.json")
+        fileManager.workingDirectory.appending(".build/manifest.json")
     }
 
     /// Get source directories to track for changes
     var sourceDirectoriesToTrack: [FilePath] {
-        return sourceDirectoryProvider.getTrackedDirectories()
+        sourceDirectoryProvider.getTrackedDirectories()
     }
 
     /// Load existing manifest if it exists
     func loadExistingManifest() throws -> GenerateManifest? {
-        return try GenerateManifest.load(from: manifestPath, fileManager: fileManager)
+        try GenerateManifest.load(from: manifestPath, fileManager: fileManager)
     }
 
     /// Check if integrity cleanup is needed based on manifest staleness

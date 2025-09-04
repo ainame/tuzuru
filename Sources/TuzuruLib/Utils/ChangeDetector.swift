@@ -1,5 +1,7 @@
 import Foundation
 
+/// ChangeDetector see if any changes were made in `contents/` from give path for `blog/` since the late request time.
+/// This powers `tuzuru serve` command to trigger regeneration only when needed.
 struct ChangeDetector: Sendable {
     private let fileManager: FileManagerWrapper
     private let sourceDirectoryProvider: SourceDirectoryProvider
@@ -10,10 +12,10 @@ struct ChangeDetector: Sendable {
     }
 
     /// Check if regeneration is needed based on file changes
-    func shouldRegenerate(
-        requestPath: String,
-        lastRequestTime: Date,
-        pathMapping: [String: FilePath]
+    func checkIfChangesMade(
+        at requestPath: String,
+        since lastRequestTime: Date,
+        in pathMapping: [String: FilePath]
     ) -> Bool {
         // Check if any source files in contents directory have changed (additions/deletions/modifications)
         if hasSourceFilesChanged(since: lastRequestTime) {
@@ -41,7 +43,7 @@ struct ChangeDetector: Sendable {
     }
 
     /// Check if source files have changed since the given time
-    func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
+    private func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
         let sourceDirectories = sourceDirectoryProvider.getSourceDirectories()
 
         for directoryPath in sourceDirectories {
@@ -54,7 +56,7 @@ struct ChangeDetector: Sendable {
     }
 
     /// Check if asset files have changed since the given time
-    func hasAssetFilesChanged(since lastRequestTime: Date) -> Bool {
+    private func hasAssetFilesChanged(since lastRequestTime: Date) -> Bool {
         let assetsPath = sourceDirectoryProvider.getAssetsDirectory()
         return hasDirectoryChanged(assetsPath, since: lastRequestTime)
     }

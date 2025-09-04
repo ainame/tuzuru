@@ -67,7 +67,7 @@ struct ServeCommand: AsyncParsableCommand {
             if shouldRegenerate {
                 print("🔄 Regenerating blog due to file changes for: \(context.path)")
                 do {
-                    let newSource = try await tuzuru.regenerateIfNeeded()
+                    let newSource = try await tuzuru.regenerate()
                     let newPathMapping = tuzuru.createPathMapping(for: newSource)
                     await MainActor.run {
                         state.currentSource = newSource
