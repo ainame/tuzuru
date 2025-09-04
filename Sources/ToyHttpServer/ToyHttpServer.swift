@@ -58,38 +58,7 @@ public class ToyHttpServer {
     }
 
     public func start() async throws {
-        #if canImport(Darwin)
-        let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
-        #elseif canImport(Musl)
-        let serverSocket = socket(AF_INET, SOCK_STREAM, 0)
-        #elseif canImport(Glibc)
-        let serverSocket = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
-        #endif
-        guard serverSocket != -1 else { throw TinyHttpServerError.socketCreationFailed }
-
-        var reuseAddr: Int32 = 1
-        setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, socklen_t(MemoryLayout<Int32>.size))
-
-        var serverAddr = sockaddr_in()
-        serverAddr.sin_family = sa_family_t(AF_INET)
-        serverAddr.sin_port = in_port_t(port).bigEndian
-        serverAddr.sin_addr.s_addr = INADDR_ANY
-
-        let bindResult = withUnsafePointer(to: &serverAddr) {
-            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                bind(serverSocket, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
-            }
-        }
-
-        guard bindResult == 0 else {
-            close(serverSocket)
-            throw TinyHttpServerError.bindFailed
-        }
-
-        guard listen(serverSocket, 5) == 0 else {
-            close(serverSocket)
-            throw TinyHttpServerError.listenFailed
-        }
+        let serverSocket = try SocketAPI.createServerSocket(port: port)
 
         print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
         print("")
@@ -101,14 +70,7 @@ public class ToyHttpServer {
 
         await withTaskGroup(of: Void.self) { group in
             while true {
-                var clientAddr = sockaddr_in()
-                var clientAddrSize = socklen_t(MemoryLayout<sockaddr_in>.size)
-
-                let clientSocket = withUnsafeMutablePointer(to: &clientAddr) {
-                    $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                        accept(serverSocket, $0, &clientAddrSize)
-                    }
-                }
+                let clientSocket = SocketAPI.accept(serverSocket)
 
                 guard clientSocket != -1 else { continue }
                 
@@ -134,10 +96,10 @@ public class ToyHttpServer {
         beforeHook: RequestHook?,
         afterHook: ResponseHook?
     ) async {
-        defer { close(clientSocket) }
+        defer { SocketAPI.close(clientSocket) }
 
         var buffer = [UInt8](repeating: 0, count: 1024)
-        let bytesRead = recv(clientSocket, &buffer, buffer.count, 0)
+        let bytesRead = SocketAPI.recv(clientSocket, &buffer, buffer.count)
         guard bytesRead > 0,
               let request = String(bytes: buffer[0..<bytesRead], encoding: .utf8),
               let requestLine = request.components(separatedBy: "\r\n").first else {
@@ -170,7 +132,7 @@ public class ToyHttpServer {
 
         guard method == "GET" else {
             logRequestStatic(method, fullPath, 405)
-            sendStringStatic(clientSocket, "HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
+            SocketAPI.sendString(clientSocket, "HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
             await afterHook?(requestContext, 405)
             return
         }
@@ -181,75 +143,7 @@ public class ToyHttpServer {
         await afterHook?(requestContext, statusCode)
     }
 
-    private func serveFile(_ clientSocket: Int32, path: String) -> Int {
-        var filePath = path == "/" ?
-            servePath + "/index.html" :
-            path.hasSuffix("/") ? servePath + path + "index.html" :
-            servePath + path
-
-        // If not a regular file, try directory index serving
-        var isDirectory: ObjCBool = false
-        if !FileManager.default.fileExists(atPath: filePath, isDirectory: &isDirectory) || isDirectory.boolValue {
-            let indexPath = filePath + "/index.html"
-            if FileManager.default.fileExists(atPath: indexPath) {
-                filePath = indexPath
-            }
-        }
-
-        guard filePath.hasPrefix(servePath),
-              FileManager.default.fileExists(atPath: filePath),
-              let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
-            sendString(clientSocket, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
-            return 404
-        }
-
-        let contentType = filePath.hasSuffix(".html") ? "text/html; charset=utf-8" :
-                         filePath.hasSuffix(".css") ? "text/css" :
-                         filePath.hasSuffix(".js") ? "application/javascript" :
-                         filePath.hasSuffix(".json") ? "application/json" :
-                         filePath.hasSuffix(".png") ? "image/png" :
-                         filePath.hasSuffix(".jpg") || filePath.hasSuffix(".jpeg") ? "image/jpeg" :
-                         filePath.hasSuffix(".gif") ? "image/gif" :
-                         filePath.hasSuffix(".webp") ? "image/webp" :
-                         filePath.hasSuffix(".svg") ? "image/svg+xml" :
-                         filePath.hasSuffix(".ico") ? "image/x-icon" :
-                         filePath.hasSuffix(".txt") ? "text/plain" :
-                         filePath.hasSuffix(".xml") ? "application/xml" :
-                         "application/octet-stream"
-
-        let response = "HTTP/1.1 200 OK\r\nContent-Type: \(contentType)\r\nContent-Length: \(data.count)\r\n\r\n"
-        sendString(clientSocket, response)
-        _ = data.withUnsafeBytes {
-            #if canImport(Darwin)
-            Darwin.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Musl)
-            Musl.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Glibc)
-            Glibc.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #endif
-        }
-        return 200
-    }
-
-    private func sendString(_ socket: Int32, _ string: String) {
-        let data = string.data(using: .utf8) ?? Data()
-        _ = data.withUnsafeBytes {
-            #if canImport(Darwin)
-            Darwin.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Musl)
-            Musl.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Glibc)
-            Glibc.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #endif
-        }
-    }
-
-    private func logRequest(_ method: String, _ path: String, _ statusCode: Int) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let timestamp = formatter.string(from: Date())
-        print("\(timestamp) \(method) \(path) \(statusCode)")
-    }
+    
 
     private static func serveFileStatic(_ clientSocket: Int32, path: String, servePath: String) -> Int {
         var filePath = path == "/" ?
@@ -269,7 +163,7 @@ public class ToyHttpServer {
         guard filePath.hasPrefix(servePath),
               FileManager.default.fileExists(atPath: filePath),
               let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
-            sendStringStatic(clientSocket, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
+            SocketAPI.sendString(clientSocket, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
             return 404
         }
 
@@ -288,30 +182,13 @@ public class ToyHttpServer {
                          "application/octet-stream"
 
         let response = "HTTP/1.1 200 OK\r\nContent-Type: \(contentType)\r\nContent-Length: \(data.count)\r\n\r\n"
-        sendStringStatic(clientSocket, response)
-        _ = data.withUnsafeBytes {
-            #if canImport(Darwin)
-            Darwin.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Musl)
-            Musl.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Glibc)
-            Glibc.send(clientSocket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #endif
-        }
+        SocketAPI.sendString(clientSocket, response)
+        SocketAPI.sendData(clientSocket, data: data)
         return 200
     }
 
     private static func sendStringStatic(_ socket: Int32, _ string: String) {
-        let data = string.data(using: .utf8) ?? Data()
-        _ = data.withUnsafeBytes {
-            #if canImport(Darwin)
-            Darwin.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Musl)
-            Musl.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #elseif canImport(Glibc)
-            Glibc.send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count, 0)
-            #endif
-        }
+        SocketAPI.sendString(socket, string)
     }
 
     private static func logRequestStatic(_ method: String, _ path: String, _ statusCode: Int) {
