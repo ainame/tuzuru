@@ -1,0 +1,9 @@
+.git
+.github
+.build
+blog
+node_modules
+tmp
+.claude
+.mise.toml
+renovate.json
