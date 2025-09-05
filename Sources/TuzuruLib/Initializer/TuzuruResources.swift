@@ -3,32 +3,34 @@ import Foundation
 enum TuzuruResources {
     private static let environmentVariableName = "TUZURU_RESOURCES"
 
-    static func resourceBundle() throws -> Bundle {
+    static func resourceBundle(fileManager: FileManagerWrapper) throws -> Bundle {
         // Check environment variable first (for Homebrew distribution)
         if ProcessInfo.processInfo.environment[environmentVariableName] != nil {
-            return try bundleFromEnvironment()
+            return try bundleFromEnvironment(fileManager: fileManager)
         }
         
         // Fall back to Bundle.module for development/normal SPM usage
         return Bundle.module
     }
 
-    private static func bundleFromEnvironment() throws -> Bundle {
-        guard let resourcesPath = ProcessInfo.processInfo.environment[environmentVariableName] else {
+    private static func bundleFromEnvironment(fileManager: FileManagerWrapper) throws -> Bundle {
+        guard let resourcesPathString = ProcessInfo.processInfo.environment[environmentVariableName] else {
             throw TuzuruError.templateNotFound("Resources bundle not found. \(environmentVariableName) environment variable not set.")
         }
 
-        let resourcesURL = URL(fileURLWithPath: resourcesPath)
+        let resourcesPath = FilePath(resourcesPathString)
 
         // Look for .bundle files in the resources directory
-        let fileManager = FileManager.default
         do {
-            let contents = try fileManager.contentsOfDirectory(at: resourcesURL, includingPropertiesForKeys: nil)
-            let bundleFiles = contents.filter { $0.pathExtension == "bundle" }
+            let contents = try fileManager.contentsOfDirectory(atPath: resourcesPath)
+            let bundleCandidates = contents.filter { $0.extension == "bundle" }
 
-            guard let bundleURL = bundleFiles.first else {
-                throw TuzuruError.templateNotFound("No .bundle file found in resources directory: \(resourcesPath)")
+            guard let firstBundle = bundleCandidates.first else {
+                throw TuzuruError.templateNotFound("No .bundle file found in resources directory: \(resourcesPathString)")
             }
+
+            let bundlePath = resourcesPath.appending(firstBundle)
+            let bundleURL = URL(fileURLWithPath: bundlePath.string)
 
             guard let bundle = Bundle(url: bundleURL) else {
                 throw TuzuruError.templateNotFound("Could not load bundle from: \(bundleURL.path)")
@@ -36,7 +38,7 @@ enum TuzuruResources {
 
             return bundle
         } catch {
-            throw TuzuruError.templateNotFound("Could not access resources directory: \(resourcesPath). Error: \(error)")
+            throw TuzuruError.templateNotFound("Could not access resources directory: \(resourcesPathString). Error: \(error)")
         }
     }
 }

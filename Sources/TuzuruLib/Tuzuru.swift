@@ -82,7 +82,7 @@ public struct Tuzuru: Sendable {
         try configData.write(to: URL(fileURLWithPath: configPath.string))
 
         // Copy template and asset files from bundle
-        let bundle = try TuzuruResources.resourceBundle()
+        let bundle = try TuzuruResources.resourceBundle(fileManager: fileManager)
         let initializer = BlogInitializer(fileManager: fileManager, bundle: bundle)
 
         let templatesDir = path.appending("templates")
