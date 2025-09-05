@@ -1,0 +1,26 @@
+# Lightweight Dockerfile for pre-built static binary
+FROM docker.io/ubuntu:24.04
+
+# Install minimal dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built binary and resources
+COPY .build/*-swift-linux-musl/release/tuzuru /usr/local/bin/tuzuru
+COPY .build/*-swift-linux-musl/release/tuzuru_TuzuruLib.resources /usr/local/bin/tuzuru_TuzuruLib.resources
+
+# Make binary executable
+RUN chmod +x /usr/local/bin/tuzuru
+
+# Create working directory
+WORKDIR /test-blog
+
+# Initialize git (required for Tuzuru)
+RUN git init && \
+    git config user.name "Test User" && \
+    git config user.email "test@example.com"
+
+# Default command
+CMD ["bash"]

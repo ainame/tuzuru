@@ -15,7 +15,7 @@ private let SOCK_STREAM_VALUE: Int32 = SOCK_STREAM
 @inline(__always) private func cclose(_ s: Int32) { close(s) }
 #elseif canImport(Musl)
 import Musl
-private let SOCK_STREAM_VALUE: Int32 = Int32(SOCK_STREAM.rawValue)
+private let SOCK_STREAM_VALUE: Int32 = SOCK_STREAM
 @inline(__always) private func csocket(_ domain: Int32, _ type: Int32, _ proto: Int32) -> Int32 { Musl.socket(domain, type, proto) }
 @inline(__always) private func csetsockopt(_ s: Int32, _ level: Int32, _ name: Int32, _ value: UnsafeMutableRawPointer?, _ len: socklen_t) -> Int32 { Musl.setsockopt(s, level, name, value, len) }
 @inline(__always) private func cbind(_ s: Int32, _ addr: UnsafePointer<sockaddr>!, _ len: socklen_t) -> Int32 { Musl.bind(s, addr, len) }
