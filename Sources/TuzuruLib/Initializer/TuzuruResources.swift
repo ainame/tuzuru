@@ -29,7 +29,11 @@ enum TuzuruResources {
                 throw TuzuruError.templateNotFound("No .bundle file found in resources directory: \(resourcesPathString)")
             }
 
-            let bundlePath = resourcesPath.appending(firstBundle)
+            guard let bundleComponent = firstBundle.lastComponent else {
+                throw TuzuruError.templateNotFound("Invalid bundle path: \(firstBundle)")
+            }
+
+            let bundlePath = resourcesPath.appending(bundleComponent)
             let bundleURL = URL(fileURLWithPath: bundlePath.string)
 
             guard let bundle = Bundle(url: bundleURL) else {
