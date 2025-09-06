@@ -1,10 +1,10 @@
 # Tuzuru
 
-![logo](.github/assets/logo.png)
-
 Tuzuru (綴る) is a dead-simple static **blog** generator CLI that uses Git to manage your blog metadata.
 Just write and commit plain Markdown files—no front matter needed.
 Tuzuru automatically derives metadata such as dates and author from your Git history.
+
+![logo](.github/assets/logo.png)
 
 It is designed to keep workflows minimal, allowing you to focus on writing.
 
