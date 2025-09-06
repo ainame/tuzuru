@@ -255,10 +255,59 @@ tuzuru serve --config my-config.json
 The serve command automatically watches for changes in your source files and regenerates the blog when needed:
 
 - **Content files**: Watches `contents/` and `contents/unlisted/` directories
-- **Asset files**: Watches the `assets/` directory  
+- **Asset files**: Watches the `assets/` directory
 - **Templates**: Watches template files for changes
 
 When files are modified, the blog is regenerated on the next HTTP request, providing a seamless development experience without manual rebuilds.
+
+## Deployment
+
+This repo has two GitHub Actions prepared for Tuzuru blogs to set up deployment easily.
+
+* [ainame/Tuzuru/.github/actions/tuzuru-deploy](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-deploy/action.yml)
+   * Install tuzuru via npm, generate blog, upload the artefact, and deploy to GitHub page
+* [ainame/Tuzuru/.github/actions/tuzuru-generate](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-generate/action.yml)
+   * Only install tuzuru via npm and generate blog
+   * You can deploy to anywhere you like
+
+Their versions should match the CLI’s version. When you update the CLI version, you should also update the action’s version.
+It is recommended to use Renovate or Dependabot to keep it up to date.
+
+This is an exmaple `.github/workflows/deploy.yml`.
+
+<details>
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ainame/Tuzuru/.github/actions/tuzuru-deploy@0.1.2
+```
+
+</details>
 
 ## Build Requirements
 
