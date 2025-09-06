@@ -166,14 +166,30 @@ public struct Tuzuru: Sendable {
 
         var mapping: [String: FilePath] = [:]
 
+        // Map individual posts to their source files
         for post in source.posts {
             let requestPath = "/" + pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
             mapping[requestPath] = post.path
         }
 
-        // Add index page mapping
-        mapping["/"] = configuration.sourceLayout.contents.appending("index.html")
-        mapping["/index.html"] = configuration.sourceLayout.contents.appending("index.html")
+        // For auto-generated pages, use a special marker to indicate they depend on the contents directory
+        let contentsDirectory = configuration.sourceLayout.contents
+        
+        // Index page - depends on all posts
+        mapping["/"] = contentsDirectory
+        mapping["/index.html"] = contentsDirectory
+        
+        // Year pages - depend on all posts from that year
+        for year in source.years {
+            mapping["/\(year)/"] = contentsDirectory
+            mapping["/\(year)/index.html"] = contentsDirectory
+        }
+        
+        // Category pages - depend on all posts with that category
+        for category in source.categories {
+            mapping["/\(category)/"] = contentsDirectory.appending(category)
+            mapping["/\(category)/index.html"] = contentsDirectory.appending(category)
+        }
 
         return mapping
     }

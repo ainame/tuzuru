@@ -27,15 +27,27 @@ struct ChangeDetector: Sendable {
             return true
         }
 
-        // Check if the specific mapped file has changed (for targeted updates)
+        // Check if the specific mapped file/directory has changed (for targeted updates)
         if let sourcePath = pathMapping[requestPath] {
-            do {
-                let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
-                if let modificationDate = attributes[.modificationDate] as? Date {
-                    return modificationDate > lastRequestTime
+            if fileManager.fileExists(atPath: sourcePath) {
+                var isDirectory: Bool = false
+                _ = fileManager.fileExists(atPath: sourcePath, isDirectory: &isDirectory)
+                
+                if isDirectory {
+                    // For directories (auto-generated pages), check if any content changed
+                    return hasDirectoryChanged(sourcePath, since: lastRequestTime)
+                } else {
+                    // For individual files, check modification date
+                    do {
+                        let attributes = try fileManager.attributesOfItem(atPath: sourcePath)
+                        if let modificationDate = attributes[.modificationDate] as? Date {
+                            return modificationDate > lastRequestTime
+                        }
+                    } catch {
+                        // File might have been deleted, ignore this specific check
+                        // The general directory check will catch changes
+                    }
                 }
-            } catch {
-                print("Warning: Could not get modification date for \(sourcePath): \(error)")
             }
         }
 
