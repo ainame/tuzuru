@@ -33,6 +33,6 @@
     "bin/",
     "scripts/",
     "vendor/",
-    "README.md"
+    "../README.md"
   ]
 }
