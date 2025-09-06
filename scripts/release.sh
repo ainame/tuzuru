@@ -56,13 +56,3 @@ git push origin main
 git push origin "$NEW_VERSION"
 
 echo "Release $NEW_VERSION completed. GitHub Actions will build artifacts and publish npm package."
-
-# Optional: local npm publish (use only if you want to publish immediately from local env)
-if [ -n "${NPM_TOKEN:-}" ]; then
-  echo "NPM_TOKEN detected; attempting local npm publish as a fallback."
-  (cd npm &&
-    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc &&
-    npm publish --access public || echo "Local npm publish failed; relying on CI." )
-else
-  echo "Hint: Set NPM_TOKEN to publish locally. Otherwise CI will publish from release workflow."
-fi
