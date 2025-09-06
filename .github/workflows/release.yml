@@ -170,7 +170,6 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
 
     - name: Publish npm package
-      working-directory: npm
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |

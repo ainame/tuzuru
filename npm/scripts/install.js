@@ -27,7 +27,7 @@ function fail(msg) {
   process.exit(1);
 }
 
-const pkg = require('../package.json');
+const pkg = require('../../package.json');
 const version = (pkg.version || '').trim();
 if (!version || version === '0.0.0') {
   log('Package version is 0.0.0; attempting to install latest release via GitHub API');
