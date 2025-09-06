@@ -164,7 +164,7 @@ jobs:
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
 
     - name: Setup Node for npm publish
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: '20'
         registry-url: 'https://registry.npmjs.org'
