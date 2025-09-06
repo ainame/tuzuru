@@ -1,14 +1,20 @@
 {
   "name": "@ainame/tuzuru",
-  "version": "0.0.0",
+  "version": "0.0.19",
   "description": "Tuzuru static blog generator (npm wrapper around prebuilt binaries)",
   "license": "MIT",
   "private": false,
   "bin": {
     "tuzuru": "bin/tuzuru.js"
   },
-  "os": ["darwin", "linux"],
-  "cpu": ["x64", "arm64"],
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
   "engines": {
     "node": ">=16"
   },
@@ -30,4 +36,3 @@
     "README.md"
   ]
 }
-
