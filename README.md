@@ -100,6 +100,8 @@ This repo has two GitHub Actions prepared for Tuzuru blogs to set up deployment 
 Their versions should match the CLI’s version. When you update the CLI version, you should also update the action’s version.
 It is recommended to use Renovate or Dependabot to keep it up to date.
 
+**Note that sicne Tuzuru relies on Git history, you have to checkout git repo with the entire history. Specify `fetch-deploy: 0` in `actions/checkout`**
+
 This is an exmaple `.github/workflows/deploy.yml`.
 
 <details>
