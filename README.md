@@ -2,22 +2,22 @@
 
 ![logo](.github/assets/logo.png)
 
-Tuzuru (綴る) is dead-simple static **blog** generator CLI that uses Git to manage your blog's metadata.
-It is designed to let you focus on writing by keeping workflows as simple as possible.
+Tuzuru (綴る) is a dead-simple static **blog** generator CLI that uses Git to manage your blog metadata.
+Just write and commit plain Markdown files—no front matter needed.
+Tuzuru automatically derives metadata such as dates and author from your Git history.
 
-* Simple plain Markdown format with no YAML syntax
-   * Instead of YAML front matter, Tuzuru uses Git to pull published date.
-* Simple routing with automatically generated listing pages
-   * Yearly listing pages and categories based listing pages are autoamtically generated
-* Simple preview server with watch mechanism built-in
-   * `tuzuru serve` works with automatic re-generation
-* Simple installation with minimum environment setup
-   * Homebrew, npm or even download a binary from GitHub Releases
-* Simple deployment with built-in GitHub Actions step
-   * It does everything from installation CLI to deploying your blog
+It is designed to keep workflows minimal, allowing you to focus on writing.
 
-Instead of writing YAML front matter, you just write and save your plain Markdown files to Git.
-Tuzuru automatically pulls metadata like the publication date and author information from the Git commit history.
+* Simple plain Markdown format, no YAML required
+  * Instead of YAML front matter, Tuzuru pulls the publication date and author from Git.
+* Simple routing with auto-generated listing pages
+  * Yearly archives and category-based listings are created automatically.
+* Simple preview server with built-in watch mode
+  * `tuzuru serve` automatically rebuilds on save.
+* Simple installation with minimal setup
+  * Install via Homebrew, npm, or download a binary from GitHub Releases.
+* Simple deployment with built-in GitHub Actions
+  * From installation to deployment, everything is handled for you.
 
 ## Installation
 
