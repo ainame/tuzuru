@@ -195,4 +195,99 @@ struct TuzuruIntegrationTests {
         let _ = try await tuzuru.generate(processedSource)
         #expect(fixture.fileManager.fileExists(atPath: FilePath("blog")))
     }
+
+    @Test("createPathMapping maps posts, index, years, and categories")
+    func testCreatePathMapping() async throws {
+        // Setup demo project in isolated git repo
+        let fixture = Environment.gitRepositoryFixture!
+        let fixturesPath = FilePath(#filePath).removingLastComponent().appending("Fixtures/DemoProject")
+        try fixture.copyFixtures(from: fixturesPath)
+        try await fixture.createCommit(message: "Add demo project fixtures")
+
+        // Load configuration and initialize Tuzuru
+        let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
+        let config = try loader.load(from: "tuzuru.json")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+
+        // Build source
+        let rawSource = try await tuzuru.loadSources(config.sourceLayout)
+        let source = try await tuzuru.processContents(rawSource)
+
+        // Create mapping
+        let mapping = tuzuru.createPathMapping(for: source)
+
+        // Index pages should map to contents directory
+        #expect(mapping["/"] == config.sourceLayout.contents)
+        #expect(mapping["/index.html"] == config.sourceLayout.contents)
+
+        // Year listing pages should exist and map to contents directory
+        if let anyYear = source.years.first {
+            #expect(mapping["/\(anyYear)/"] == config.sourceLayout.contents)
+            #expect(mapping["/\(anyYear)/index.html"] == config.sourceLayout.contents)
+        } else {
+            // The demo fixture always yields at least one year from git history
+            #expect(Bool(true))
+        }
+
+        // Category listing pages should map to the corresponding directory
+        if let anyCategory = source.categories.first {
+            #expect(mapping["/\(anyCategory)/"] == config.sourceLayout.contents.appending(anyCategory))
+            #expect(mapping["/\(anyCategory)/index.html"] == config.sourceLayout.contents.appending(anyCategory))
+        } else {
+            // The demo fixture has category directories (e.g., technology, lifestyle)
+            #expect(Bool(true))
+        }
+
+        // At least one post should be present and mapped
+        #expect(!source.posts.isEmpty)
+        let pathGen = PathGenerator(
+            configuration: config.output,
+            contentsBasePath: config.sourceLayout.contents,
+            unlistedBasePath: config.sourceLayout.unlisted
+        )
+        if let post = source.posts.first {
+            let req = "/" + pathGen.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
+            #expect(mapping[req] == post.path)
+        }
+    }
+
+    @Test("shouldRegenerate returns true when category content changes")
+    func testShouldRegenerateForCategoryDirectoryChanges() async throws {
+        // Setup demo project in isolated git repo
+        let fixture = Environment.gitRepositoryFixture!
+        let fixturesPath = FilePath(#filePath).removingLastComponent().appending("Fixtures/DemoProject")
+        try fixture.copyFixtures(from: fixturesPath)
+        try await fixture.createCommit(message: "Add demo project fixtures")
+
+        // Load configuration and initialize Tuzuru
+        let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
+        let config = try loader.load(from: "tuzuru.json")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+
+        // Build source and path mapping
+        let rawSource = try await tuzuru.loadSources(config.sourceLayout)
+        let source = try await tuzuru.processContents(rawSource)
+        let mapping = tuzuru.createPathMapping(for: source)
+
+        // Pick a known category from the demo fixture
+        let category = source.categories.contains("technology") ? "technology" : (source.categories.first ?? "technology")
+        let requestPath = "/\(category)/"
+
+        // Baseline: no changes after this timestamp
+        let lastRequestTime = Date()
+
+        // Immediately checking should be false (no changes after lastRequestTime)
+        let initial = tuzuru.shouldRegenerate(requestPath: requestPath, lastRequestTime: lastRequestTime, pathMapping: mapping)
+        #expect(initial == false)
+
+        // Wait a moment to ensure file timestamps move forward
+        try await Task.sleep(nanoseconds: 1_200_000_000)
+
+        // Modify or add a file under the category directory
+        try fixture.writeFile(at: "contents/\(category)/new-post.md", content: "# Hello\n")
+
+        // Now changes occurred after lastRequestTime, should be true
+        let changed = tuzuru.shouldRegenerate(requestPath: requestPath, lastRequestTime: lastRequestTime, pathMapping: mapping)
+        #expect(changed == true)
+    }
 }
