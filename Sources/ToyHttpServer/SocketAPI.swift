@@ -37,9 +37,9 @@ private let SOCK_STREAM_VALUE: Int32 = Int32(SOCK_STREAM.rawValue)
 @inline(__always) private func cclose(_ s: Int32) { Glibc.close(s) }
 #endif
 
-// MARK: - Connection Abstraction
+// MARK: - Socket Abstraction
 
-struct Connection {
+struct Socket {
     let fileDescriptor: Int32
     
     init(_ fileDescriptor: Int32) {
@@ -49,12 +49,32 @@ struct Connection {
     func close() {
         cclose(fileDescriptor)
     }
+    
+    func recv(_ buffer: UnsafeMutablePointer<UInt8>, _ length: Int) -> Int {
+        crecv(fileDescriptor, buffer, length, 0)
+    }
+    
+    @discardableResult
+    func send(_ buffer: UnsafeRawPointer?, _ length: Int) -> Int {
+        csend(fileDescriptor, buffer, length, 0)
+    }
+    
+    func sendData(_ data: Data) {
+        _ = data.withUnsafeBytes {
+            send($0.bindMemory(to: UInt8.self).baseAddress, data.count)
+        }
+    }
+    
+    func sendString(_ string: String) {
+        let data = string.data(using: .utf8) ?? Data()
+        sendData(data)
+    }
 }
 
 // MARK: - Platform Implementation (simplified)
 
 struct SocketAPI {
-    static func createServerSocket(port: Int) throws -> Connection {
+    static func createServerSocket(port: Int) throws -> Socket {
         let serverSocket = csocket(AF_INET, SOCK_STREAM_VALUE, 0)
         guard serverSocket != -1 else { throw TinyHttpServerError.socketCreationFailed }
 
@@ -91,10 +111,10 @@ struct SocketAPI {
             throw TinyHttpServerError.listenFailed
         }
 
-        return Connection(serverSocket)
+        return Socket(serverSocket)
     }
 
-    static func accept(_ serverSocket: Connection) -> Connection? {
+    static func accept(_ serverSocket: Socket) -> Socket? {
         var clientAddr = sockaddr_in()
         var clientAddrSize = socklen_t(MemoryLayout<sockaddr_in>.size)
         let clientSocket = withUnsafeMutablePointer(to: &clientAddr) {
@@ -102,29 +122,7 @@ struct SocketAPI {
                 caccept(serverSocket.fileDescriptor, $0, &clientAddrSize)
             }
         }
-        return clientSocket != -1 ? Connection(clientSocket) : nil
+        return clientSocket != -1 ? Socket(clientSocket) : nil
     }
 
-    static func recv(_ socket: Connection, _ buffer: UnsafeMutablePointer<UInt8>, _ length: Int) -> Int {
-        crecv(socket.fileDescriptor, buffer, length, 0)
-    }
-
-    @discardableResult
-    static func send(_ socket: Connection, _ buffer: UnsafeRawPointer?, _ length: Int) -> Int {
-        csend(socket.fileDescriptor, buffer, length, 0)
-    }
-
-    static func close(_ socket: Connection) {
-        socket.close()
-    }
-    static func sendData(_ socket: Connection, data: Data) {
-        _ = data.withUnsafeBytes {
-            send(socket, $0.bindMemory(to: UInt8.self).baseAddress, data.count)
-        }
-    }
-
-    static func sendString(_ socket: Connection, _ string: String) {
-        let data = string.data(using: .utf8) ?? Data()
-        sendData(socket, data: data)
-    }
 }

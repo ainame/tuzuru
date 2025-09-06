@@ -89,15 +89,15 @@ public class ToyHttpServer {
     }
 
     private static func handleClientInstance(
-        _ clientSocket: Connection, 
+        _ clientSocket: Socket, 
         servePath: String,
         beforeHook: RequestHook?,
         afterHook: ResponseHook?
     ) async {
-        defer { SocketAPI.close(clientSocket) }
+        defer { clientSocket.close() }
 
         var buffer = [UInt8](repeating: 0, count: 1024)
-        let bytesRead = SocketAPI.recv(clientSocket, &buffer, buffer.count)
+        let bytesRead = clientSocket.recv(&buffer, buffer.count)
         guard bytesRead > 0,
               let request = String(bytes: buffer[0..<bytesRead], encoding: .utf8),
               let requestLine = request.components(separatedBy: "\r\n").first else {
@@ -130,7 +130,7 @@ public class ToyHttpServer {
 
         guard method == "GET" else {
             logRequestStatic(method, fullPath, 405)
-            SocketAPI.sendString(clientSocket, "HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
+            clientSocket.sendString("HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
             await afterHook?(requestContext, 405)
             return
         }
@@ -143,7 +143,7 @@ public class ToyHttpServer {
 
     
 
-    private static func serveFileStatic(_ clientSocket: Connection, path: String, servePath: String) -> Int {
+    private static func serveFileStatic(_ clientSocket: Socket, path: String, servePath: String) -> Int {
         var filePath = path == "/" ?
             servePath + "/index.html" :
             path.hasSuffix("/") ? servePath + path + "index.html" :
@@ -161,7 +161,7 @@ public class ToyHttpServer {
         guard filePath.hasPrefix(servePath),
               FileManager.default.fileExists(atPath: filePath),
               let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
-            SocketAPI.sendString(clientSocket, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
+            clientSocket.sendString("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
             return 404
         }
 
@@ -180,13 +180,13 @@ public class ToyHttpServer {
                          "application/octet-stream"
 
         let response = "HTTP/1.1 200 OK\r\nContent-Type: \(contentType)\r\nContent-Length: \(data.count)\r\n\r\n"
-        SocketAPI.sendString(clientSocket, response)
-        SocketAPI.sendData(clientSocket, data: data)
+        clientSocket.sendString(response)
+        clientSocket.sendData(data)
         return 200
     }
 
-    private static func sendStringStatic(_ socket: Connection, _ string: String) {
-        SocketAPI.sendString(socket, string)
+    private static func sendStringStatic(_ socket: Socket, _ string: String) {
+        socket.sendString(string)
     }
 
     private static func logRequestStatic(_ method: String, _ path: String, _ statusCode: Int) {
