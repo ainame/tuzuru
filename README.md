@@ -3,23 +3,21 @@
 ![logo](.github/assets/logo.png)
 
 Tuzuru (綴る) is dead-simple static **blog** generator CLI that uses Git to manage your blog's metadata.
+It is designed to let you focus on writing by keeping workflows as simple as possible.
 
-Instead of writing YAML front matter, you just write and save your plain Markdown files to Git. Tuzuru automatically pulls metadata like the publication date and author information from the Git commit history.
+* Simple plain Markdown format with no YAML syntax
+   * Instead of YAML front matter, Tuzuru uses Git to pull published date.
+* Simple routing with automatically generated listing pages
+   * Yearly listing pages and categories based listing pages are autoamtically generated
+* Simple preview server with watch mechanism built-in
+   * `tuzuru serve` works with automatic re-generation
+* Simple installation with minimum environment setup
+   * Homebrew, npm or even download a binary from GitHub Releases
+* Simple deployment with built-in GitHub Actions step
+   * It does everything from installation CLI to deploying your blog
 
-This means you can focus on what you're writing, not on remembering syntax. It's a simpler, more lightweight way to manage your blog.
-
-## Motivation
-
-Years ago, I built a blog with Hugo, but eventually stopped updating it. When I recently wanted to start again, I found it tough to remember and re-learn how to use it.
-
-I wanted a simple, intuitive blogging tool, but none I tried felt quite right. So, I decided to build my own.
-
-Tuzuru is designed with these core principles:
-
-* Plain Markdown: No YAML front matter.
-* Simple Routing: A routing system built specifically for blogs.
-* No JavaScript Framework: Lightweight and fast.
-* Single Binary Installation: Avoids environment setup for tools that you may not use day-to-day
+Instead of writing YAML front matter, you just write and save your plain Markdown files to Git.
+Tuzuru automatically pulls metadata like the publication date and author information from the Git commit history.
 
 ## Installation
 
@@ -89,14 +87,73 @@ tuzuru serve
 
 This starts a local HTTP server at `http://localhost:8000` with auto-regeneration enabled. When you modify source files, the blog will be automatically rebuilt on the next request.
 
+### Deployment
+
+This repo has two GitHub Actions prepared for Tuzuru blogs to set up deployment easily.
+
+* [ainame/Tuzuru/.github/actions/tuzuru-deploy](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-deploy/action.yml)
+   * Install tuzuru via npm, generate blog, upload the artefact, and deploy to GitHub page
+* [ainame/Tuzuru/.github/actions/tuzuru-generate](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-generate/action.yml)
+   * Only install tuzuru via npm and generate blog
+   * You can deploy to anywhere you like
+
+Their versions should match the CLI’s version. When you update the CLI version, you should also update the action’s version.
+It is recommended to use Renovate or Dependabot to keep it up to date.
+
+This is an exmaple `.github/workflows/deploy.yml`.
+
+<details>
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ainame/Tuzuru/.github/actions/tuzuru-deploy@0.1.2
+```
+
+</details>
+
 ### Built-in layout
 
 The built-in layout is a great starting point and is easy to customize. It already includes [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) to make writing tech blog posts a breeze.
 
-
 ![screenshot](.github/assets/screenshot.png)
 
-### Example project structure
+### Demo
+
+You can see Tuzuru in action with this demo blog hosted on GitHub Pages:
+
+- **Live Demo**: [https://ainame.tokyo/tuzuru-demo/](https://ainame.github.io/tuzuru-demo/)
+- **Source Repository**: [https://github.com/ainame/tuzuru-demo](https://github.com/ainame/tuzuru-demo)
+
+This demo showcases the built-in layout.
+
+## How it works
+
+This is how a tuzuru project look like.
 
 ```
 my-blog/
@@ -115,16 +172,10 @@ my-blog/
 └── tuzuru.json
 ```
 
-### Demo
-
-You can see Tuzuru in action with this demo blog hosted on GitHub Pages:
-
-- **Live Demo**: [https://ainame.tokyo/tuzuru-demo/](https://ainame.github.io/tuzuru-demo/)
-- **Source Repository**: [https://github.com/ainame/tuzuru-demo](https://github.com/ainame/tuzuru-demo)
-
-This demo showcases the built-in layout and demonstrates how Tuzuru generates clean, lightweight blog pages from plain Markdown files.
-
-## How it works
+* `contents/` - where you put markdown files
+* `templates/` - layout files
+* `assets/` - place to locate your assets files, like css or images
+* `tuzuru.json` - configuration
 
 ### Layout and customization
 
@@ -165,7 +216,9 @@ To prevent browser cache issues, use the `{{buildVersion}}` variable in your tem
 
 ### tuzuru.json
 
-`tuzuru.json` is the main configuration file, though you can omit most settings if you stick to the defaults.
+`tuzuru.json` is the main configuration file.
+By default, you get only `metadata` section by `tuzuru init` but
+here's the rest of customization you can do.
 
 
 ```javascript
@@ -259,55 +312,6 @@ The serve command automatically watches for changes in your source files and reg
 - **Templates**: Watches template files for changes
 
 When files are modified, the blog is regenerated on the next HTTP request, providing a seamless development experience without manual rebuilds.
-
-## Deployment
-
-This repo has two GitHub Actions prepared for Tuzuru blogs to set up deployment easily.
-
-* [ainame/Tuzuru/.github/actions/tuzuru-deploy](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-deploy/action.yml)
-   * Install tuzuru via npm, generate blog, upload the artefact, and deploy to GitHub page
-* [ainame/Tuzuru/.github/actions/tuzuru-generate](https://github.com/ainame/tuzuru/blob/main/.github/actions/tuzuru-generate/action.yml)
-   * Only install tuzuru via npm and generate blog
-   * You can deploy to anywhere you like
-
-Their versions should match the CLI’s version. When you update the CLI version, you should also update the action’s version.
-It is recommended to use Renovate or Dependabot to keep it up to date.
-
-This is an exmaple `.github/workflows/deploy.yml`.
-
-<details>
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - uses: ainame/Tuzuru/.github/actions/tuzuru-deploy@0.1.2
-```
-
-</details>
 
 ## Build Requirements
 
