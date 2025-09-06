@@ -1,94 +1,30 @@
 name: "Tuzuru - Generate Blog"
-description: "Download latest Tuzuru release binary and run 'tuzuru generate'"
+description: "Install tuzuru via npm and run 'tuzuru generate'"
 
 inputs:
-  working-directory:
-    description: "Path to the blog repository root"
-    required: false
-    default: "."
   config:
     description: "Path to tuzuru.json (relative to working-directory)"
-    required: false
-    default: ""
-  args:
-    description: "Extra arguments to pass to 'tuzuru generate'"
     required: false
     default: ""
 
 runs:
   using: "composite"
   steps:
-    - name: Detect runner architecture
-      id: arch
+    - name: Setup Node.js
+      uses: actions/setup-node@v5
+      with:
+        node-version: '22'
+
+    - name: Install Tuzuru
       shell: bash
-      run: |
-        set -euo pipefail
-        ARCH=$(uname -m)
-        case "$ARCH" in
-          x86_64|amd64)
-            echo "asset_suffix=linux-x86_64.tar.gz" >> "$GITHUB_OUTPUT"
-            ;;
-          aarch64|arm64)
-            echo "asset_suffix=linux-aarch64.tar.gz" >> "$GITHUB_OUTPUT"
-            ;;
-          *)
-            echo "Unsupported architecture: $ARCH" >&2
-            exit 1
-            ;;
-        esac
-
-    - name: Download latest Tuzuru release
-      id: download
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      shell: bash
-      run: |
-        set -euo pipefail
-        OWNER_REPO="ainame/Tuzuru"
-        API_URL="https://api.github.com/repos/${OWNER_REPO}/releases/latest"
-        ASSET_SUFFIX="${{ steps.arch.outputs.asset_suffix }}"
-
-        # Fetch release metadata
-        json=$(curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GITHUB_TOKEN}" "$API_URL")
-
-        # Find asset download URL matching our platform
-        url=$(echo "$json" | jq -r ".assets[] | select(.name | endswith(\"${ASSET_SUFFIX}\")) | .browser_download_url" | head -n1)
-        if [[ -z "${url}" || "${url}" == "null" ]]; then
-          echo "Failed to find asset for suffix ${ASSET_SUFFIX}" >&2
-          echo "$json" | jq -r '.assets[] | .name' || true
-          exit 1
-        fi
-
-        mkdir -p "$RUNNER_TEMP/tuzuru"
-        curl -fsSL -o "$RUNNER_TEMP/tuzuru/tuzuru.tar.gz" "$url"
-        tar -xzf "$RUNNER_TEMP/tuzuru/tuzuru.tar.gz" -C "$RUNNER_TEMP/tuzuru"
-
-        if [[ ! -x "$RUNNER_TEMP/tuzuru/tuzuru" ]]; then
-          echo "tuzuru binary not found in extracted archive" >&2
-          ls -la "$RUNNER_TEMP/tuzuru" >&2 || true
-          exit 1
-        fi
-
-        echo "bin_dir=$RUNNER_TEMP/tuzuru" >> "$GITHUB_OUTPUT"
+      run: npm install -g @ainame/tuzuru
 
     - name: Generate blog
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
-        BIN_DIR='${{ steps.download.outputs.bin_dir }}'
-        TUZURU="$BIN_DIR/tuzuru"
-
-        # Build args
-        ARGS=(generate)
         if [[ -n "${{ inputs.config }}" ]]; then
-          ARGS+=("-c" "${{ inputs.config }}")
+          tuzuru generate -c "${{ inputs.config }}"
+        else
+          tuzuru generate
         fi
-        if [[ -n "${{ inputs.args }}" ]]; then
-          # shellcheck disable=SC2206
-          EXTRA=( ${{ inputs.args }} )
-          ARGS+=("${EXTRA[@]}")
-        fi
-
-        "$TUZURU" "${ARGS[@]}"
-

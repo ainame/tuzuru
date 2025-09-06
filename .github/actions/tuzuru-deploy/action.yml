@@ -1,0 +1,56 @@
+name: "Tuzuru - Generate and Deploy Blog"
+description: "Install tuzuru via npm, generate blog, and deploy to GitHub Pages"
+
+inputs:
+  config:
+    description: "Path to tuzuru.json (relative to working-directory)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v5
+      with:
+        node-version: '22'
+
+    - name: Install Tuzuru
+      shell: bash
+      run: npm install -g @ainame/tuzuru
+
+    - name: Generate blog
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ -n "${{ inputs.config }}" ]]; then
+          tuzuru generate -c "${{ inputs.config }}"
+        else
+          tuzuru generate
+        fi
+
+    - name: Get output directory from config
+      id: config
+      shell: bash
+      run: |
+        set -euo pipefail
+        CONFIG_FILE="${{ inputs.config }}"
+        if [[ -z "$CONFIG_FILE" ]]; then
+          CONFIG_FILE="tuzuru.json"
+        fi
+
+        if [[ -f "$CONFIG_FILE" ]]; then
+          OUTPUT_DIR=$(jq -r '.output.directory // "blog"' "$CONFIG_FILE")
+        else
+          OUTPUT_DIR="blog"
+        fi
+
+        echo "output-dir=$OUTPUT_DIR" >> "$GITHUB_OUTPUT"
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ steps.config.outputs.output-dir }}
+
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
