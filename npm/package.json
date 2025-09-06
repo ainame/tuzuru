@@ -1,0 +1,33 @@
+{
+  "name": "@ainame/tuzuru",
+  "version": "0.0.0",
+  "description": "Tuzuru static blog generator (npm wrapper around prebuilt binaries)",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    "tuzuru": "bin/tuzuru.js"
+  },
+  "os": ["darwin", "linux"],
+  "cpu": ["x64", "arm64"],
+  "engines": {
+    "node": ">=16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ainame/Tuzuru.git"
+  },
+  "homepage": "https://github.com/ainame/Tuzuru",
+  "bugs": {
+    "url": "https://github.com/ainame/Tuzuru/issues"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "vendor/",
+    "README.md"
+  ]
+}
+
