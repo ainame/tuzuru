@@ -33,6 +33,13 @@ if [ -f "Formula/tuzuru.rb" ]; then
     sed -i '' "s|tuzuru-[^-]*-macos|tuzuru-$NEW_VERSION-macos|" Formula/tuzuru.rb
 fi
 
+# Update npm package.json version to match tag (no git tag creation)
+if command -v npm >/dev/null 2>&1; then
+    (cd npm && npm version --no-git-tag-version "$NEW_VERSION")
+else
+    echo "Warning: npm is not installed; skipped updating npm/package.json version"
+fi
+
 # Build and test
 echo "Building..."
 swiftly run swift build
@@ -48,4 +55,14 @@ git tag "$NEW_VERSION"
 git push origin main
 git push origin "$NEW_VERSION"
 
-echo "Release $NEW_VERSION completed"
+echo "Release $NEW_VERSION completed. GitHub Actions will build artifacts and publish npm package."
+
+# Optional: local npm publish (use only if you want to publish immediately from local env)
+if [ -n "${NPM_TOKEN:-}" ]; then
+  echo "NPM_TOKEN detected; attempting local npm publish as a fallback."
+  (cd npm &&
+    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc &&
+    npm publish --access public || echo "Local npm publish failed; relying on CI." )
+else
+  echo "Hint: Set NPM_TOKEN to publish locally. Otherwise CI will publish from release workflow."
+fi

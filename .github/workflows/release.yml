@@ -162,3 +162,19 @@ jobs:
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz \
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-aarch64.tar.gz \
           build/linux/${{ env.PRODUCT_NAME }}-${{ steps.version.outputs.version }}-linux-checksums.txt
+
+    - name: Setup Node for npm publish
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Publish npm package
+      working-directory: npm
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: |
+        # Ensure package.json version matches the tag (no 'v' prefix)
+        # If already correct (updated by release.sh), this is a no-op.
+        jq '.version = "${{ steps.version.outputs.version }}"' package.json > package.json.tmp && mv package.json.tmp package.json
+        npm publish --access public
