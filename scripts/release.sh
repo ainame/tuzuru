@@ -35,10 +35,15 @@ fi
 
 # Update npm package.json version to match tag (no git tag creation)
 if command -v npm >/dev/null 2>&1; then
-    (cd npm && npm version --no-git-tag-version "$NEW_VERSION")
+    npm version --no-git-tag-version "$NEW_VERSION"
 else
-    echo "Warning: npm is not installed; skipped updating npm/package.json version"
+    echo "Warning: npm is not installed; skipped updating package.json version"
 fi
+
+# Update GitHub Actions to use the specific version
+echo "Updating GitHub Actions to use version $NEW_VERSION"
+sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$NEW_VERSION/g" .github/actions/tuzuru-generate/action.yml
+sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$NEW_VERSION/g" .github/actions/tuzuru-deploy/action.yml
 
 # Build and test
 echo "Building..."
