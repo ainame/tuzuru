@@ -48,7 +48,7 @@ runs:
         echo "output-dir=$OUTPUT_DIR" >> "$GITHUB_OUTPUT"
 
     - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         path: ${{ steps.config.outputs.output-dir }}
 
