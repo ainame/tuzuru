@@ -70,9 +70,7 @@ public class ToyHttpServer {
 
         await withTaskGroup(of: Void.self) { group in
             while true {
-                let clientSocket = SocketAPI.accept(serverSocket)
-
-                guard clientSocket != -1 else { continue }
+                guard let clientSocket = SocketAPI.accept(serverSocket) else { continue }
                 
                 group.addTask { @Sendable [
                     servePath = self.servePath,
@@ -91,7 +89,7 @@ public class ToyHttpServer {
     }
 
     private static func handleClientInstance(
-        _ clientSocket: Int32, 
+        _ clientSocket: Connection, 
         servePath: String,
         beforeHook: RequestHook?,
         afterHook: ResponseHook?
@@ -145,7 +143,7 @@ public class ToyHttpServer {
 
     
 
-    private static func serveFileStatic(_ clientSocket: Int32, path: String, servePath: String) -> Int {
+    private static func serveFileStatic(_ clientSocket: Connection, path: String, servePath: String) -> Int {
         var filePath = path == "/" ?
             servePath + "/index.html" :
             path.hasSuffix("/") ? servePath + path + "index.html" :
@@ -187,7 +185,7 @@ public class ToyHttpServer {
         return 200
     }
 
-    private static func sendStringStatic(_ socket: Int32, _ string: String) {
+    private static func sendStringStatic(_ socket: Connection, _ string: String) {
         SocketAPI.sendString(socket, string)
     }
 
