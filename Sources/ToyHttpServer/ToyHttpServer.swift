@@ -46,7 +46,7 @@ public class ToyHttpServer {
     private let afterResponseHook: ResponseHook?
 
     public init(
-        port: Int, 
+        port: Int,
         servePath: String,
         beforeResponseHook: RequestHook? = nil,
         afterResponseHook: ResponseHook? = nil
@@ -58,7 +58,7 @@ public class ToyHttpServer {
     }
 
     public func start() async throws {
-        let serverSocket = try SocketAPI.createServerSocket(port: port)
+        let serverSocket = try Socket.createServerSocket(port: port)
 
         print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
         print("")
@@ -70,8 +70,8 @@ public class ToyHttpServer {
 
         await withTaskGroup(of: Void.self) { group in
             while true {
-                guard let clientSocket = SocketAPI.accept(serverSocket) else { continue }
-                
+                guard let clientSocket = Socket.accept(serverSocket) else { continue }
+
                 group.addTask { @Sendable [
                     servePath = self.servePath,
                     beforeHook = self.beforeResponseHook,
@@ -89,7 +89,7 @@ public class ToyHttpServer {
     }
 
     private static func handleClientInstance(
-        _ clientSocket: Socket, 
+        _ clientSocket: Socket,
         servePath: String,
         beforeHook: RequestHook?,
         afterHook: ResponseHook?
@@ -130,18 +130,18 @@ public class ToyHttpServer {
 
         guard method == "GET" else {
             logRequestStatic(method, fullPath, 405)
-            clientSocket.sendString("HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
+            clientSocket.send("HTTP/1.1 405 Method Not Allowed\r\n\r\n405 Method Not Allowed")
             await afterHook?(requestContext, 405)
             return
         }
 
         let statusCode = serveFileStatic(clientSocket, path: path, servePath: servePath)
         logRequestStatic(method, fullPath, statusCode)
-        
+
         await afterHook?(requestContext, statusCode)
     }
 
-    
+
 
     private static func serveFileStatic(_ clientSocket: Socket, path: String, servePath: String) -> Int {
         var filePath = path == "/" ?
@@ -161,7 +161,7 @@ public class ToyHttpServer {
         guard filePath.hasPrefix(servePath),
               FileManager.default.fileExists(atPath: filePath),
               let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
-            clientSocket.sendString("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
+            clientSocket.send("HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
             return 404
         }
 
@@ -180,13 +180,13 @@ public class ToyHttpServer {
                          "application/octet-stream"
 
         let response = "HTTP/1.1 200 OK\r\nContent-Type: \(contentType)\r\nContent-Length: \(data.count)\r\n\r\n"
-        clientSocket.sendString(response)
-        clientSocket.sendData(data)
+        clientSocket.send(response)
+        clientSocket.send(data)
         return 200
     }
 
     private static func sendStringStatic(_ socket: Socket, _ string: String) {
-        socket.sendString(string)
+        socket.send(string)
     }
 
     private static func logRequestStatic(_ method: String, _ path: String, _ statusCode: Int) {

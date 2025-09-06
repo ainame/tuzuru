@@ -41,39 +41,35 @@ private let SOCK_STREAM_VALUE: Int32 = Int32(SOCK_STREAM.rawValue)
 
 struct Socket {
     let fileDescriptor: Int32
-    
+
     init(_ fileDescriptor: Int32) {
         self.fileDescriptor = fileDescriptor
     }
-    
+
     func close() {
         cclose(fileDescriptor)
     }
-    
+
     func recv(_ buffer: UnsafeMutablePointer<UInt8>, _ length: Int) -> Int {
         crecv(fileDescriptor, buffer, length, 0)
     }
-    
+
     @discardableResult
     func send(_ buffer: UnsafeRawPointer?, _ length: Int) -> Int {
         csend(fileDescriptor, buffer, length, 0)
     }
-    
-    func sendData(_ data: Data) {
+
+    func send(_ data: Data) {
         _ = data.withUnsafeBytes {
             send($0.bindMemory(to: UInt8.self).baseAddress, data.count)
         }
     }
-    
-    func sendString(_ string: String) {
+
+    func send(_ string: String) {
         let data = string.data(using: .utf8) ?? Data()
-        sendData(data)
+        send(data)
     }
-}
 
-// MARK: - Platform Implementation (simplified)
-
-struct SocketAPI {
     static func createServerSocket(port: Int) throws -> Socket {
         let serverSocket = csocket(AF_INET, SOCK_STREAM_VALUE, 0)
         guard serverSocket != -1 else { throw TinyHttpServerError.socketCreationFailed }
@@ -124,5 +120,4 @@ struct SocketAPI {
         }
         return clientSocket != -1 ? Socket(clientSocket) : nil
     }
-
 }
