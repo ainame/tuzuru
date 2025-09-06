@@ -33,22 +33,10 @@ if (!existsSync(binPath)) {
   fail('tuzuru binary is not installed. Try reinstalling the package.');
 }
 
-// Discover bundled resources next to the binary
-let resourcesPath = null;
-try {
-  const entries = readdirSync(vendorDir, { withFileTypes: true });
-  for (const ent of entries) {
-    if (ent.isDirectory() && (ent.name.endsWith('.bundle') || ent.name.endsWith('.resources'))) {
-      resourcesPath = join(vendorDir);
-      break;
-    }
-  }
-} catch {}
-
+// Set resources path to the vendor directory containing the bundle
 const env = { ...process.env };
-if (resourcesPath) {
-  env.TUZURU_RESOURCES = resourcesPath;
-}
+// The bundle is extracted alongside the binary, so set the resources path to the vendor directory
+env.TUZURU_RESOURCES = vendorDir;
 
 const args = process.argv.slice(2);
 const child = spawn(binPath, args, { stdio: 'inherit', env });

@@ -68,20 +68,49 @@ function httpGetJson(url) {
 
 function httpDownload(url, destPath) {
   return new Promise((resolve, reject) => {
-    const file = createWriteStream(destPath);
-    https.get(url, { headers: { 'User-Agent': ua } }, res => {
-      if (res.statusCode !== 200) {
-        file.close(() => {});
-        reject(new Error(`HTTP ${res.statusCode} for ${url}`));
-        res.resume();
+    function handleRedirect(url, maxRedirects = 5) {
+      if (maxRedirects === 0) {
+        reject(new Error('Too many redirects'));
         return;
       }
-      res.pipe(file);
-      file.on('finish', () => file.close(resolve));
-    }).on('error', err => {
-      try { rmSync(destPath, { force: true }); } catch {}
-      reject(err);
-    });
+      
+      const file = createWriteStream(destPath);
+      
+      https.get(url, { headers: { 'User-Agent': ua } }, res => {
+        if (res.statusCode === 301 || res.statusCode === 302) {
+          file.close(() => {});
+          const location = res.headers.location;
+          if (!location) {
+            reject(new Error(`Redirect response missing location header`));
+            return;
+          }
+          log(`Following redirect to ${location}`);
+          handleRedirect(location, maxRedirects - 1);
+          return;
+        }
+        
+        if (res.statusCode !== 200) {
+          file.close(() => {});
+          reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+          res.resume();
+          return;
+        }
+        
+        res.pipe(file);
+        file.on('finish', () => file.close(resolve));
+        file.on('error', err => {
+          file.close(() => {});
+          try { rmSync(destPath, { force: true }); } catch {}
+          reject(err);
+        });
+      }).on('error', err => {
+        file.close(() => {});
+        try { rmSync(destPath, { force: true }); } catch {}
+        reject(err);
+      });
+    }
+    
+    handleRedirect(url);
   });
 }
 
