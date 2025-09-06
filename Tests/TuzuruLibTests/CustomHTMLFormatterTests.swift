@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import Markdown
+@testable import TuzuruLib
 
 @Suite("CustomHTMLFormatter Tests")
 struct CustomHTMLFormatterTests {
