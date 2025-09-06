@@ -17,7 +17,7 @@ runs:
 
     - name: Install Tuzuru
       shell: bash
-      run: npm install -g @ainame/tuzuru@0.1.1
+      run: npm install -g @ainame/tuzuru@0.1.2
 
     - name: Generate blog
       shell: bash
