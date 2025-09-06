@@ -75,10 +75,11 @@ public struct Tuzuru: Sendable {
             throw TuzuruError.configurationAlreadyExists
         }
 
-        // Generate and write tuzuru.json
+        // Generate and write tuzuru.json with only metadata
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        let configData = try encoder.encode(BlogConfiguration.default)
+        let simplifiedConfig = ["metadata": BlogConfiguration.default.metadata]
+        let configData = try encoder.encode(simplifiedConfig)
         try configData.write(to: URL(fileURLWithPath: configPath.string))
 
         // Copy template and asset files from bundle
