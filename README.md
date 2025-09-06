@@ -23,6 +23,14 @@ Tuzuru is designed with these core principles:
 
 ## Installation
 
+### npm (Cross-platform)
+
+```bash
+npm install -g @ainame/tuzuru
+```
+
+This will download and install the appropriate prebuilt binary for your platform (macOS or Linux).
+
 ### Homebrew (macOS)
 
 ```bash
