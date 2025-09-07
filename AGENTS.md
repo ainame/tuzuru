@@ -58,8 +58,8 @@ At least one of `--published-at` or `--author` must be provided.
 ### Package Structure
 - **Command target**: CLI interface using ArgumentParser with MainActor isolation
 - **TuzuruLib target**: Core library containing business logic
-- **Resources**: Template files (Mustache) and static assets
- - **ToyHttpServer target**: Minimal HTTP server for local development (used by `serve`)
+   - **Resources**: Template files (Mustache) and static assets
+- **ToyHttpServer target**: Minimal HTTP server for local development (used by `serve`)
 
 ### Key Dependencies
 - swift-argument-parser: CLI parsing
@@ -68,7 +68,6 @@ At least one of `--published-at` or `--author` must be provided.
 - swift-system: File system operations
 - swift-subprocess: Process execution
 - Yams: YAML parsing
- - (internal) ToyHttpServer: local dev server used by `serve`
 
 ### Core Components
 - `Sources/Command/Command.swift`: CLI command definitions using ArgumentParser
@@ -78,9 +77,9 @@ At least one of `--published-at` or `--author` must be provided.
 - `Sources/TuzuruLib/SourceLoader/`: Content loading and parsing
 - `Sources/TuzuruLib/Importer/`: Content import functionality
 - `Sources/TuzuruLib/Amender/`: File metadata amending functionality
- - `Sources/TuzuruLib/Initializer/`: Blog bootstrap and resource copy logic
- - `Sources/TuzuruLib/Utils/`: Utilities including `FileManagerWrapper`, `GitWrapper`, `ChangeDetector`
- - `Sources/ToyHttpServer/`: Local HTTP server implementation
+- `Sources/TuzuruLib/Initializer/`: Blog bootstrap and resource copy logic
+- `Sources/TuzuruLib/Utils/`: Utilities including `FileManagerWrapper`, `GitWrapper`, `ChangeDetector`
+- `Sources/ToyHttpServer/`: Local HTTP server implementation
 
 ### File Conventions
 - Source markdown files: `contents/` directory
