@@ -1,4 +1,5 @@
-// System package exists from SDK and Subprocess depends on this
+// System framework exists on SDK and Subprocess depends on it conditionally.
+// https://developer.apple.com/documentation/System
 // https://github.com/swiftlang/swift-subprocess/issues/141
 
 #if canImport(System)
