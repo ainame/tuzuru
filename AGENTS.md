@@ -127,6 +127,35 @@ This is for testing purpose due to swift-testing's parallel execution.
 - Use `./tmp` directory with git (tuzuru command depends on a git project)
 - Don't delete `./tmp`
 
+## GitHub Actions
+
+The project provides two composite GitHub Actions for use in workflows:
+
+### `tuzuru-deploy` Action (`.github/actions/tuzuru-deploy/action.yml`)
+- **Purpose**: Complete blog generation and deployment to GitHub Pages
+- **Description**: "Install tuzuru via npm, generate blog, and deploy to GitHub Pages"
+- **Steps**:
+  1. Setup Node.js (v22)
+  2. Install Tuzuru globally (`@ainame/tuzuru@0.1.2`)
+  3. Generate blog using `tuzuru generate`
+  4. Extract output directory from config (defaults to `blog`)
+  5. Upload Pages artifact
+  6. Deploy to GitHub Pages
+- **Inputs**:
+  - `config`: Path to tuzuru.json (optional, relative to working-directory)
+
+### `tuzuru-generate` Action (`.github/actions/tuzuru-generate/action.yml`)
+- **Purpose**: Blog generation only (no deployment)
+- **Description**: "Install tuzuru via npm and run 'tuzuru generate'"
+- **Steps**:
+  1. Setup Node.js (v22)
+  2. Install Tuzuru globally (`@ainame/tuzuru@0.1.2`)
+  3. Generate blog using `tuzuru generate`
+- **Inputs**:
+  - `config`: Path to tuzuru.json (optional, relative to working-directory)
+
+Both actions use the published npm package `@ainame/tuzuru@0.1.2` rather than building from source.
+
 ## Memory
 
 - Always use @Sources/TuzuruLib/Tuzuru.swift facade to implement a command
