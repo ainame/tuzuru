@@ -1,5 +1,11 @@
 # Tuzuru
 
+[![Swift Version](https://img.shields.io/badge/Swift-6.1+-blue.svg)](https://swift.org)
+[![Swift Package Manager](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ainame/tuzuru/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/ainame/tuzuru)](https://github.com/ainame/tuzuru/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ainame/tuzuru/ci.yml?branch=main)](https://github.com/ainame/tuzuru/actions)
+
 Tuzuru (綴る) is a dead-simple static **blog** generator CLI that uses Git to manage your blog metadata.
 Just write and commit plain Markdown files—no front matter needed.
 Tuzuru automatically derives metadata such as dates and author from your Git history.
