@@ -19,7 +19,7 @@ It is designed to keep workflows minimal, allowing you to focus on writing.
 * Simple routing with auto-generated listing pages
   * Yearly archives and category-based listings are created automatically.
 * Simple preview server with built-in watch mode
-  * `tuzuru serve` automatically rebuilds on save.
+  * `tuzuru serve` automatically rebuilds on requests.
 * Simple installation with minimal setup
   * Install via Homebrew, npm, or download a binary from GitHub Releases.
 * Simple deployment with built-in GitHub Actions
