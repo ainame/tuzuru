@@ -14,6 +14,7 @@ struct GitLogReader: Sendable {
             let output = try await GitWrapper.run(
                 arguments: [
                     "log",
+                    "--follow",
                     "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
                     "--",
                     filePath.string
