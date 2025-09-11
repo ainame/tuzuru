@@ -58,8 +58,8 @@ At least one of `--published-at` or `--author` must be provided.
 ### Package Structure
 - **Command target**: CLI interface using ArgumentParser with MainActor isolation
 - **TuzuruLib target**: Core library containing business logic
-- **Resources**: Template files (Mustache) and static assets
- - **ToyHttpServer target**: Minimal HTTP server for local development (used by `serve`)
+   - **Resources**: Template files (Mustache) and static assets
+- **ToyHttpServer target**: Minimal HTTP server for local development (used by `serve`)
 
 ### Key Dependencies
 - swift-argument-parser: CLI parsing
@@ -68,7 +68,6 @@ At least one of `--published-at` or `--author` must be provided.
 - swift-system: File system operations
 - swift-subprocess: Process execution
 - Yams: YAML parsing
- - (internal) ToyHttpServer: local dev server used by `serve`
 
 ### Core Components
 - `Sources/Command/Command.swift`: CLI command definitions using ArgumentParser
@@ -78,9 +77,9 @@ At least one of `--published-at` or `--author` must be provided.
 - `Sources/TuzuruLib/SourceLoader/`: Content loading and parsing
 - `Sources/TuzuruLib/Importer/`: Content import functionality
 - `Sources/TuzuruLib/Amender/`: File metadata amending functionality
- - `Sources/TuzuruLib/Initializer/`: Blog bootstrap and resource copy logic
- - `Sources/TuzuruLib/Utils/`: Utilities including `FileManagerWrapper`, `GitWrapper`, `ChangeDetector`
- - `Sources/ToyHttpServer/`: Local HTTP server implementation
+- `Sources/TuzuruLib/Initializer/`: Blog bootstrap and resource copy logic
+- `Sources/TuzuruLib/Utils/`: Utilities including `FileManagerWrapper`, `GitWrapper`, `ChangeDetector`
+- `Sources/ToyHttpServer/`: Local HTTP server implementation
 
 ### File Conventions
 - Source markdown files: `contents/` directory
@@ -127,6 +126,35 @@ This is for testing purpose due to swift-testing's parallel execution.
 
 - Use `./tmp` directory with git (tuzuru command depends on a git project)
 - Don't delete `./tmp`
+
+## GitHub Actions
+
+The project provides two composite GitHub Actions for use in workflows:
+
+### `tuzuru-deploy` Action (`.github/actions/tuzuru-deploy/action.yml`)
+- **Purpose**: Complete blog generation and deployment to GitHub Pages
+- **Description**: "Install tuzuru via npm, generate blog, and deploy to GitHub Pages"
+- **Steps**:
+  1. Setup Node.js (v22)
+  2. Install Tuzuru globally (`@ainame/tuzuru@0.1.2`)
+  3. Generate blog using `tuzuru generate`
+  4. Extract output directory from config (defaults to `blog`)
+  5. Upload Pages artifact
+  6. Deploy to GitHub Pages
+- **Inputs**:
+  - `config`: Path to tuzuru.json (optional, relative to working-directory)
+
+### `tuzuru-generate` Action (`.github/actions/tuzuru-generate/action.yml`)
+- **Purpose**: Blog generation only (no deployment)
+- **Description**: "Install tuzuru via npm and run 'tuzuru generate'"
+- **Steps**:
+  1. Setup Node.js (v22)
+  2. Install Tuzuru globally (`@ainame/tuzuru@0.1.2`)
+  3. Generate blog using `tuzuru generate`
+- **Inputs**:
+  - `config`: Path to tuzuru.json (optional, relative to working-directory)
+
+Both actions use the published npm package `@ainame/tuzuru@0.1.2` rather than building from source.
 
 ## Memory
 
