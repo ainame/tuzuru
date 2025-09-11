@@ -31,7 +31,7 @@ struct ListCommand: AsyncParsableCommand {
         // Print CSV header: Published At, Author, Title, File Path
         print("\"Published At\", \"Author\", \"Title\", \"File Path\"")
 
-        for post in processedSource.posts {
+        for post in processedSource.posts.sorted(by: { $0.publishedAt > $1.publishedAt }) {
             let relativePath = extractRelativePath(from: post.path, basePath: blogConfig.sourceLayout.contents)
             let formattedDate = dateFormatter.string(from: post.publishedAt)
             let truncatedTitle = truncateString(post.title, maxLength: 40)
