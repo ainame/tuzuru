@@ -5,6 +5,7 @@ import TuzuruLib
 struct GenerateCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "generate",
+        abstract: "Generate blog from markdown files in contents and assets",
     )
 
     @Option(name: [.long, .customShort("c")], help: "Path to configuration file (default: tuzuru.json)")

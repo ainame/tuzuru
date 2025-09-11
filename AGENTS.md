@@ -20,6 +20,7 @@ Note: The codebase also includes conditional support for Linux (Glibc/Musl) in t
 - `swift run tuzuru init` - Init a blog project
 - `swift run tuzuru import` - Import posts from other project using Hugo or Jekyll
 - `swift run tuzuru amend` - Update publishedAt date and/or author for a markdown file by creating marker commits
+- `swift run tuzuru list` - List blog posts with metadata in CSV format
 - `swift run tuzuru serve` - Start a local HTTP server to serve the generated blog with auto-regeneration
 - `swift run tuzuru --help` - Show help
 
@@ -52,6 +53,13 @@ It uses the internal `ToyHttpServer` target and is intended only for local devel
 - `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
 
 At least one of `--published-at` or `--author` must be provided.
+
+#### List Command Options
+- `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
+
+The list command outputs blog posts in CSV format with columns: "Published At", "Author", "Title", "File Path".
+Titles are truncated to 40 characters with "..." if longer. Supports all international scripts and Unicode characters.
+Output format: `"Published At", "Author", "Title", "File Path"` with single space after each comma for readability.
 
 ## Architecture
 
