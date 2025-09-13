@@ -75,18 +75,18 @@ struct ListCommand: AsyncParsableCommand {
     }
 
     private func truncateString(_ string: String, maxLength: Int) -> String {
-        if visualWidth(of: string) <= maxLength {
+        if wcwidth(string) <= maxLength {
             return string
         }
 
         var truncated = ""
         var currentWidth = 0
         let ellipsis = "..."
-        let ellipsisWidth = visualWidth(of: ellipsis)
+        let ellipsisWidth = wcwidth(ellipsis)
         let targetWidth = maxLength - ellipsisWidth
 
         for char in string {
-            let charWidth = visualWidth(of: String(char))
+            let charWidth = wcwidth(char)
             if currentWidth + charWidth > targetWidth {
                 break
             }
@@ -97,18 +97,13 @@ struct ListCommand: AsyncParsableCommand {
         return truncated + ellipsis
     }
 
-    private func visualWidth(of string: String) -> Int {
-        let wcwidth = Wcwidth()
-        return wcwidth(string) ?? string.count
-    }
-
     private func printTableWithBorders(headers: [String], rows: [[String]]) {
         // Calculate column widths
-        var columnWidths = headers.map { visualWidth(of: $0) }
+        var columnWidths = headers.map { wcwidth($0) }
 
         for row in rows {
             for (index, cell) in row.enumerated() {
-                let cellWidth = visualWidth(of: cell)
+                let cellWidth = wcwidth(cell)
                 if cellWidth > columnWidths[index] {
                     columnWidths[index] = cellWidth
                 }
@@ -159,7 +154,7 @@ struct ListCommand: AsyncParsableCommand {
     private func printRow(cells: [String], columnWidths: [Int]) {
         var row = "│"
         for (index, cell) in cells.enumerated() {
-            let cellWidth = visualWidth(of: cell)
+            let cellWidth = wcwidth(cell)
             let padding = columnWidths[index] - cellWidth
             row += " \(cell)\(String(repeating: " ", count: padding)) │"
         }

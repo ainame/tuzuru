@@ -1,5 +1,5 @@
 {
-  "originHash" : "b7bb64f3ef96239d70bb58e2f64e045816616f04339c324e40257a770d0815e8",
+  "originHash" : "aa07463b330a0e0f0a7427dda887fc61c7a4e2c50676df58dbc5c726428c30e9",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ainame/swift-wcwidth.git",
       "state" : {
-        "revision" : "b5afe47c7b0cdfadc5a70d5bc7e0e0c6ca07e6d8",
-        "version" : "0.0.1"
+        "revision" : "f9cefb1b9fe52789e016c8c51400a88de95f2509",
+        "version" : "0.0.2"
       }
     },
     {
