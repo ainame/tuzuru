@@ -325,3 +325,19 @@ When files are modified, the blog is regenerated on the next HTTP request, provi
 
 - Swift 6.1+
 - macOS v15+
+
+## Release
+
+Tuzuru uses a PR-based release flow with automated tagging.
+
+- Prepare PR (bumps versions, updates composite actions, runs build/tests):
+  - `scripts/release.sh 1.2.3` (shortcut for `prepare`)
+  - `scripts/release.sh prepare 1.2.3`
+
+- After the PR is merged into `main`, a GitHub Actions workflow automatically creates and pushes the git tag (no `v` prefix). That tag triggers the Release workflow to build binaries, create the GitHub Release, and publish to npm.
+
+Notes:
+- The script updates `Sources/Command/Command.swift`, `package.json`, `Formula/tuzuru.rb` (if present), and internal composite actions to reference the new npm version.
+- Tags do not use a `v` prefix (e.g., use `1.2.3`).
+- If automation is ever unavailable, a fallback command exists: `scripts/release.sh tag <version>`.
+- If `gh` (GitHub CLI) is installed, the script opens a PR automatically; otherwise, push branch `release/<version>` and open a PR manually.

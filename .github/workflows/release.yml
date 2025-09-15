@@ -2,14 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.0)'
-        required: true
-        type: string
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -21,10 +15,16 @@ jobs:
   build-and-release:
     name: Build Universal Binaries and Release
     runs-on: macos-15
+    # Only run on version bump commits when triggered by push to main
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[Version Bump]')
 
     steps:
     - name: Checkout
       uses: actions/checkout@v5
+
+    - name: Auto-create tag for version bumps
+      id: auto_tag
+      run: scripts/auto-tag.sh
 
     - name: Setup Xcode
       run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
@@ -32,11 +32,8 @@ jobs:
     - name: Get version
       id: version
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-        else
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        fi
+        VERSION="${{ steps.auto_tag.outputs.created_tag }}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Install Swiftly for Linux cross-compilation
       run: |
