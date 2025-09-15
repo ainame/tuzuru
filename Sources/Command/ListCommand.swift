@@ -1,9 +1,9 @@
 import ArgumentParser
 import Foundation
 import TuzuruLib
-import Wcwidth
+import DisplayWidth
 
-private let wcwidth = Wcwidth()
+private let displayWidth = DisplayWidth()
 
 struct ListCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
@@ -75,18 +75,18 @@ struct ListCommand: AsyncParsableCommand {
     }
 
     private func truncateString(_ string: String, maxLength: Int) -> String {
-        if wcwidth(string) <= maxLength {
+        if displayWidth(string) <= maxLength {
             return string
         }
 
         var truncated = ""
         var currentWidth = 0
         let ellipsis = "..."
-        let ellipsisWidth = wcwidth(ellipsis)
+        let ellipsisWidth = displayWidth(ellipsis)
         let targetWidth = maxLength - ellipsisWidth
 
         for char in string {
-            let charWidth = wcwidth(char)
+            let charWidth = displayWidth(char)
             if currentWidth + charWidth > targetWidth {
                 break
             }
@@ -99,11 +99,11 @@ struct ListCommand: AsyncParsableCommand {
 
     private func printTableWithBorders(headers: [String], rows: [[String]]) {
         // Calculate column widths
-        var columnWidths = headers.map { wcwidth($0) }
+        var columnWidths = headers.map { displayWidth($0) }
 
         for row in rows {
             for (index, cell) in row.enumerated() {
-                let cellWidth = wcwidth(cell)
+                let cellWidth = displayWidth(cell)
                 if cellWidth > columnWidths[index] {
                     columnWidths[index] = cellWidth
                 }
@@ -154,7 +154,7 @@ struct ListCommand: AsyncParsableCommand {
     private func printRow(cells: [String], columnWidths: [Int]) {
         var row = "│"
         for (index, cell) in cells.enumerated() {
-            let cellWidth = wcwidth(cell)
+            let cellWidth = displayWidth(cell)
             let padding = columnWidths[index] - cellWidth
             row += " \(cell)\(String(repeating: " ", count: padding)) │"
         }
