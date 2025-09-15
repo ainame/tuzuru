@@ -48,11 +48,6 @@ update_sources_for_version() {
   # Update version in Command.swift
   sed -i '' "s/version: \".*\"/version: \"$v\"/" Sources/Command/Command.swift
 
-  # Update version in Homebrew Formula if it exists (URL and archive name)
-  if [ -f "Formula/tuzuru.rb" ]; then
-    sed -i '' "s|download/[^/]*/|download/$v/|" Formula/tuzuru.rb
-    sed -i '' "s|tuzuru-[^-]*-macos|tuzuru-$v-macos|" Formula/tuzuru.rb
-  fi
 
   # Update npm package.json version to match tag (no git tag creation)
   if command -v npm >/dev/null 2>&1; then
