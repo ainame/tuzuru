@@ -164,6 +164,34 @@ The project provides two composite GitHub Actions for use in workflows:
 
 Both actions use the published npm package `@ainame/tuzuru@0.1.2` rather than building from source.
 
+## Release Workflow
+
+The project uses an automated PR-based release workflow:
+
+### Release Process
+1. **Create Release PR**: Run `scripts/release.sh <version>` (e.g., `scripts/release.sh 1.2.3`)
+   - Updates version in Swift source files and package.json
+   - Updates GitHub Action composite actions to use new npm version
+   - Runs build and tests locally
+   - Creates release branch and PR with `[Version Bump]` title prefix
+
+2. **Automated Release**: When the PR is merged to main:
+   - `.github/workflows/release.yml` triggers on commit messages containing `[Version Bump]`
+   - `scripts/auto-tag.sh` creates git tag from current version
+   - Workflow builds cross-platform binaries (macOS universal, Linux x86_64/aarch64)
+   - Updates Homebrew Formula with correct SHA256
+   - Creates GitHub release with all assets
+   - Publishes to npm registry
+
+### Key Scripts
+- `scripts/release.sh`: Creates version bump PR with proper title format
+- `scripts/auto-tag.sh`: Extracts version and creates git tag (used by workflow)
+
+### Important Notes
+- Release workflow depends on `[Version Bump]` commit message prefix
+- Tags are created without 'v' prefix (e.g., `1.2.3`, not `v1.2.3`)
+- Homebrew Formula is updated during release workflow, not during PR creation
+
 ## Memory
 
 - Always use @Sources/TuzuruLib/Tuzuru.swift facade to implement a command
