@@ -1,5 +1,5 @@
 {
-  "originHash" : "aa07463b330a0e0f0a7427dda887fc61c7a4e2c50676df58dbc5c726428c30e9",
+  "originHash" : "11be9bc9d8fc0c83ca1b87dc3702a05d4d214afb32e4cc971fc5d875b7d6a3ad",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "b022b08312decdc46585e0b3440d97f6f22ef703",
         "version" : "0.6.0"
+      }
+    },
+    {
+      "identity" : "swift-displaywidth",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ainame/swift-displaywidth.git",
+      "state" : {
+        "revision" : "e2bfbdf1469366483451708bca36511f4f48ddb1",
+        "version" : "0.0.3"
       }
     },
     {
@@ -53,15 +62,6 @@
       "state" : {
         "revision" : "61e4ca4b81b9e09e2ec863b00c340eb13497dac6",
         "version" : "1.5.0"
-      }
-    },
-    {
-      "identity" : "swift-wcwidth",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ainame/swift-wcwidth.git",
-      "state" : {
-        "revision" : "f9cefb1b9fe52789e016c8c51400a88de95f2509",
-        "version" : "0.0.2"
       }
     },
     {
