@@ -104,14 +104,16 @@ prepare_pr() {
   local branch="release/${v}"
   git switch -c "$branch"
   git add .
-  git commit -m "release: bump version to $v"
+  git commit -m "[Version Bump] bump version to $v"
   git push -u origin "$branch"
 
   if command -v gh >/dev/null 2>&1; then
     echo "Opening pull request via GitHub CLI..."
     gh pr create \
       --title "[Version Bump] $v" \
-      --body "Bump version to $v\n\nThis PR was created by scripts/release.sh. After merge, the release workflow will automatically create the tag." \
+      --body "Bump version to $v
+
+This PR was created by scripts/release.sh. After merge, the release workflow will automatically create the tag." \
       --base main \
       --head "$branch" || true
   else
