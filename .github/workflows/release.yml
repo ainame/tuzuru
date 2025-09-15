@@ -133,11 +133,16 @@ jobs:
         sed -i '' "s|sha256 \".*\"|sha256 \"$SHA\"|" Formula/tuzuru.rb
 
     - name: Commit Formula Update
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add Formula/tuzuru.rb
         git commit -m "chore: update Formula for ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
+        # Use GitHub CLI to push with bypass permissions
+        gh auth setup-git
         git push origin HEAD:main || echo "Failed to push changes"
 
     - name: Create Release and Upload All Assets
