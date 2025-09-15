@@ -6,7 +6,7 @@ set -euo pipefail
 # Tuzuru release helper
 #
 # Creates a release branch and PR for version bump.
-# After PR merge, auto-tag-on-merge.yml workflow will create the tag automatically.
+# After PR merge, release.yml workflow will create the tag automatically.
 #
 # Usage:
 #   scripts/release.sh <version>
@@ -32,7 +32,7 @@ ensure_clean_worktree() {
   fi
 }
 
-validate_version() {
+validate_semver() {
   local v="$1"
   if ! echo "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+)?$'; then
     echo "Error: Invalid version format. Use semantic versioning (e.g., 1.0.0 or 1.0.0-rc.1)"
@@ -91,7 +91,7 @@ prepare_pr() {
   local v="$1"
 
   ensure_clean_worktree
-  validate_version "$v"
+  validate_semver "$v"
 
   # Ensure we are on main and up-to-date before branching
   git fetch origin
@@ -111,7 +111,7 @@ prepare_pr() {
     echo "Opening pull request via GitHub CLI..."
     gh pr create \
       --title "[Version Bump] $v" \
-      --body "Bump version to $v\n\nThis PR was created by scripts/release.sh. After merge, the auto-tag-on-merge workflow will automatically create the tag." \
+      --body "Bump version to $v\n\nThis PR was created by scripts/release.sh. After merge, the release workflow will automatically create the tag." \
       --base main \
       --head "$branch" || true
   else

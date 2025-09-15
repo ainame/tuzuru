@@ -16,6 +16,8 @@ jobs:
     name: Build Universal Binaries and Release
     runs-on: macos-15
     # Only run on version bump commits when triggered by push to main
+    # IMPORTANT: This workflow depends on commit messages containing '[Version Bump]'
+    # which is automatically created by scripts/release.sh when creating version bump PRs
     if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[Version Bump]')
 
     steps:
