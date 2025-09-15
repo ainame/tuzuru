@@ -1,63 +1,140 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <version>"
-    echo "Example: $0 1.0.0"
-    exit 1
-fi
+#
+# Tuzuru release helper
+#
+# Creates a release branch and PR for version bump.
+# After PR merge, release.yml workflow will create the tag automatically.
+#
+# Usage:
+#   scripts/release.sh <version>
+#
+# Examples:
+#   scripts/release.sh 1.2.3
+#
 
-NEW_VERSION="$1"
+usage() {
+  cat <<USAGE
+Usage:
+  $0 <version>   Create a branch and PR to bump version
 
-# Validate version format
-if ! echo "$NEW_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-    echo "Error: Invalid version format. Use semantic versioning (e.g., 1.0.0)"
-    exit 1
-fi
+Examples:
+  $0 1.2.3
+USAGE
+}
 
-# Check git status
-if ! git diff-index --quiet HEAD --; then
+ensure_clean_worktree() {
+  if ! git diff-index --quiet HEAD --; then
     echo "Error: Working directory is not clean. Please commit or stash your changes."
     exit 1
-fi
+  fi
+}
 
-echo "Updating version to $NEW_VERSION"
+validate_semver() {
+  local v="$1"
+  if ! echo "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+)?$'; then
+    echo "Error: Invalid version format. Use semantic versioning (e.g., 1.0.0 or 1.0.0-rc.1)"
+    exit 1
+  fi
+}
 
-# Update version in Command.swift
-sed -i '' "s/version: \".*\"/version: \"$NEW_VERSION\"/" Sources/Command/Command.swift
+update_sources_for_version() {
+  local v="$1"
 
-# Update version in Formula if it exists
-if [ -f "Formula/tuzuru.rb" ]; then
-    sed -i '' "s|download/[^/]*/|download/$NEW_VERSION/|" Formula/tuzuru.rb
-    sed -i '' "s|tuzuru-[^-]*-macos|tuzuru-$NEW_VERSION-macos|" Formula/tuzuru.rb
-fi
+  echo "Updating version to $v"
 
-# Update npm package.json version to match tag (no git tag creation)
-if command -v npm >/dev/null 2>&1; then
-    npm version --no-git-tag-version "$NEW_VERSION"
-else
+  # Update version in Command.swift
+  sed -i '' "s/version: \".*\"/version: \"$v\"/" Sources/Command/Command.swift
+
+  # Update version in Homebrew Formula if it exists (URL and archive name)
+  if [ -f "Formula/tuzuru.rb" ]; then
+    sed -i '' "s|download/[^/]*/|download/$v/|" Formula/tuzuru.rb
+    sed -i '' "s|tuzuru-[^-]*-macos|tuzuru-$v-macos|" Formula/tuzuru.rb
+  fi
+
+  # Update npm package.json version to match tag (no git tag creation)
+  if command -v npm >/dev/null 2>&1; then
+    npm version --no-git-tag-version "$v"
+  else
     echo "Warning: npm is not installed; skipped updating package.json version"
-fi
+  fi
 
-# Update GitHub Actions to use the specific version
-echo "Updating GitHub Actions to use version $NEW_VERSION"
-sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$NEW_VERSION/g" .github/actions/tuzuru-generate/action.yml
-sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$NEW_VERSION/g" .github/actions/tuzuru-deploy/action.yml
+  # Update internal composite actions to use the specific version of npm package
+  echo "Updating GitHub composite actions to use @ainame/tuzuru@$v"
+  sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$v/g" .github/actions/tuzuru-generate/action.yml
+  sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$v/g" .github/actions/tuzuru-deploy/action.yml
+}
 
-# Build and test
-echo "Building..."
-swiftly run swift build
+build_and_test() {
+  echo "Building..."
+  if command -v swift >/dev/null 2>&1; then
+    swift build
+  elif command -v swiftly >/dev/null 2>&1; then
+    swiftly run swift build
+  else
+    echo "Warning: neither 'swift' nor 'swiftly' found in PATH; skipping build"
+  fi
 
-echo "Running tests..."
-swiftly run swift test
+  echo "Running tests..."
+  if command -v swift >/dev/null 2>&1; then
+    swift test
+  elif command -v swiftly >/dev/null 2>&1; then
+    swiftly run swift test
+  else
+    echo "Warning: neither 'swift' nor 'swiftly' found in PATH; skipping tests"
+  fi
+}
 
-# Commit and tag
-git fetch
-git add .
-git commit -m "Bump version to $NEW_VERSION"
-git tag "$NEW_VERSION"
-git push origin main
-git push origin "$NEW_VERSION"
+prepare_pr() {
+  local v="$1"
 
-echo "Release $NEW_VERSION completed. GitHub Actions will build artifacts and publish npm package."
+  ensure_clean_worktree
+  validate_semver "$v"
+
+  # Ensure we are on main and up-to-date before branching
+  git fetch origin
+  git switch main
+  git pull --ff-only origin main
+
+  update_sources_for_version "$v"
+  build_and_test
+
+  local branch="release/${v}"
+  git switch -c "$branch"
+  git add .
+  git commit -m "release: bump version to $v"
+  git push -u origin "$branch"
+
+  if command -v gh >/dev/null 2>&1; then
+    echo "Opening pull request via GitHub CLI..."
+    gh pr create \
+      --title "[Version Bump] $v" \
+      --body "Bump version to $v\n\nThis PR was created by scripts/release.sh. After merge, the release workflow will automatically create the tag." \
+      --base main \
+      --head "$branch" || true
+  else
+    echo "GitHub CLI 'gh' not found. Please open a PR from branch '$branch' into 'main'."
+  fi
+
+  echo "Created branch $branch with version bump. Opened PR if possible."
+}
+
+
+main() {
+  if [ $# -eq 0 ]; then
+    usage
+    exit 1
+  fi
+
+  # Check if argument looks like a version
+  if echo "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+    prepare_pr "$1"
+  else
+    usage
+    exit 1
+  fi
+}
+
+main "$@"
