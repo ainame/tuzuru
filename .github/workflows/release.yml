@@ -139,11 +139,27 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add Formula/tuzuru.rb
-        git commit -m "chore: update Formula for ${{ steps.version.outputs.version }}" || echo "No changes to commit"
 
-        # Use GitHub CLI to push with bypass permissions
-        gh auth setup-git
-        git push origin HEAD:main || echo "Failed to push changes"
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No Formula changes to commit"
+        else
+          # Create a branch for Formula update
+          BRANCH="update-formula-${{ steps.version.outputs.version }}"
+          git checkout -b "$BRANCH"
+          git commit -m "chore: update Formula for ${{ steps.version.outputs.version }}"
+          git push origin "$BRANCH"
+
+          # Create PR for Formula update
+          gh pr create \
+            --title "chore: update Formula for ${{ steps.version.outputs.version }}" \
+            --body "Automated Formula update for release ${{ steps.version.outputs.version }}" \
+            --base main \
+            --head "$BRANCH"
+
+          # Auto-merge the PR
+          gh pr merge "$BRANCH" --squash --auto
+        fi
 
     - name: Create Release and Upload All Assets
       env:
