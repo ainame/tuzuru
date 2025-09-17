@@ -20,6 +20,8 @@ jobs:
         ./swiftly init --quiet-shell-followup && \
         . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
         hash -r
+        swiftly install $(cat .swift-version)
+        swiftly use $(cat .swift-version)
 
     - name: Run tests
       run: |
