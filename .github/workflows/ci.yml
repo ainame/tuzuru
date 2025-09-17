@@ -13,16 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
-    - name: Setup Swift
-      run: |
-        curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
-        tar zxf swiftly-$(uname -m).tar.gz && \
-        ./swiftly init --quiet-shell-followup && \
-        . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
-        hash -r
-        swiftly install $(cat .swift-version)
-        swiftly use $(cat .swift-version)
+    - uses: vapor/swiftly-action@v0.2
+      with:
+        toolchain: 6.2
 
     - name: Run tests
       run: |
+        swiftly use $(cat .swift-version)
         swift test
