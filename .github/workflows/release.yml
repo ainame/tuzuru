@@ -15,7 +15,7 @@ env:
 jobs:
   build-and-release:
     name: Build Universal Binaries and Release
-    runs-on: macos-15
+    runs-on: macos-26
     # Only run on version bump commits when triggered by push to main
     # IMPORTANT: This workflow depends on commit messages containing '[Version Bump]'
     # which is automatically created by scripts/release.sh when creating version bump PRs
@@ -53,12 +53,12 @@ jobs:
         swiftly init --assume-yes
         hash -r
 
-        # Install Swift 6.1.2 for cross-compilation
-        swiftly install 6.1.2
-        swiftly use 6.1.2
+        # Install Swift 6.2.0 for cross-compilation
+        swiftly install 6.2.0
+        swiftly use 6.2.0
 
         # Install Static Linux SDK
-        swift sdk install https://download.swift.org/swift-6.1.2-release/static-sdk/swift-6.1.2-RELEASE/swift-6.1.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum df0b40b9b582598e7e3d70c82ab503fd6fbfdff71fd17e7f1ab37115a0665b3b
+        swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
 
     - name: Build Linux binaries
       run: |
