@@ -167,7 +167,6 @@ jobs:
             --url "$URL" \
             --sha256 "$SHA" \
             --no-audit \
-            --no-bottle \
             --no-browse \
             --no-fork \
             --message "chore: update Formula for ${VERSION}" \
