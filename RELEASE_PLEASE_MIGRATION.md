@@ -27,7 +27,7 @@
    - When the release PR merges, release-please automatically opens a GitHub Release, creates the `MAJOR.MINOR.PATCH` tag, and publishes release notes.
 3. **Artifact builder workflow** (`release-assets.yml`)
    - Trigger: `release` event (`types: [published]`).
-   - Runs matrix builds for Linux targets (cross compiled with `swiftly` static SDK) and a macOS universal build.
+   - Runs matrix builds for Linux targets (cross compiled with `swiftly` static SDK) and a macOS universal build; because we rely on the static Linux SDK + musl, the host OS choice is flexible (macOS runner is fine).
    - Executes `swift build`/`swift test`, packages binaries/bundles, and uploads assets + checksum files to the existing GitHub Release (using `gh release upload`).
    - Publishes npm package with the release version (asserting the tag matches `package.json`).
 4. **Formula updater workflow** (`homebrew-formula.yml`)
@@ -44,7 +44,7 @@
 - Add `.release-please-manifest.json` with the current version (`{".": "0.3.3"}`) to seed state.
 - Add `release-please-config.json` containing:
   - `include-v-in-tag: false`, `pull-request-title-pattern`, `changelog-sections` (optional customization).
-  - `packages` entry for `.` using `release-type: node` (manages `package.json`).
+  - `packages` entry for `.` using `release-type: node` (manages `package.json`) with `prerelease: false` to keep the channel single-track.
   - `extra-files` definitions:
     - `Sources/Command/Command.swift` (`regex` update for `version: "(?<version>[^"]+)"`).
     - `.github/actions/tuzuru-generate/action.yml` & `.github/actions/tuzuru-deploy/action.yml` (`@ainame/tuzuru@{version}`).
@@ -57,7 +57,7 @@
   - `workflow_dispatch` (manual release trigger).
   - `schedule` (e.g., daily) to automatically raise PRs even if nobody manually triggers.
   - Optional `push` to `main` to immediately offer a PR after feature merges (ensure concurrency to avoid duplicate jobs).
-- Enable automerge label (`release-please:force-run`) support, or rely on humans to merge.
+- Enable automerge by default so release PRs merge as soon as required checks (build/test/linters) succeed; document how to opt-out when a manual review is desired.
 - Add instructions in PR template to run `swift test` before merging.
 
 ### 3. Replace the legacy release workflow
@@ -71,15 +71,17 @@
   6. Store artifacts (Actions artifacts for debugging + `gh release upload`).
   7. Publish npm package using `NODE_AUTH_TOKEN` (fail fast if tag mismatches `package.json`).
 - Ensure workflow is idempotent—re-running should overwrite release assets (`gh release upload --clobber`).
-- Gate jobs behind `if: github.event.release.prerelease == false` if we want to skip asset publishing for RCs, or adjust to support prereleases.
+- Always build full assets on release events because we only ship stable tags (no prerelease branch flow).
 
 ### 4. Automate Homebrew formula updates
 - New workflow triggered after `release-assets` completes:
   - Use `actions/download-artifact` (if sharing artifacts) or the public release tarball to compute SHA.
   - `brew bump-formula-pr --force --no-browse --message "chore: bump tuzuru to ${version}" Formula/tuzuru.rb`.
-  - Optionally auto-merge the resulting PR (if desired) via `gh pr merge --auto`.
+  - Auto-merge the resulting PR (consistent with release PR policy) once brew CI checks clear.
+- Keep `Formula/tuzuru.rb` in this repo; automation complexity stays manageable because `brew bump-formula-pr` works against local files—no extra tap permissions required.
 - Add PAT with `public_repo` scope as `HOMEBREW_GITHUB_API_TOKEN`.
 - Document fallback instructions for manual formula tweaks if automation fails.
+- Note in docs that the formula PR may lag slightly because it needs the release tarball SHA (expected behaviour).
 
 ### 5. Update ancillary tooling & docs
 - Rework `scripts/release.sh` to:
@@ -100,13 +102,13 @@
 - Run `npx release-please release-pr --dry-run` locally to confirm file updates.
 - Push configuration to a feature branch, trigger `release-please` via `workflow_dispatch`, and inspect the generated PR.
 - Once satisfied, archive the old workflow/scripts and merge the migration.
-- Conduct a full release (possibly `0.3.4-rc.1`) as a smoke test before the next stable release.
+- Conduct a full patch release (e.g. `0.3.4`) as a smoke test once automation lands, since we are not maintaining separate prerelease channels.
 
-## Open Questions / Follow-ups
-- Do we want prerelease channels (alpha/beta/rc) through release-please? If so, define branch-to-channel mapping in config.
-- Should `Formula/tuzuru.rb` live in this repo or be split into a dedicated tap to simplify automation?
-- How aggressively should we enable automerge for release PRs (requires confidence in tests covering release-critical paths)?
-- Evaluate whether to keep building Linux binaries via macOS cross compilation or introduce native Linux runners for verification.
+## Follow-up Decisions
+- Stick to a single stable channel; release-please will not manage `alpha/beta/rc` streams.
+- Retain `Formula/tuzuru.rb` inside this repository—`brew bump-formula-pr` can update it in-place with minimal extra automation.
+- Enable automerge for release PRs (and formula PRs) once required checks succeed, matching the goal of hands-off releases.
+- Continue building Linux binaries via the static Linux SDK + musl toolchain; the host runner may remain macOS as long as we keep the cross-compile toolchain.
 
 ## References
 - DeepWiki: [googleapis/release-please](https://deepwiki.com/googleapis/release-please), [googleapis/release-please-action](https://deepwiki.com/googleapis/release-please-action)
