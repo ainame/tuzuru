@@ -44,6 +44,9 @@ jobs:
           hash -r
           swiftly install 6.2.0
           swiftly use 6.2.0
+          # workaround for swift-testing referencing wrong directory
+          mkdir -p ~/Library/Developer/Toolchains/swift-6.2-RELEASE.xctoolchain/usr/lib/swift/macosx/testing
+          ln -sf ~/Library/Developer/Toolchains/swift-6.2-RELEASE.xctoolchain/usr/lib/swift/macosx/libswiftCompatibilitySpan.dylib ~/Library/Developer/Toolchains/swift-6.2-RELEASE.xctoolchain/usr/lib/swift/macosx/testing/libswiftCompatibilitySpan.dylib
           swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
 
       - name: Verify host build
