@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.6](https://github.com/ainame/tuzuru/compare/0.3.5...0.3.6) (2025-09-18)
+
+
+### Bug Fixes
+
+* dummy fix ([f09cda6](https://github.com/ainame/tuzuru/commit/f09cda6d9415120e14b16e9ff354376046a96a07))
+* dummy fix2 ([f88ab43](https://github.com/ainame/tuzuru/commit/f88ab4326a09d72fd8552f718281d7740abb8df2))
+
 ## [0.3.5](https://github.com/ainame/tuzuru/compare/0.3.4...0.3.5) (2025-09-18)
 
 

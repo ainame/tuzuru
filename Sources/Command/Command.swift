@@ -7,7 +7,7 @@ struct MainCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tuzuru",
         abstract: "Simple static blog generator",
-        version: "0.3.5", // x-release-please-version
+        version: "0.3.6", // x-release-please-version
         subcommands: [
             InitCommand.self,
             GenerateCommand.self,
