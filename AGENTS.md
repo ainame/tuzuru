@@ -169,28 +169,25 @@ Both actions use the published npm package `@ainame/tuzuru@0.1.2` rather than bu
 The project uses an automated PR-based release workflow:
 
 ### Release Process
-1. **Create Release PR**: Run `scripts/release.sh <version>` (e.g., `scripts/release.sh 1.2.3`)
-   - Updates version in Swift source files and package.json
-   - Updates GitHub Action composite actions to use new npm version
-   - Runs build and tests locally
-   - Creates release branch and PR with `[Version Bump]` title prefix
+1. **Open the release PR**: Run `scripts/release.sh` (optionally with `--dry-run`)
+   - Validates the working tree is clean and runs `swift build`/`swift test` locally
+   - Invokes release-please to update versions (`package.json`, `Sources/Command/Command.swift`, composite actions) and open/refresh the autorelease PR on GitHub
+   - Use a maintainer PAT via `RELEASE_PLEASE_TOKEN` to ensure branch protection checks run
 
-2. **Automated Release**: When the PR is merged to main:
-   - `.github/workflows/release.yml` triggers on commit messages containing `[Version Bump]`
-   - `scripts/auto-tag.sh` creates git tag from current version
-   - Workflow builds cross-platform binaries (macOS universal, Linux x86_64/aarch64)
-   - Updates Homebrew Formula with correct SHA256
-   - Creates GitHub release with all assets
-   - Publishes to npm registry
+2. **Merge the release PR**: Once CI succeeds, the PR auto-merges (or can be merged manually) and the `Release Please` workflow tags the merge commit and drafts the GitHub release.
+
+3. **Publish assets**: The `Release Assets` workflow (triggered by the published release)
+   - Cross-compiles macOS universal and Linux (x86_64/aarch64, static musl) binaries
+   - Uploads tarballs, bundles, and checksum files to the GitHub release and publishes the npm package
+   - Uses Homebrew tooling to open an auto-merged PR that bumps `Formula/tuzuru.rb` with the new tarball URL and SHA
 
 ### Key Scripts
-- `scripts/release.sh`: Creates version bump PR with proper title format
-- `scripts/auto-tag.sh`: Extracts version and creates git tag (used by workflow)
+- `scripts/release.sh`: Runs tests locally and kicks off release-please (or a dry-run preview) using the maintainer PAT
 
 ### Important Notes
-- Release workflow depends on `[Version Bump]` commit message prefix
-- Tags are created without 'v' prefix (e.g., `1.2.3`, not `v1.2.3`)
-- Homebrew Formula is updated during release workflow, not during PR creation
+- Tags remain plain semver (no `v` prefix) and are created by release-please.
+- Ensure repository secrets define `RELEASE_PLEASE_TOKEN`, `NPM_TOKEN`, and `HOMEBREW_GITHUB_API_TOKEN`.
+- The Homebrew formula update occurs after the GitHub release so it can reference the published tarball SHA.
 
 ## Memory
 

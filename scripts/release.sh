@@ -2,27 +2,26 @@
 
 set -euo pipefail
 
-#
-# Tuzuru release helper
-#
-# Creates a release branch and PR for version bump.
-# After PR merge, release.yml workflow will create the tag automatically.
-#
-# Usage:
-#   scripts/release.sh <version>
-#
-# Examples:
-#   scripts/release.sh 1.2.3
-#
-
 usage() {
   cat <<USAGE
 Usage:
-  $0 <version>   Create a branch and PR to bump version
+  $0 [--dry-run] [--token <github_token>]
 
 Examples:
-  $0 1.2.3
+  $0 --dry-run
+  $0 --token ghp_xxx
+
+Environment variables:
+  RELEASE_PLEASE_TOKEN  Personal access token with "contents"/"pull_requests" scopes.
+  GITHUB_TOKEN          Fallback token if RELEASE_PLEASE_TOKEN is unset.
 USAGE
+}
+
+require_tool() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Error: required tool '$1' is not installed."
+    exit 1
+  fi
 }
 
 ensure_clean_worktree() {
@@ -32,106 +31,60 @@ ensure_clean_worktree() {
   fi
 }
 
-validate_semver() {
-  local v="$1"
-  if ! echo "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+)?$'; then
-    echo "Error: Invalid version format. Use semantic versioning (e.g., 1.0.0 or 1.0.0-rc.1)"
-    exit 1
-  fi
-}
+main() {
+  local dry_run=false
+  local token_arg=""
 
-update_sources_for_version() {
-  local v="$1"
-
-  echo "Updating version to $v"
-
-  # Update version in Command.swift
-  sed -i '' "s/version: \".*\"/version: \"$v\"/" Sources/Command/Command.swift
-
-
-  # Update npm package.json version to match tag (no git tag creation)
-  if command -v npm >/dev/null 2>&1; then
-    npm version --no-git-tag-version "$v"
-  else
-    echo "Warning: npm is not installed; skipped updating package.json version"
-  fi
-
-  # Update internal composite actions to use the specific version of npm package
-  echo "Updating GitHub composite actions to use @ainame/tuzuru@$v"
-  sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$v/g" .github/actions/tuzuru-generate/action.yml
-  sed -i '' "s/@ainame\/tuzuru@[^[:space:]]*/@ainame\/tuzuru@$v/g" .github/actions/tuzuru-deploy/action.yml
-}
-
-build_and_test() {
-  echo "Building..."
-  if command -v swift >/dev/null 2>&1; then
-    swift build
-  elif command -v swiftly >/dev/null 2>&1; then
-    swiftly run swift build
-  else
-    echo "Warning: neither 'swift' nor 'swiftly' found in PATH; skipping build"
-  fi
-
-  echo "Running tests..."
-  if command -v swift >/dev/null 2>&1; then
-    swift test
-  elif command -v swiftly >/dev/null 2>&1; then
-    swiftly run swift test
-  else
-    echo "Warning: neither 'swift' nor 'swiftly' found in PATH; skipping tests"
-  fi
-}
-
-prepare_pr() {
-  local v="$1"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dry-run)
+        dry_run=true
+        shift
+        ;;
+      --token)
+        token_arg="$2"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        echo "Unknown argument: $1"
+        usage
+        exit 1
+        ;;
+    esac
+  done
 
   ensure_clean_worktree
-  validate_semver "$v"
+  require_tool git
+  require_tool npx
+  require_tool swift
 
-  # Ensure we are on main and up-to-date before branching
-  git fetch origin
-  git switch main
-  git pull --ff-only origin main
-
-  update_sources_for_version "$v"
-  build_and_test
-
-  local branch="release/${v}"
-  git switch -c "$branch"
-  git add .
-  git commit -m "[Version Bump] bump version to $v"
-  git push -u origin "$branch"
-
-  if command -v gh >/dev/null 2>&1; then
-    echo "Opening pull request via GitHub CLI..."
-    gh pr create \
-      --title "[Version Bump] $v" \
-      --body "Bump version to $v
-
-This PR was created by scripts/release.sh. After merge, the release workflow will automatically create the tag." \
-      --base main \
-      --head "$branch" || true
-  else
-    echo "GitHub CLI 'gh' not found. Please open a PR from branch '$branch' into 'main'."
-  fi
-
-  echo "Created branch $branch with version bump. Opened PR if possible."
-}
-
-
-main() {
-  if [ $# -eq 0 ]; then
-    usage
+  local token="${token_arg:-${RELEASE_PLEASE_TOKEN:-${GITHUB_TOKEN:-}}}"
+  if [[ -z "$token" ]]; then
+    echo "Error: provide a GitHub token via --token, RELEASE_PLEASE_TOKEN, or GITHUB_TOKEN."
     exit 1
   fi
 
-  # Check if argument looks like a version
-  if echo "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
-    prepare_pr "$1"
-  else
-    usage
-    exit 1
+  echo "Running swift build/test before preparing release PR..."
+  swift build
+  swift test
+
+  echo "Triggering release-please to open/update the release PR..."
+  local args=(release-please release-pr \
+    --repo-url=ainame/Tuzuru \
+    --target-branch=main \
+    --token="$token")
+  if [[ "$dry_run" == true ]]; then
+    args+=(--dry-run)
   fi
+
+  npx --yes "${args[@]}"
+
+  echo
+  echo "release-please invoked. Review the PR in GitHub UI and merge once ready."
 }
 
 main "$@"
