@@ -125,7 +125,7 @@ jobs:
 
   update-formula:
     needs: build-and-upload
-    runs-on: macos-14
+    runs-on: macos-latest
     if: github.event.release.prerelease == false
     permissions:
       contents: write
