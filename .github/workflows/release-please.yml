@@ -18,5 +18,4 @@ jobs:
       - name: Run release-please
         uses: googleapis/release-please-action@v4
         with:
-          command: manifest
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
