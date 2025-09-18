@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-v-in-tag": false,
+  "pull-request-title-pattern": "chore: release ${version}",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "prerelease": false,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "regex",
+          "path": "Sources/Command/Command.swift",
+          "search": "version: \"(?<version>[^\\\"]+)\""
+        },
+        {
+          "type": "regex",
+          "path": ".github/actions/tuzuru-generate/action.yml",
+          "search": "@ainame/tuzuru@(?<version>[^\\s]+)"
+        },
+        {
+          "type": "regex",
+          "path": ".github/actions/tuzuru-deploy/action.yml",
+          "search": "@ainame/tuzuru@(?<version>[^\\s]+)"
+        }
+      ]
+    }
+  }
+}
