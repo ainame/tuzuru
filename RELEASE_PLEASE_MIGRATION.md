@@ -57,6 +57,7 @@
   - `workflow_dispatch` (manual release trigger).
   - `schedule` (e.g., daily) to automatically raise PRs even if nobody manually triggers.
   - Optional `push` to `main` to immediately offer a PR after feature merges (ensure concurrency to avoid duplicate jobs).
+- Configure the action with a PAT (`RELEASE_PLEASE_TOKEN`) tied to a human maintainer so release PRs originate from a real user; this lets branch protection fire required status checks and keeps automerge eligible.
 - Enable automerge by default so release PRs merge as soon as required checks (build/test/linters) succeed; document how to opt-out when a manual review is desired.
 - Add instructions in PR template to run `swift test` before merging.
 
@@ -93,8 +94,8 @@
 ### 6. Secrets & permissions audit
 - Confirm required secrets exist:
   - `NPM_TOKEN` (already used; ensure still scoped to publish).
-  - `RELEASE_PLEASE_TOKEN` (optional; default `GITHUB_TOKEN` usually sufficient, but PAT recommended if repo has branch protections requiring workflow to bypass checks).
-  - `HOMEBREW_GITHUB_API_TOKEN` for formula PRs.
+  - `RELEASE_PLEASE_TOKEN` (required PAT linked to a maintainer account so release PRs run under a user context and trigger protected-branch checks).
+  - `HOMEBREW_GITHUB_API_TOKEN` for formula PRs (could reuse the same PAT if scopes permit).
 - Ensure branch protection allows GitHub Actions to push tags/releases (release-please uses the token to create tags/releases).
 - Verify runner availability (`macos-14` or `macos-13` might be more available than `macos-26`).
 
