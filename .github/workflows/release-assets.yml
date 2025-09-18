@@ -33,12 +33,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Using version $VERSION"
 
-      - name: Verify host build
-        run: |
-          swift build
-          swift test
-
-      - name: Install Swiftly for Linux cross-compilation
+      - name: Install Swiftly toolchain
         run: |
           curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
           installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
@@ -50,6 +45,11 @@ jobs:
           swiftly install 6.2.0
           swiftly use 6.2.0
           swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
+
+      - name: Verify host build
+        run: |
+          swiftly run swift build
+          swiftly run swift test
 
       - name: Build Linux binaries
         env:
@@ -78,7 +78,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           mkdir -p build/macos/universal
-          swift build -c release --arch arm64 --arch x86_64
+          swiftly run swift build -c release --arch arm64 --arch x86_64
           cp .build/apple/Products/Release/${PRODUCT_NAME} build/macos/universal/${PRODUCT_NAME}
           chmod +x build/macos/universal/${PRODUCT_NAME}
           cp -r .build/apple/Products/Release/${PRODUCT_NAME}_TuzuruLib.bundle build/macos/universal/
@@ -125,7 +125,7 @@ jobs:
 
   update-formula:
     needs: build-and-upload
-    runs-on: macos-14
+    runs-on: macos-latest
     if: github.event.release.prerelease == false
     permissions:
       contents: write
