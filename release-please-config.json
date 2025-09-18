@@ -9,19 +9,16 @@
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
-          "type": "regex",
-          "path": "Sources/Command/Command.swift",
-          "search": "version: \"(?<version>[^\\\"]+)\""
+          "type": "generic",
+          "path": "Sources/Command/Command.swift"
         },
         {
-          "type": "regex",
-          "path": ".github/actions/tuzuru-generate/action.yml",
-          "search": "@ainame/tuzuru@(?<version>[^\\s]+)"
+          "type": "generic",
+          "path": ".github/actions/tuzuru-generate/action.yml"
         },
         {
-          "type": "regex",
-          "path": ".github/actions/tuzuru-deploy/action.yml",
-          "search": "@ainame/tuzuru@(?<version>[^\\s]+)"
+          "type": "generic",
+          "path": ".github/actions/tuzuru-deploy/action.yml"
         }
       ]
     }
