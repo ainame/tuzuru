@@ -1,0 +1,188 @@
+name: Release Assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  PRODUCT_NAME: tuzuru
+
+jobs:
+  build-and-upload:
+    runs-on: macos-14
+    if: github.event.release.prerelease == false
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+
+      - name: Determine release version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version $VERSION"
+
+      - name: Verify host build
+        run: |
+          swift build
+          swift test
+
+      - name: Install Swiftly for Linux cross-compilation
+        run: |
+          curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
+          installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+          rm swiftly.pkg
+          echo "$HOME/.swiftly/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.swiftly/bin:$PATH"
+          swiftly init --assume-yes
+          hash -r
+          swiftly install 6.2.0
+          swiftly use 6.2.0
+          swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
+
+      - name: Build Linux binaries
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          export PATH="$HOME/.swiftly/bin:$PATH"
+          mkdir -p build/linux/x86_64
+          mkdir -p build/linux/aarch64
+          swift build -c release --swift-sdk x86_64-swift-linux-musl
+          cp .build/x86_64-swift-linux-musl/release/${PRODUCT_NAME} build/linux/x86_64/${PRODUCT_NAME}
+          cp -r .build/x86_64-swift-linux-musl/release/${PRODUCT_NAME}_TuzuruLib.resources build/linux/x86_64/
+          rm -rf .build
+          swift build -c release --swift-sdk aarch64-swift-linux-musl
+          cp .build/aarch64-swift-linux-musl/release/${PRODUCT_NAME} build/linux/aarch64/${PRODUCT_NAME}
+          cp -r .build/aarch64-swift-linux-musl/release/${PRODUCT_NAME}_TuzuruLib.resources build/linux/aarch64/
+          cd build/linux
+          tar -czf ${PRODUCT_NAME}-${VERSION}-linux-x86_64.tar.gz -C x86_64 ${PRODUCT_NAME} ${PRODUCT_NAME}_TuzuruLib.resources
+          tar -czf ${PRODUCT_NAME}-${VERSION}-linux-aarch64.tar.gz -C aarch64 ${PRODUCT_NAME} ${PRODUCT_NAME}_TuzuruLib.resources
+          shasum -a 256 *.tar.gz > ${PRODUCT_NAME}-${VERSION}-linux-checksums.txt
+
+      - name: Clean build directory before macOS build
+        run: rm -rf .build
+
+      - name: Build macOS universal binary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p build/macos/universal
+          swift build -c release --arch arm64 --arch x86_64
+          cp .build/apple/Products/Release/${PRODUCT_NAME} build/macos/universal/${PRODUCT_NAME}
+          chmod +x build/macos/universal/${PRODUCT_NAME}
+          cp -r .build/apple/Products/Release/${PRODUCT_NAME}_TuzuruLib.bundle build/macos/universal/
+          cd build/macos
+          tar -czf ${PRODUCT_NAME}-${VERSION}-macos-universal.tar.gz -C universal ${PRODUCT_NAME} ${PRODUCT_NAME}_TuzuruLib.bundle
+          shasum -a 256 *.tar.gz > ${PRODUCT_NAME}-${VERSION}-macos-checksums.txt
+
+      - name: Smoke test binaries
+        run: |
+          build/macos/universal/${PRODUCT_NAME} --version || echo "Version command not available"
+          build/macos/universal/${PRODUCT_NAME} --help
+          chmod +x build/linux/x86_64/${PRODUCT_NAME}
+          chmod +x build/linux/aarch64/${PRODUCT_NAME}
+          file build/linux/x86_64/${PRODUCT_NAME}
+          file build/linux/aarch64/${PRODUCT_NAME}
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release upload "$VERSION" \
+            build/macos/universal/${PRODUCT_NAME} \
+            build/macos/${PRODUCT_NAME}-${VERSION}-macos-universal.tar.gz \
+            build/macos/${PRODUCT_NAME}-${VERSION}-macos-checksums.txt \
+            build/linux/${PRODUCT_NAME}-${VERSION}-linux-x86_64.tar.gz \
+            build/linux/${PRODUCT_NAME}-${VERSION}-linux-aarch64.tar.gz \
+            build/linux/${PRODUCT_NAME}-${VERSION}-linux-checksums.txt \
+            --clobber
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Publish npm package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          jq '.version = "'"${VERSION}"'"' package.json > package.json.tmp && mv package.json.tmp package.json
+          npm publish --access public
+
+  update-formula:
+    needs: build-and-upload
+    runs-on: macos-14
+    if: github.event.release.prerelease == false
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      VERSION: ${{ needs.build-and-upload.outputs.version }}
+      PRODUCT_NAME: tuzuru
+    steps:
+      - name: Ensure Homebrew is up to date
+        run: brew update
+
+      - name: Calculate macOS checksum
+        id: checksum
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${PRODUCT_NAME}-${VERSION}-macos-universal.tar.gz"
+          curl -L "$URL" -o ${PRODUCT_NAME}-${VERSION}-macos-universal.tar.gz
+          SHA=$(shasum -a 256 ${PRODUCT_NAME}-${VERSION}-macos-universal.tar.gz | cut -d ' ' -f 1)
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Tap repository
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
+        run: brew tap ainame/tuzuru https://github.com/${{ github.repository }}
+
+      - name: Open Formula bump PR
+        id: bump
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
+        run: |
+          set -eo pipefail
+          URL="${{ steps.checksum.outputs.url }}"
+          SHA="${{ steps.checksum.outputs.sha }}"
+          OUTPUT=$(brew bump-formula-pr \
+            --tap ainame/tuzuru \
+            --formula tuzuru \
+            --url "$URL" \
+            --sha256 "$SHA" \
+            --no-audit \
+            --no-bottle \
+            --no-browse \
+            --no-fork \
+            --message "chore: update Formula for ${VERSION}" \
+            --version "$VERSION" \
+            --verbose)
+          echo "$OUTPUT"
+          PR_URL=$(echo "$OUTPUT" | grep -Eo 'https://github.com/.*/pull/[0-9]+' | tail -n1)
+          if [[ -z "$PR_URL" ]]; then
+            echo "Formula bump PR URL not detected" >&2
+            exit 1
+          fi
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge for Formula PR
+        if: steps.bump.outputs.pr_url
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
+        run: |
+          gh pr merge "${{ steps.bump.outputs.pr_url }}" --auto --squash
