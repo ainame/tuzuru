@@ -164,8 +164,6 @@ jobs:
           URL="${{ steps.checksum.outputs.url }}"
           SHA="${{ steps.checksum.outputs.sha }}"
           OUTPUT=$(brew bump-formula-pr \
-            --tap ainame/tuzuru \
-            --formula tuzuru \
             --url "$URL" \
             --sha256 "$SHA" \
             --no-audit \
@@ -174,7 +172,8 @@ jobs:
             --no-fork \
             --message "chore: update Formula for ${VERSION}" \
             --version "$VERSION" \
-            --verbose)
+            --verbose \
+            ainame/tuzuru/tuzuru)
           echo "$OUTPUT"
           PR_URL=$(echo "$OUTPUT" | grep -Eo 'https://github.com/.*/pull/[0-9]+' | tail -n1)
           if [[ -z "$PR_URL" ]]; then
