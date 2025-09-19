@@ -16,6 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run release-please
+        id: release
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Remove v prefix from release title
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          current=$(gh release view "${{ steps.release.outputs.tag_name }}" --json name --jq '.name // ""')
+          new=$(ruby -e "puts (ENV['CURRENT'] || ENV['VERSION']).gsub(/[vV]#{ENV['VERSION']}/, ENV['VERSION'])" CURRENT="$current" VERSION="${{ steps.release.outputs.version }}")
+          [[ "$new" != "$current" ]] && gh release edit "${{ steps.release.outputs.tag_name }}" --title "$new"
