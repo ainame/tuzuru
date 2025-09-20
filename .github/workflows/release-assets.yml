@@ -154,6 +154,13 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
         run: brew tap ainame/tuzuru https://github.com/${{ github.repository }}
 
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "HOMEBREW_GIT_NAME=github-actions[bot]" >> "$GITHUB_ENV"
+          echo "HOMEBREW_GIT_EMAIL=41898282+github-actions[bot]@users.noreply.github.com" >> "$GITHUB_ENV"
+
       - name: Open Formula bump PR
         id: bump
         env:
