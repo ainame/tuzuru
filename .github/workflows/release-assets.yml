@@ -30,7 +30,11 @@ jobs:
       - name: Determine release version
         id: version
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="${{ github.event.release.tag_name }}"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Using version $VERSION"
 
