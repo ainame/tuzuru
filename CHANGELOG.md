@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.5](https://github.com/ainame/tuzuru/compare/0.3.4...0.3.5) (2025-09-20)
+
+
+### Bug Fixes
+
+* Add margin-bottom to content ([#63](https://github.com/ainame/tuzuru/issues/63)) ([78355af](https://github.com/ainame/tuzuru/commit/78355af4c4cf047859b1fcd6df65ddd612f716a2))
+* inconsistent author highlight ([#65](https://github.com/ainame/tuzuru/issues/65)) ([82e4081](https://github.com/ainame/tuzuru/commit/82e4081b6aa751afed3a50eca976facfe4c76700))
+
 ## [0.3.4](https://github.com/ainame/tuzuru/compare/0.3.3...0.3.4) (2025-09-18)
 
 
