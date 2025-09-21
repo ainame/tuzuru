@@ -2,7 +2,7 @@ import Foundation
 import Markdown
 
 struct CodeBlockHTMLEscaper: MarkupRewriter {
-    mutating func decendInto(_ markup: Markup) -> Markup? {
+    mutating func descendInto(_ markup: Markup) -> Markup? {
         let newChildren = markup.children.compactMap {
             visit($0)
         }
@@ -11,7 +11,7 @@ struct CodeBlockHTMLEscaper: MarkupRewriter {
 
     mutating func defaultVisit(_ markup: any Markup) -> (any Markup)? {
         if markup is Document {
-            return decendInto(markup)
+            return descendInto(markup)
         }
 
         return markup
