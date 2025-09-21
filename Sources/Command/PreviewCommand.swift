@@ -15,10 +15,10 @@ private class RegenerationState {
     }
 }
 
-struct ServeCommand: AsyncParsableCommand {
+struct PreviewCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "serve",
-        abstract: "Start a local HTTP server to serve the generated blog"
+        commandName: "preview",
+        abstract: "Start a local HTTP server to preview the generated blog"
     )
 
     @Option(name: [.long, .customShort("p")], help: "Port to serve on (default: 8000)")

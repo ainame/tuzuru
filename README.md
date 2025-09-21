@@ -19,7 +19,7 @@ It is designed to keep workflows minimal, allowing you to focus on writing.
 * Simple routing with auto-generated listing pages
   * Yearly archives and category-based listings are created automatically.
 * Simple preview server with built-in watch mode
-  * `tuzuru serve` automatically rebuilds on requests.
+  * `tuzuru preview` automatically rebuilds on requests.
 * Simple installation with minimal setup
   * Install via Homebrew, npm, or download a binary from GitHub Releases.
 * Simple deployment with built-in GitHub Actions
@@ -85,10 +85,10 @@ tuzuru generate
 
 You can now see the `blog` directory that can be deployed to GitHub Pages or your favorite HTTP server.
 
-For local development, use the built-in serve command:
+For local development, use the built-in preview command:
 
 ``` bash
-tuzuru serve
+tuzuru preview
 ```
 
 This starts a local HTTP server at `http://localhost:8000` with auto-regeneration enabled. When you modify source files, the blog will be automatically rebuilt on the next request.
@@ -299,21 +299,21 @@ Tuzuru includes a built-in HTTP server for local development:
 
 ```bash
 # Basic usage (serves on port 8000)
-tuzuru serve
+tuzuru preview
 
 # Custom port
-tuzuru serve --port 3000
+tuzuru preview --port 3000
 
 # Custom directory (default is 'blog')
-tuzuru serve --directory my-output
+tuzuru preview --directory my-output
 
 # Custom config file
-tuzuru serve --config my-config.json
+tuzuru preview --config my-config.json
 ```
 
 ### Auto-regeneration
 
-The serve command automatically watches for changes in your source files and regenerates the blog when needed:
+The preview command automatically watches for changes in your source files and regenerates the blog when needed:
 
 - **Content files**: Watches `contents/` and `contents/unlisted/` directories
 - **Asset files**: Watches the `assets/` directory

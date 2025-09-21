@@ -76,4 +76,4 @@ echo "🔧 Server running with real-time logs (Ctrl+C to stop):"
 echo ""
 
 # Start server with real-time logs in foreground
-container exec tuzuru-static-test stdbuf -oL -eL tuzuru serve --port 8080
+container exec tuzuru-static-test stdbuf -oL -eL tuzuru preview --port 8080

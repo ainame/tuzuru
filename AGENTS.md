@@ -21,16 +21,16 @@ Note: The codebase also includes conditional support for Linux (Glibc/Musl) in t
 - `swift run tuzuru import` - Import posts from other project using Hugo or Jekyll
 - `swift run tuzuru amend` - Update publishedAt date and/or author for a markdown file by creating marker commits
 - `swift run tuzuru list` - List blog posts with metadata in CSV format
-- `swift run tuzuru serve` - Start a local HTTP server to serve the generated blog with auto-regeneration
+- `swift run tuzuru preview` - Start a local HTTP server to preview the generated blog with auto-regeneration
 - `swift run tuzuru --help` - Show help
 
-#### Serve Command Options
+#### Preview Command Options
 - `-p, --port <port>` - Port to serve on (default: 8000)
 - `-c, --config <config>` - Path to configuration file (default: tuzuru.json)
 
 The output directory is determined by `output.directory` in `tuzuru.json` (default: `blog`). There is no `--directory` option in the current implementation.
 
-The serve command includes auto-regeneration capability that automatically rebuilds the blog when source files are modified, providing a live development experience.
+The preview command includes auto-regeneration capability that automatically rebuilds the blog when source files are modified, providing a live development experience.
 It uses the internal `ToyHttpServer` target and is intended only for local development, not production use.
 
 #### Generate Command Options

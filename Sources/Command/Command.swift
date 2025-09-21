@@ -14,7 +14,7 @@ struct MainCommand: AsyncParsableCommand {
             ImportCommand.self,
             AmendCommand.self,
             ListCommand.self,
-            ServeCommand.self,
+            PreviewCommand.self,
         ],
         defaultSubcommand: GenerateCommand.self,
     )
