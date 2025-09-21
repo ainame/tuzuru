@@ -2,7 +2,7 @@ import Foundation
 import Markdown
 
 struct URLLinker: MarkupRewriter {
-    mutating func decendInto(_ markup: Markup) -> Markup? {
+    mutating func descendInto(_ markup: Markup) -> Markup? {
         let newChildren = markup.children.compactMap {
             visit($0)
         }
@@ -10,7 +10,7 @@ struct URLLinker: MarkupRewriter {
     }
 
     mutating func defaultVisit(_ markup: any Markup) -> (any Markup)? {
-        decendInto(markup)
+        descendInto(markup)
     }
 
     mutating func visitParagraph(_ paragraph: Paragraph) -> (any Markup)? {

@@ -6,7 +6,7 @@ import Markdown
 struct MarkdownDestructor: MarkupRewriter {
     private(set) var title: String?
 
-    mutating func decendInto(_ markup: Markup) -> Markup? {
+    mutating func descendInto(_ markup: Markup) -> Markup? {
         let newChildren = markup.children.compactMap {
             visit($0)
         }
@@ -15,7 +15,7 @@ struct MarkdownDestructor: MarkupRewriter {
 
     mutating func defaultVisit(_ markup: any Markup) -> (any Markup)? {
         if markup is Document {
-            return decendInto(markup)
+            return descendInto(markup)
         }
 
         if title == nil {
