@@ -133,4 +133,20 @@ struct MarkdownProcessorTests {
         #expect(processedPost.htmlContent.contains("<li>prefix <a href=\"https://example.com\">example</a> suffix</li>"))
         #expect(!processedPost.htmlContent.contains("<li><p>"))
     }
+
+    @Test("URL autolinks within list items")
+    func testURLAutolinkWithinListItem() throws {
+        let processor = MarkdownProcessor()
+        let rawPost = RawPost(
+            path: FilePath("/test/post.md"),
+            author: "Test Author",
+            publishedAt: Date(),
+            content: "# Links\n\n- Visit https://example.com for info",
+            isUnlisted: false
+        )
+
+        let processedPost = try processor.process(rawPost)
+
+        #expect(processedPost.htmlContent.contains("<li>Visit <a href=\"https://example.com\">https://example.com</a> for info</li>"))
+    }
 }
