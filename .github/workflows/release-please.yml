@@ -26,6 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
-          current=$(gh release view "${{ steps.release.outputs.tag_name }}" --json name --jq '.name // ""')
+          current=$(gh release view "${{ steps.release.outputs.tag_name }}" --repo "$GITHUB_REPOSITORY" --json name --jq '.name // ""')
           new=$(CURRENT="$current" VERSION="${{ steps.release.outputs.version }}" ruby -e "current = ENV['CURRENT']; current = ENV['VERSION'] if current.nil? || current.empty?; puts current.gsub(/[vV]#{ENV['VERSION']}/, ENV['VERSION'])")
-          [[ "$new" != "$current" ]] && gh release edit "${{ steps.release.outputs.tag_name }}" --title "$new"
+          [[ "$new" != "$current" ]] && gh release edit "${{ steps.release.outputs.tag_name }}" --repo "$GITHUB_REPOSITORY" --title "$new"
