@@ -117,8 +117,8 @@ struct MarkdownProcessorTests {
         #expect(processedPost.title == "New Title") // Title should be updated from H1
     }
 
-    @Test("Process markdown link inside list loses surrounding spaces")
-    func testMarkdownLinkInListLosesSpaces() throws {
+    @Test("Process markdown link inside list preserves surrounding spaces")
+    func testMarkdownLinkInListPreservesSpaces() throws {
         let processor = MarkdownProcessor()
         let rawPost = RawPost(
             path: FilePath("/test/post.md"),
@@ -130,6 +130,7 @@ struct MarkdownProcessorTests {
 
         let processedPost = try processor.process(rawPost)
 
-        #expect(processedPost.htmlContent.contains("<li>prefix<a href=\"https://example.com\">example</a>suffix</li>"))
+        #expect(processedPost.htmlContent.contains("<li>prefix <a href=\"https://example.com\">example</a> suffix</li>"))
+        #expect(!processedPost.htmlContent.contains("<li><p>"))
     }
 }
