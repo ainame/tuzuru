@@ -75,4 +75,4 @@ echo "🔧 Server running with real-time logs (Ctrl+C to stop):"
 echo ""
 
 # Start the server (this will run until interrupted)
-container exec tuzuru-test stdbuf -oL -eL tuzuru serve --port 8080
+container exec tuzuru-test stdbuf -oL -eL tuzuru preview --port 8080

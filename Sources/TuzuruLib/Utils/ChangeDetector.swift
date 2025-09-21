@@ -1,7 +1,7 @@
 import Foundation
 
 /// ChangeDetector see if any changes were made in `contents/` from give path for `blog/` since the late request time.
-/// This powers `tuzuru serve` command to trigger regeneration only when needed.
+/// This powers `tuzuru preview` command to trigger regeneration only when needed.
 struct ChangeDetector: Sendable {
     private let fileManager: FileManagerWrapper
     private let sourceDirectoryProvider: SourceDirectoryProvider
