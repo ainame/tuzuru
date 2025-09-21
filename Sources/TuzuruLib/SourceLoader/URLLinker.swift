@@ -10,11 +10,7 @@ struct URLLinker: MarkupRewriter {
     }
 
     mutating func defaultVisit(_ markup: any Markup) -> (any Markup)? {
-        if markup is Document {
-            return decendInto(markup)
-        }
-
-        return markup
+        decendInto(markup)
     }
 
     mutating func visitParagraph(_ paragraph: Paragraph) -> (any Markup)? {
