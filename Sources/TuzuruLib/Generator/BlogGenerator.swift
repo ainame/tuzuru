@@ -273,12 +273,10 @@ struct BlogGenerator {
             // Remove the contents base path to get the relative path
             guard postPath.hasPrefix(contentsPath) else { continue }
             let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
-            let pathComponents = relativePath.split(separator: "/")
+            let pathComponents = FilePath(relativePath).components
 
             // Skip posts directly in contents root (no directory)
-            guard pathComponents.count > 1 else { continue }
-
-            let topLevelDirectory = String(pathComponents[0])
+            guard let topLevelDirectory = pathComponents.first?.string else { continue }
 
             // Skip imported directory (based on configuration)
             let importedDirName = configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
