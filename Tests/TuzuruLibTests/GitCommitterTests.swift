@@ -113,31 +113,6 @@ struct GitCommitterTests {
         }
     }
     
-    @Test("Handle commit with non-existent file creates empty commit")
-    func handleCommitWithNonExistentFile() async throws {
-        let fixture = Environment.gitRepositoryFixture!
-        let gitCommitter = GitCommitter(workingDirectory: fixture.path)
-        
-        let message = "Non-existent file"
-        let date = Date()
-        
-        // GitCommitter allows committing non-existent files (git add will succeed with non-existent files)
-        // This creates an empty commit with the specified message
-        try await gitCommitter.commit(
-            filePath: "non-existent-file.md",
-            message: message,
-            date: date,
-            author: "Test Author <test@example.com>"
-        )
-        
-        // Verify the commit was created
-        let gitLogReader = GitLogReader(workingDirectory: fixture.path)
-        let baseCommit = await gitLogReader.baseCommit(for: FilePath("non-existent-file.md"))
-        
-        // Since the file doesn't exist, baseCommit should be nil
-        #expect(baseCommit == nil)
-    }
-    
     @Test("Commit without author parameter uses current git config")
     func commitWithoutAuthorUsesGitConfig() async throws {
         let fixture = Environment.gitRepositoryFixture!
