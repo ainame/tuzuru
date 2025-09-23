@@ -16,23 +16,24 @@ public struct PathGenerator: Sendable {
     public func generateOutputPath(for pagePath: FilePath, isUnlisted: Bool = false) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
-        // Calculate relative path from appropriate base directory
         let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-        let relativePath = getRelativePath(from: basePath, to: pagePath)
-        let relativeDir = relativePath.removingLastComponent()
+        let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+        let relativeDirComponents = Array(relativeComponents.dropLast())
 
         switch configuration.routingStyle {
         case .direct:
-            if relativeDir.components.isEmpty {
+            if relativeDirComponents.isEmpty {
                 return "\(stem).html"
             } else {
-                return "\(relativeDir.string)/\(stem).html"
+                let directoryPath = makeURLPath(from: relativeDirComponents)
+                return "\(directoryPath)/\(stem).html"
             }
         case .subdirectory:
-            if relativeDir.components.isEmpty {
+            if relativeDirComponents.isEmpty {
                 return "\(stem)/index.html"
             } else {
-                return "\(relativeDir.string)/\(stem)/index.html"
+                let directoryPath = makeURLPath(from: relativeDirComponents)
+                return "\(directoryPath)/\(stem)/index.html"
             }
         }
     }
@@ -41,23 +42,24 @@ public struct PathGenerator: Sendable {
     public func generateUrl(for pagePath: FilePath, isUnlisted: Bool = false) -> String {
         let stem = pagePath.lastComponent?.stem ?? "untitled"
 
-        // Calculate relative path from appropriate base directory
         let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-        let relativePath = getRelativePath(from: basePath, to: pagePath)
-        let relativeDir = relativePath.removingLastComponent()
+        let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+        let relativeDirComponents = Array(relativeComponents.dropLast())
 
         switch configuration.routingStyle {
         case .direct:
-            if relativeDir.components.isEmpty {
+            if relativeDirComponents.isEmpty {
                 return "\(stem).html"
             } else {
-                return "\(relativeDir.string)/\(stem).html"
+                let directoryPath = makeURLPath(from: relativeDirComponents)
+                return "\(directoryPath)/\(stem).html"
             }
         case .subdirectory:
-            if relativeDir.components.isEmpty {
+            if relativeDirComponents.isEmpty {
                 return "\(stem)/"
             } else {
-                return "\(relativeDir.string)/\(stem)/"
+                let directoryPath = makeURLPath(from: relativeDirComponents)
+                return "\(directoryPath)/\(stem)/"
             }
         }
     }
@@ -68,9 +70,9 @@ public struct PathGenerator: Sendable {
         case .direct:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-                let relativePath = getRelativePath(from: basePath, to: pagePath)
-                let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count
+                let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+                let relativeDirComponents = Array(relativeComponents.dropLast())
+                let depth = relativeDirComponents.count
                 if depth > 0 {
                     return String(repeating: "../", count: depth) + configuration.indexFileName
                 }
@@ -79,12 +81,11 @@ public struct PathGenerator: Sendable {
         case .subdirectory:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-                let relativePath = getRelativePath(from: basePath, to: pagePath)
-                let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
+                let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+                let relativeDirComponents = Array(relativeComponents.dropLast())
+                let depth = relativeDirComponents.count + 1
                 return String(repeating: "../", count: depth)
             } else {
-                // For the index page itself
                 return "./"
             }
         }
@@ -96,9 +97,9 @@ public struct PathGenerator: Sendable {
         case .direct:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-                let relativePath = getRelativePath(from: basePath, to: pagePath)
-                let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count
+                let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+                let relativeDirComponents = Array(relativeComponents.dropLast())
+                let depth = relativeDirComponents.count
                 if depth > 0 {
                     return String(repeating: "../", count: depth) + "assets/"
                 }
@@ -107,12 +108,11 @@ public struct PathGenerator: Sendable {
         case .subdirectory:
             if let pagePath = pagePath {
                 let basePath = isUnlisted ? unlistedBasePath : contentsBasePath
-                let relativePath = getRelativePath(from: basePath, to: pagePath)
-                let relativeDir = relativePath.removingLastComponent()
-                let depth = relativeDir.components.count + 1 // +1 for the post subdirectory
+                let relativeComponents = getRelativePathComponents(from: basePath, to: pagePath)
+                let relativeDirComponents = Array(relativeComponents.dropLast())
+                let depth = relativeDirComponents.count + 1
                 return String(repeating: "../", count: depth) + "assets/"
             } else {
-                // For the index page itself
                 return "assets/"
             }
         }
@@ -130,21 +130,19 @@ public struct PathGenerator: Sendable {
         return cleanBaseUrl + cleanRelativePath
     }
 
-    /// Calculate relative path from base to target
-    private func getRelativePath(from base: FilePath, to target: FilePath) -> FilePath {
-        let baseComponents = base.components
-        let targetComponents = target.components
+    /// Calculate relative path components from base to target
+    private func getRelativePathComponents(from base: FilePath, to target: FilePath) -> [FilePath.Component] {
+        let baseComponents = Array(base.components)
+        let targetComponents = Array(target.components)
 
-        // Find the common prefix length
         let commonLength = zip(baseComponents, targetComponents)
             .prefix { $0 == $1 }
             .count
 
-        // Get the remaining components from the target path
-        let relativeComponents = Array(targetComponents.dropFirst(commonLength))
+        return Array(targetComponents.dropFirst(commonLength))
+    }
 
-        // Create path string from components
-        let pathString = relativeComponents.map(\.string).joined(separator: "/")
-        return FilePath(pathString)
+    private func makeURLPath(from components: [FilePath.Component]) -> String {
+        components.map(\.string).joined(separator: "/")
     }
 }
