@@ -13,6 +13,16 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
+    - name: Restore Swift build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .build
+          .swiftpm
+        key: ${{ runner.os }}-swift-${{ hashFiles('Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-swift-
+
     - name: Install Swift toolchain
       uses: vapor/swiftly-action@v0.2
       with:
@@ -29,6 +39,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - name: Restore Swift build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .build
+          .swiftpm
+        key: ${{ runner.os }}-swift-${{ hashFiles('Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-swift-
 
     - name: Install Swift toolchain
       shell: bash
@@ -52,6 +72,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - name: Restore Swift build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .build
+          .swiftpm
+        key: ${{ runner.os }}-swift-${{ hashFiles('Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-swift-
 
     - name: Install Swift toolchain
       uses: compnerd/gha-setup-swift@main
