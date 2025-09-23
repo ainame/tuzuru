@@ -36,13 +36,13 @@ struct GenerateManifestTests {
         // Verify manifest properties
         #expect(manifest.generatedAt > 0)
         #expect(manifest.sourceDirs.count == 3)
-        #expect(manifest.sourceDirs[contentsDir.string] != nil)
-        #expect(manifest.sourceDirs[assetsDir.string] != nil)
-        #expect(manifest.sourceDirs[unlistedDir.string] != nil)
+        #expect(manifest.sourceDirs.keys.contains { FilePath($0) == contentsDir })
+        #expect(manifest.sourceDirs.keys.contains { FilePath($0) == assetsDir })
+        #expect(manifest.sourceDirs.keys.contains { FilePath($0) == unlistedDir })
         #expect(manifest.files.count == 3)
-        #expect(manifest.files.contains("blog/index.html"))
-        #expect(manifest.files.contains("blog/post1.html"))
-        #expect(manifest.files.contains("blog/2024/index.html"))
+        #expect(manifest.files.contains { FilePath($0) == FilePath("blog/index.html") })
+        #expect(manifest.files.contains { FilePath($0) == FilePath("blog/post1.html") })
+        #expect(manifest.files.contains { FilePath($0) == FilePath("blog/2024/index.html") })
     }
     
     @Test("Save and load manifest")
@@ -102,14 +102,14 @@ struct GenerateManifestTests {
         
         // Current files (post2.html was removed)
         let currentFiles = [
-            "blog/index.html",
-            "blog/post1.html"
+            FilePath("blog/index.html").string,
+            FilePath("blog/post1.html").string
         ]
         
         let orphanedFiles = manifest.getOrphanedFiles(currentFiles: currentFiles)
         
         #expect(orphanedFiles.count == 1)
-        #expect(orphanedFiles.contains("blog/post2.html"))
+        #expect(orphanedFiles.contains { FilePath($0) == FilePath("blog/post2.html") })
     }
     
     @Test("Load non-existent manifest returns nil")

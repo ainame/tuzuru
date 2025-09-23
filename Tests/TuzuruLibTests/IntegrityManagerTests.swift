@@ -86,8 +86,8 @@ struct IntegrityManagerTests {
         let savedManifest = try integrityManager.loadExistingManifest()
         #expect(savedManifest != nil)
         #expect(savedManifest!.files.count == 3)
-        #expect(savedManifest!.files.contains("blog/index.html"))
-        #expect(savedManifest!.files.contains("blog/post1.html"))
-        #expect(savedManifest!.files.contains("blog/sitemap.xml"))
+        #expect(savedManifest!.files.contains { FilePath($0) == FilePath("blog/index.html") })
+        #expect(savedManifest!.files.contains { FilePath($0) == FilePath("blog/post1.html") })
+        #expect(savedManifest!.files.contains { FilePath($0) == FilePath("blog/sitemap.xml") })
     }
 }
