@@ -54,13 +54,13 @@ struct BlogConfigurationLoaderTests {
         #expect(config.metadata.locale.identifier == "en_GB")
         #expect(config.output.directory == "public")
         #expect(config.output.routingStyle == .subdirectory)
-        #expect(config.sourceLayout.assets.string == "assets")
-        #expect(config.sourceLayout.contents.string == "contents")
-        #expect(config.sourceLayout.imported.string == "contents/imported")
-        #expect(config.sourceLayout.unlisted.string == "contents/unlisted")
-        #expect(config.sourceLayout.templates.layout.string == "templates/layout.mustache")
-        #expect(config.sourceLayout.templates.list.string == "templates/list.mustache")
-        #expect(config.sourceLayout.templates.post.string == "templates/post.mustache")
+        #expect(config.sourceLayout.assets == FilePath("assets"))
+        #expect(config.sourceLayout.contents == FilePath("contents"))
+        #expect(config.sourceLayout.imported == FilePath("contents/imported"))
+        #expect(config.sourceLayout.unlisted == FilePath("contents/unlisted"))
+        #expect(config.sourceLayout.templates.layout == FilePath("templates/layout.mustache"))
+        #expect(config.sourceLayout.templates.list == FilePath("templates/list.mustache"))
+        #expect(config.sourceLayout.templates.post == FilePath("templates/post.mustache"))
     }
 
     @Test
@@ -101,12 +101,12 @@ struct BlogConfigurationLoaderTests {
         // Verify default values are used for missing fields
         #expect(config.output.directory == "blog")
         #expect(config.output.routingStyle == .subdirectory)
-        #expect(config.sourceLayout.assets.string == "assets")
-        #expect(config.sourceLayout.contents.string == "contents")
-        #expect(config.sourceLayout.imported.string == "contents/imported")
-        #expect(config.sourceLayout.unlisted.string == "contents/unlisted")
-        #expect(config.sourceLayout.templates.layout.string == "templates/layout.mustache")
-        #expect(config.sourceLayout.templates.list.string == "templates/list.mustache")
-        #expect(config.sourceLayout.templates.post.string == "templates/post.mustache")
+        #expect(config.sourceLayout.assets == FilePath("assets"))
+        #expect(config.sourceLayout.contents == FilePath("contents"))
+        #expect(config.sourceLayout.imported == FilePath("contents/imported"))
+        #expect(config.sourceLayout.unlisted == FilePath("contents/unlisted"))
+        #expect(config.sourceLayout.templates.layout == FilePath("templates/layout.mustache"))
+        #expect(config.sourceLayout.templates.list == FilePath("templates/list.mustache"))
+        #expect(config.sourceLayout.templates.post == FilePath("templates/post.mustache"))
     }
 }
