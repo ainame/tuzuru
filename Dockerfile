@@ -1,5 +1,5 @@
 # Build stage
-FROM docker.io/swift:6.2 as builder
+FROM docker.io/swift:6.1 as builder
 
 # Install necessary system dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,7 +17,7 @@ COPY . .
 RUN swift build --configuration release
 
 # Runtime stage
-FROM docker.io/swift:6.2
+FROM docker.io/swift:6.1
 
 # Install necessary system dependencies
 RUN apt-get update && apt-get install -y \

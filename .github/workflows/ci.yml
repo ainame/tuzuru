@@ -15,7 +15,7 @@ jobs:
 
     - uses: vapor/swiftly-action@v0.2
       with:
-        toolchain: 6.2
+        toolchain: 6.1.3
 
     - name: Run tests
       run: |
