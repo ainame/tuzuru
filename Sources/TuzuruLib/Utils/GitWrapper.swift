@@ -3,9 +3,9 @@ import Subprocess
 
 /// Thin wrapper around git command execution to reduce ceremonial code
 struct GitWrapper {
-    struct Error: Swift.Error {
-        let message: String
-        let exitStatus: Int
+    enum Error: Swift.Error {
+        case failed(message: String, exitStatus: Int)
+        case exception(message: String, signal: Int)
     }
 
     /// Executes a git command with the given arguments
@@ -22,13 +22,14 @@ struct GitWrapper {
                 output: .string(limit: .max),
                 error: .string(limit: .max)
             )
-            
+
             switch result.terminationStatus {
             case .exited(let code) where code == 0:
                 return result.standardOutput?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            case .exited(let code),
-                 .unhandledException(let code):
-                throw Error(message: result.standardError ?? "", exitStatus: Int(code))
+            case .exited(let code):
+                throw Error.failed(message: result.standardError ?? "", exitStatus: Int(code))
+            case .unhandledException(let signal):
+                throw Error.exception(message: result.standardError ?? "", signal: Int(signal))
             }
         } catch {
             let command = "git \(arguments.joined(separator: " "))"
