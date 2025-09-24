@@ -65,11 +65,12 @@ struct FileAmender {
         
         // Append an empty line to the file (minimal, invisible change)
         let fullFilePath = fileManager.workingDirectory.appending(filePath.string)
-        let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: fullFilePath.string))
-        defer { fileHandle.closeFile() }
-        
-        fileHandle.seekToEndOfFile()
-        fileHandle.write("\n".data(using: .utf8)!)
+        do {
+            let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: fullFilePath.string))
+            defer { try? fileHandle.close() }
+            try fileHandle.seekToEnd()
+            try fileHandle.write(contentsOf: "\n".data(using: .utf8)!)
+        }
 
         // Stage the file
         try await GitWrapper.run(
