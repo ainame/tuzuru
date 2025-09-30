@@ -1,0 +1,18 @@
+FROM ubuntu:24.04
+
+# Download and extract SwiftLint static binary
+RUN apt-get update && apt-get install -y wget unzip libcurl4 && \
+    wget -q https://github.com/realm/SwiftLint/releases/download/0.61.0/swiftlint_linux_arm64.zip && \
+    unzip swiftlint_linux_arm64.zip && \
+    mv swiftlint-static /usr/local/bin/swiftlint && \
+    chmod +x /usr/local/bin/swiftlint && \
+    rm -rf swiftlint_linux_arm64.zip swiftlint LICENSE && \
+    apt-get remove -y wget unzip && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Run SwiftLint by default
+CMD ["swiftlint"]
