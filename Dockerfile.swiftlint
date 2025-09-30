@@ -14,5 +14,8 @@ RUN apt-get update && apt-get install -y wget unzip libcurl4 && \
 
 WORKDIR /workspace
 
+# Copy entire codebase (excluding .git via .dockerignore)
+COPY . .
+
 # Run SwiftLint by default
 CMD ["swiftlint"]
