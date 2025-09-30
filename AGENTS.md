@@ -5,7 +5,7 @@ This file provides guidance to AI coding agents (e.g., Claude Code, GitHub Copil
 ## Project Overview
 
 Tuzuru is a static blog generator CLI tool written in Swift that converts markdown files to HTML pages using Mustache templates. It's designed for Swift 6.1 with macOS v15+ minimum requirement.
-Note: The codebase also includes conditional support for Linux (Glibc/Musl) in the local HTTP server component.
+Note: The codebase also includes conditional support for Linux (Glibc/Musl) in the local HTTP server component. CI also exercises the core targets on Windows, so always keep Windows path semantics in mind when touching shared logic.
 
 ## Essential Commands
 
@@ -122,6 +122,11 @@ Especially, when you need to work with Subprocess or GitWrapper,
 you must give `FileManagerWrapper.workingDirectory` to ensure you run command at right place.
 This is for testing purpose due to swift-testing's parallel execution.
 `GitRepositoryFixtureTrait` works on top of that way.
+
+### Windows support
+
+- The CLI and library must continue to compile and pass tests on Windows as well as Apple/Linux platforms.
+- Avoid manipulating file-system paths with hard-coded `/` separators (e.g., `somePath.string.split(separator: "/")`). Use `FilePath` APIs such as `components`, `appending`, and `removingLastComponent()` to remain portable. Converting a string literal into a `FilePath` first is acceptable when you need to derive components.
 
 ## Testing
 
