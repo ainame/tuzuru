@@ -186,3 +186,5 @@ private enum Winsock {
     }
 }
 #endif
+
+// swiftlint:enable identifier_name type_name

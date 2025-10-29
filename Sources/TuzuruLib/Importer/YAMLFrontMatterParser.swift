@@ -9,10 +9,6 @@ struct YAMLFrontMatterParser: Sendable {
         let author: String?
         let draft: Bool?
         let type: String?
-
-        private enum CodingKeys: String, CodingKey {
-            case title, date, author, draft, type
-        }
     }
 
     struct ParseResult: Sendable {
