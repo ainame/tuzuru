@@ -5,6 +5,9 @@ included:
 disabled_rules:
   - line_length
   - file_length
+  - function_body_length
+  - type_body_length
+  - large_tuple
   - unused_closure_parameter
 
 trailing_comma:
