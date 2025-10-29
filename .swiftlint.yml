@@ -1,0 +1,11 @@
+included:
+  - Sources
+  - Tests
+
+disabled_rules:
+  - line_length
+  - file_length
+  - unused_closure_parameter
+
+trailing_comma:
+  mandatory_comma: true
