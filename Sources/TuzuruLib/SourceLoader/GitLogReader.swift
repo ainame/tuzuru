@@ -32,13 +32,13 @@ struct GitLogReader: Sendable {
         let lines = output.components(separatedBy: .newlines).filter { !$0.isEmpty }
         var logs: [GitLog] = []
 
-        var i = 0
-        while i + 4 < lines.count {
-            let commitHash = lines[i]
-            let commitMessage = lines[i + 1]
-            let author = lines[i + 2]
-            let email = lines[i + 3]
-            let dateString = lines[i + 4]
+        var lineIndex = 0
+        while lineIndex + 4 < lines.count {
+            let commitHash = lines[lineIndex]
+            let commitMessage = lines[lineIndex + 1]
+            let author = lines[lineIndex + 2]
+            let email = lines[lineIndex + 3]
+            let dateString = lines[lineIndex + 4]
 
             if let date = parseGitDate(dateString) {
                 let log = GitLog(
@@ -51,7 +51,7 @@ struct GitLogReader: Sendable {
                 logs.append(log)
             }
 
-            i += 5
+            lineIndex += 5
         }
 
         return logs

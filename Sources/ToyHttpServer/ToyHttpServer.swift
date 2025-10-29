@@ -63,11 +63,7 @@ public class ToyHttpServer: @unchecked Sendable {
             while true {
                 guard let clientSocket = Socket.accept(serverSocket) else { continue }
 
-                group.addTask { @Sendable [
-                    servePath = self.servePath,
-                    beforeHook = self.beforeResponseHook,
-                    afterHook = self.afterResponseHook,
-                ] in
+                group.addTask { @Sendable [servePath = self.servePath, beforeHook = self.beforeResponseHook, afterHook = self.afterResponseHook] in
                     await ToyHttpServer.handleClientInstance(
                         clientSocket,
                         servePath: servePath,
@@ -117,7 +113,7 @@ public class ToyHttpServer: @unchecked Sendable {
 
             if httpRequest.method != "GET" {
                 response = HttpResponse(statusCode: 405, contentType: "text/plain",
-                                        data: "405 Method Not Allowed".data(using: .utf8) ?? Data())
+                                        data: Data("405 Method Not Allowed".utf8))
             } else {
                 response = serveFile(path: httpRequest.path, servePath: servePath)
             }
@@ -162,7 +158,7 @@ public class ToyHttpServer: @unchecked Sendable {
               FileManager.default.fileExists(atPath: filePath),
               let data = try? Data(contentsOf: URL(fileURLWithPath: filePath)) else {
             return HttpResponse(statusCode: 404, contentType: "text/plain",
-                               data: "404 Not Found".data(using: .utf8) ?? Data())
+                               data: Data("404 Not Found".utf8))
         }
 
         let contentType = determineContentType(for: filePath)

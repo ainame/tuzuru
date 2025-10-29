@@ -1,5 +1,5 @@
-// swiftlint:disable all
-// This file wraps low-level C socket APIs and requires unsafe operations
+// swiftlint:disable identifier_name type_name
+// This file wraps low-level C socket APIs and requires platform-specific code
 import Foundation
 
 // Platform imports and aliases concentrated here so implementation

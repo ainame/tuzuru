@@ -55,8 +55,9 @@ struct URLLinker: MarkupRewriter {
             // Create link from URL
             let url = String(content[match.range])
             let linkChildren: [InlineMarkup] = [Text(url)]
-            let link = Link(destination: url).withUncheckedChildren(linkChildren) as! Link
-            result.append(link)
+            if let link = Link(destination: url).withUncheckedChildren(linkChildren) as? Link {
+                result.append(link)
+            }
 
             lastIndex = match.range.upperBound
         }

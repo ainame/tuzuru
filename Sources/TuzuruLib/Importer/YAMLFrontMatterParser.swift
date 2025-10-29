@@ -39,13 +39,13 @@ struct YAMLFrontMatterParser: Sendable {
         var contentStartIndex = 1
         var foundClosingDelimiter = false
 
-        for i in 1..<lines.count {
-            if lines[i] == "---" {
+        for lineIndex in 1..<lines.count {
+            if lines[lineIndex] == "---" {
                 foundClosingDelimiter = true
-                contentStartIndex = i + 1
+                contentStartIndex = lineIndex + 1
                 break
             }
-            frontMatterLines.append(lines[i])
+            frontMatterLines.append(lines[lineIndex])
         }
 
         guard foundClosingDelimiter else {

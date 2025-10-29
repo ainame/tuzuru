@@ -50,11 +50,9 @@ struct MarkdownTransformer: Sendable {
         // Find the closing delimiter
         var contentStartIndex = 1
 
-        for i in 1..<lines.count {
-            if lines[i] == "---" {
-                contentStartIndex = i + 1
-                break
-            }
+        for lineIndex in 1..<lines.count where lines[lineIndex] == "---" {
+            contentStartIndex = lineIndex + 1
+            break
         }
 
         // Return content after front matter

@@ -2,6 +2,7 @@ import Foundation
 
 public enum TuzuruError: LocalizedError {
     case templateNotFound(String)
+    case invalidTemplateEncoding(String)
     case directoryCreationFailed(String)
     case fileNotFound(String)
     case titleNotFound(String)
@@ -13,6 +14,8 @@ public enum TuzuruError: LocalizedError {
         switch self {
         case .templateNotFound(let name):
             return "Template not found: \(name)"
+        case .invalidTemplateEncoding(let path):
+            return "Invalid template encoding (not UTF-8): \(path)"
         case .directoryCreationFailed(let path):
             return "Failed to create directory: \(path)"
         case .fileNotFound(let path):

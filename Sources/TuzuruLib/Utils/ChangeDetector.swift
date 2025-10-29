@@ -58,10 +58,8 @@ struct ChangeDetector: Sendable {
     private func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
         let sourceDirectories = sourceDirectoryProvider.getSourceDirectories()
 
-        for directoryPath in sourceDirectories {
-            if hasDirectoryChanged(directoryPath, since: lastRequestTime) {
-                return true
-            }
+        for directoryPath in sourceDirectories where hasDirectoryChanged(directoryPath, since: lastRequestTime) {
+            return true
         }
 
         return false

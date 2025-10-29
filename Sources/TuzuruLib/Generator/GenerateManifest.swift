@@ -9,12 +9,10 @@ public struct GenerateManifest: Codable, Sendable {
         self.generatedAt = Date().timeIntervalSince1970
 
         var dirTimestamps: [String: TimeInterval] = [:]
-        for dir in sourceDirs {
-            if fileManager.fileExists(atPath: dir) {
-                let attributes = try fileManager.attributesOfItem(atPath: dir)
-                if let modificationDate = attributes[.modificationDate] as? Date {
-                    dirTimestamps[dir.string] = modificationDate.timeIntervalSince1970
-                }
+        for dir in sourceDirs where fileManager.fileExists(atPath: dir) {
+            let attributes = try fileManager.attributesOfItem(atPath: dir)
+            if let modificationDate = attributes[.modificationDate] as? Date {
+                dirTimestamps[dir.string] = modificationDate.timeIntervalSince1970
             }
         }
         self.sourceDirs = dirTimestamps

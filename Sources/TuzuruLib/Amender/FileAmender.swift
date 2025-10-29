@@ -69,7 +69,7 @@ struct FileAmender {
             let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: fullFilePath.string))
             defer { try? fileHandle.close() }
             try fileHandle.seekToEnd()
-            try fileHandle.write(contentsOf: "\n".data(using: .utf8)!)
+            try fileHandle.write(contentsOf: Data("\n".utf8))
         }
 
         // Stage the file
