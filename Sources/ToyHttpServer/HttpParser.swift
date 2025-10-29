@@ -38,7 +38,7 @@ struct HttpParser {
             buffer.append(contentsOf: chunk[0..<bytesRead])
 
             // Check if we have complete headers
-            if let headerEnd = buffer.range(of: "\r\n\r\n".data(using: .utf8)!) {
+            if let headerEnd = buffer.range(of: Data("\r\n\r\n".utf8)) {
                 // We have complete headers, parse the request
                 let headerData = buffer[..<headerEnd.lowerBound]
                 guard let headerString = String(data: headerData, encoding: .utf8) else {

@@ -32,7 +32,7 @@ struct ChangeDetector: Sendable {
             if fileManager.fileExists(atPath: sourcePath) {
                 var isDirectory: Bool = false
                 _ = fileManager.fileExists(atPath: sourcePath, isDirectory: &isDirectory)
-                
+
                 if isDirectory {
                     // For directories (auto-generated pages), check if any content changed
                     return hasDirectoryChanged(sourcePath, since: lastRequestTime)
@@ -58,10 +58,8 @@ struct ChangeDetector: Sendable {
     private func hasSourceFilesChanged(since lastRequestTime: Date) -> Bool {
         let sourceDirectories = sourceDirectoryProvider.getSourceDirectories()
 
-        for directoryPath in sourceDirectories {
-            if hasDirectoryChanged(directoryPath, since: lastRequestTime) {
-                return true
-            }
+        for directoryPath in sourceDirectories where hasDirectoryChanged(directoryPath, since: lastRequestTime) {
+            return true
         }
 
         return false

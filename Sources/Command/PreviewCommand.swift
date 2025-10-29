@@ -24,7 +24,6 @@ struct PreviewCommand: AsyncParsableCommand {
     @Option(name: [.long, .customShort("p")], help: "Port to serve on (default: 8000)")
     var port: Int = 8000
 
-
     @Option(name: [.long, .customShort("c")], help: "Path to configuration file (default: tuzuru.json)")
     var config: String?
 

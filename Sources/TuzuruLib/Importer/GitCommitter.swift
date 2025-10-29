@@ -34,7 +34,7 @@ struct GitCommitter {
         try await GitWrapper.run(
             arguments: [
                 "add",
-                filePath.string
+                filePath.string,
             ],
             workingDirectory: workingDirectory
         )
@@ -46,7 +46,7 @@ struct GitCommitter {
                 "commit",
                 "-m", message,
                 "--date", date,
-                "--author", author
+                "--author", author,
             ],
             workingDirectory: workingDirectory,
         )
@@ -57,7 +57,7 @@ struct GitCommitter {
             arguments: [
                 "commit",
                 "-m", message,
-                "--date", date
+                "--date", date,
             ],
             workingDirectory: workingDirectory,
         )
@@ -89,7 +89,7 @@ struct GitCommitter {
                 "-1",
                 "--format=%an <%ae>",
                 "--",
-                filePath.string
+                filePath.string,
             ],
             workingDirectory: workingDirectory,
         )

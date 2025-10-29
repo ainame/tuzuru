@@ -192,6 +192,9 @@ struct SourceLoader: Sendable {
         guard let data = fileManager.contents(atPath: filePath) else {
             throw TuzuruError.templateNotFound(filePath.string)
         }
-        try library.register(MustacheTemplate(string: String(decoding: data, as: UTF8.self)), named: name)
+        guard let templateString = String(bytes: data, encoding: .utf8) else {
+            throw TuzuruError.invalidTemplateEncoding(filePath.string)
+        }
+        try library.register(MustacheTemplate(string: templateString), named: name)
     }
 }

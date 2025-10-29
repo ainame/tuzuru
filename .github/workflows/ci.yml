@@ -7,6 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-slim
+
+    steps:
+    - uses: actions/checkout@v5
+    - uses: ainame/swiftlint-linux@0.62.2
+      with:
+        strict: true
+
   test-linux:
     runs-on: ubuntu-latest
 

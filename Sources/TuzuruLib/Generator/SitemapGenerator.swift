@@ -22,7 +22,9 @@ struct SitemapGenerator: Sendable {
 
         // Create root urlset element
         let urlsetElement = XMLElement(name: "urlset")
-        urlsetElement.addAttribute(XMLNode.attribute(withName: "xmlns", stringValue: "http://www.sitemaps.org/schemas/sitemap/0.9") as! XMLNode)
+        if let xmlnsAttribute = XMLNode.attribute(withName: "xmlns", stringValue: "http://www.sitemaps.org/schemas/sitemap/0.9") as? XMLNode {
+            urlsetElement.addAttribute(xmlnsAttribute)
+        }
 
         // Add home page
         let homeUrl = pathGenerator.generateAbsoluteUrl(baseUrl: baseUrl, relativePath: "")

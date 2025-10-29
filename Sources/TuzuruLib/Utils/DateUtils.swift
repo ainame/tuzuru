@@ -27,16 +27,16 @@ struct DateUtils: Sendable {
             createFormatter(format: "dd/MM/yyyy"),
             createFormatter(format: "MM/dd/yyyy"),
         ]
-        
+
         for formatter in formatters {
             if let date = formatter.date(from: dateString) {
                 return date
             }
         }
-        
+
         return nil
     }
-    
+
     private static func createFormatter(format: String, locale: String = "en_US_POSIX") -> DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = format

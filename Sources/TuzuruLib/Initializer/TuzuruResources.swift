@@ -8,7 +8,7 @@ enum TuzuruResources {
         if ProcessInfo.processInfo.environment[environmentVariableName] != nil {
             return try bundleFromEnvironment(fileManager: fileManager)
         }
-        
+
         // Fall back to Bundle.module for development/normal SPM usage
         return Bundle.module
     }

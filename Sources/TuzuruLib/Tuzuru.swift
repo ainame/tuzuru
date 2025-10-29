@@ -175,17 +175,17 @@ public struct Tuzuru: Sendable {
 
         // For auto-generated pages, use a special marker to indicate they depend on the contents directory
         let contentsDirectory = configuration.sourceLayout.contents
-        
+
         // Index page - depends on all posts
         mapping["/"] = contentsDirectory
         mapping["/index.html"] = contentsDirectory
-        
+
         // Year pages - depend on all posts from that year
         for year in source.years {
             mapping["/\(year)/"] = contentsDirectory
             mapping["/\(year)/index.html"] = contentsDirectory
         }
-        
+
         // Category pages - depend on all posts with that category
         for category in source.categories {
             mapping["/\(category)/"] = contentsDirectory.appending(category)
@@ -203,7 +203,6 @@ public struct Tuzuru: Sendable {
         let changeDetector = ChangeDetector(fileManager: fileManager, configuration: configuration)
         return changeDetector.checkIfChangesMade(at: requestPath, since: lastRequestTime, in: pathMapping)
     }
-
 
     public func regenerate() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)

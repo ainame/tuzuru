@@ -48,7 +48,7 @@ public struct FileManagerWrapper: @unchecked Sendable {
     public func createFile(
         atPath path: FilePath,
         contents: Data?,
-        attributes: [FileAttributeKey : Any]? = nil,
+        attributes: [FileAttributeKey: Any]? = nil,
     ) -> Bool {
         fileManager.createFile(
             atPath: normalizePath(path),
@@ -60,7 +60,7 @@ public struct FileManagerWrapper: @unchecked Sendable {
     public func createDirectory(
         atPath path: FilePath,
         withIntermediateDirectories createIntermediates: Bool,
-        attributes: [FileAttributeKey : Any]? = nil,
+        attributes: [FileAttributeKey: Any]? = nil,
     ) throws {
         try fileManager.createDirectory(
             atPath: normalizePath(path),
