@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - uses: ainame/linux-swiftlint-action@0.62.2
+    - uses: ainame/swiftlint-linux@0.62.2
 
   test-linux:
     runs-on: ubuntu-latest
