@@ -9,6 +9,7 @@ disabled_rules:
   - type_body_length
   - large_tuple
   - unused_closure_parameter
+  - optional_data_string_conversion
 
 trailing_comma:
   mandatory_comma: true
