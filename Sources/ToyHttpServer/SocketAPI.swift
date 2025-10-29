@@ -1,3 +1,5 @@
+// swiftlint:disable all
+// This file wraps low-level C socket APIs and requires unsafe operations
 import Foundation
 
 // Platform imports and aliases concentrated here so implementation
