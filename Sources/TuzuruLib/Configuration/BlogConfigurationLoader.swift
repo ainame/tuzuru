@@ -6,7 +6,7 @@ public struct BlogConfigurationLoader {
     public enum LoadError: Error, LocalizedError {
         case configFileNotFound(String)
         case invalidConfigurationData(Error)
-        
+
         public var errorDescription: String? {
             switch self {
             case .configFileNotFound(let path):
@@ -16,7 +16,7 @@ public struct BlogConfigurationLoader {
             }
         }
     }
-    
+
     public init(fileManager: FileManagerWrapper) {
         self.fileManager = fileManager
     }
@@ -25,12 +25,12 @@ public struct BlogConfigurationLoader {
     /// - Parameter configPath: Optional path to configuration file. If nil, uses "tuzuru.json" in current directory
     /// - Returns: Loaded BlogConfiguration
     /// - Throws: LoadError if file not found or invalid
-    public func load(from configPath: String? = nil) throws -> BlogConfiguration {        
+    public func load(from configPath: String? = nil) throws -> BlogConfiguration {
         let configPath = configPath ?? "tuzuru.json"
         guard fileManager.fileExists(atPath: FilePath(configPath)) else {
             throw LoadError.configFileNotFound(configPath)
         }
-        
+
         do {
             let url = URL(fileURLWithPath: fileManager.workingDirectory.appending(configPath).string)
             let configData = try Data(contentsOf: url)

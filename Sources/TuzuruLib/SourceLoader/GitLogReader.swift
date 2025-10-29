@@ -17,7 +17,7 @@ struct GitLogReader: Sendable {
                     "--follow",
                     "--pretty=format:%H%n%s%n%an%n%ae%n%ai",
                     "--",
-                    filePath.string
+                    filePath.string,
                 ],
                 workingDirectory: workingDirectory
             )
@@ -68,7 +68,7 @@ struct GitLogReader: Sendable {
         if let markerCommit = logs.first(where: { $0.commitMessage.hasPrefix("[tuzuru amend]") }) {
             return markerCommit
         }
-        
+
         // No marker commits found, use the original first commit (last in chronological order)
         return logs.last
     }

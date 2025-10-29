@@ -32,7 +32,7 @@ struct ChangeDetector: Sendable {
             if fileManager.fileExists(atPath: sourcePath) {
                 var isDirectory: Bool = false
                 _ = fileManager.fileExists(atPath: sourcePath, isDirectory: &isDirectory)
-                
+
                 if isDirectory {
                     // For directories (auto-generated pages), check if any content changed
                     return hasDirectoryChanged(sourcePath, since: lastRequestTime)

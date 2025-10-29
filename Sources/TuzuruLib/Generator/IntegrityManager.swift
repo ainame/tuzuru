@@ -13,7 +13,6 @@ struct IntegrityManager: Sendable {
         self.sourceDirectoryProvider = SourceDirectoryProvider(fileManager: fileManager, configuration: blogConfiguration)
     }
 
-
     /// Get the path to the manifest file in .build
     var manifestPath: FilePath {
         fileManager.workingDirectory.appending(".build/manifest.json")

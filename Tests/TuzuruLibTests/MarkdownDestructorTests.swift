@@ -26,4 +26,3 @@ struct MarkdownDestructorTests {
         #expect(newDocument.childCount == 6)
     }
 }
-

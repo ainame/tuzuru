@@ -4,7 +4,7 @@ import Markdown
 /// Converts X (Twitter) post URLs to embedded tweet HTML
 /// Converts direct X.com URLs to Twitter embed format for Tuzuru compatibility
 struct XPostLinkConverter: MarkupRewriter {
-    
+
     mutating func descendInto(_ markup: Markup) -> Markup? {
         let newChildren = markup.children.compactMap {
             visit($0)
@@ -23,7 +23,7 @@ struct XPostLinkConverter: MarkupRewriter {
     mutating func visitParagraph(_ paragraph: Paragraph) -> (any Markup)? {
         // Process all children and collect inline elements
         var newInlineElements: [InlineMarkup] = []
-        
+
         for child in paragraph.children {
             if let textChild = child as? Text {
                 let processedElements = processTextForXPostURLs(textChild)
@@ -32,7 +32,7 @@ struct XPostLinkConverter: MarkupRewriter {
                 newInlineElements.append(inlineChild)
             }
         }
-        
+
         return paragraph.withUncheckedChildren(newInlineElements)
     }
 
@@ -40,17 +40,17 @@ struct XPostLinkConverter: MarkupRewriter {
         let content = text.string
         // Match X.com URLs in the format: https://x.com/username/status/tweetid
         let xPostRegex = /https:\/\/x\.com\/([^\/\s]+)\/status\/(\d+)(?:\?[^\s]*)?/
-        
+
         let matches = content.matches(of: xPostRegex)
-        
+
         // If no X post URLs found, return original text
         if matches.isEmpty {
             return [text]
         }
-        
+
         var result: [InlineMarkup] = []
         var lastIndex = content.startIndex
-        
+
         for match in matches {
             // Add text before X post URL
             if lastIndex < match.range.lowerBound {
@@ -59,18 +59,18 @@ struct XPostLinkConverter: MarkupRewriter {
                     result.append(Text(beforeText))
                 }
             }
-            
+
             // Create HTML block from X post URL
             let user = String(match.output.1)
             let id = String(match.output.2)
-            
+
             let embedHTML = generateXEmbedHTML(user: user, id: id)
             let inlineHTML = InlineHTML(embedHTML)
             result.append(inlineHTML)
-            
+
             lastIndex = match.range.upperBound
         }
-        
+
         // Add remaining text after last X post URL
         if lastIndex < content.endIndex {
             let afterText = String(content[lastIndex...])
@@ -78,10 +78,10 @@ struct XPostLinkConverter: MarkupRewriter {
                 result.append(Text(afterText))
             }
         }
-        
+
         return result
     }
-    
+
     /// Generate Twitter embed HTML compatible with Twitter's widget system
     private func generateXEmbedHTML(user: String, id: String) -> String {
         return """

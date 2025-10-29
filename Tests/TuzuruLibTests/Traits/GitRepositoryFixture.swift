@@ -40,9 +40,9 @@ final class GitRepositoryFixture: @unchecked Sendable {
             arguments: ["checkout", "-b", "main"],
             workingDirectory: path,
         )
-        
+
         // Create initial commit to establish repository state
-        let _ = fileManager.createFile(atPath: FilePath(".gitkeep"), contents: Data())
+        _ = fileManager.createFile(atPath: FilePath(".gitkeep"), contents: Data())
         try await GitWrapper.run(
             arguments: ["add", ".gitkeep"],
             workingDirectory: path
@@ -106,7 +106,7 @@ final class GitRepositoryFixture: @unchecked Sendable {
             let existingContent = fileManager.contents(atPath: filePath) ?? Data()
             let existingString = String(data: existingContent, encoding: .utf8) ?? ""
             let newContent = existingString + "\n"
-            let _ = fileManager.createFile(atPath: filePath, contents: newContent.data(using: .utf8) ?? Data())
+            _ = fileManager.createFile(atPath: filePath, contents: newContent.data(using: .utf8) ?? Data())
         }
 
         let message = "[tuzuru amend] Updated \(field) for \(fileName)"

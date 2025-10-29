@@ -14,7 +14,7 @@ struct FileAmender {
         self.fileManager = fileManager
         self.gitLogReader = GitLogReader(workingDirectory: fileManager.workingDirectory)
     }
-    
+
     func amendFile(
         filePath: FilePath,
         newDate: String? = nil,
@@ -48,11 +48,11 @@ struct FileAmender {
     ) async throws {
         // Get previous marker commit to inherit unchanged metadata
         let previousCommit = await gitLogReader.baseCommit(for: filePath)
-        
+
         // Determine final author and date, inheriting from previous marker commit when unchanged
         let finalAuthor: String?
         let finalDate: Date?
-        
+
         if let previousCommit = previousCommit, previousCommit.commitMessage.hasPrefix("[tuzuru amend]") {
             // Previous marker commit exists, inherit unchanged values
             finalAuthor = newAuthor ?? previousCommit.author
@@ -62,7 +62,7 @@ struct FileAmender {
             finalAuthor = newAuthor
             finalDate = newDate
         }
-        
+
         // Append an empty line to the file (minimal, invisible change)
         let fullFilePath = fileManager.workingDirectory.appending(filePath.string)
         do {
@@ -91,12 +91,12 @@ struct FileAmender {
 
         // Build git commit arguments
         var commitArgs = ["commit", "-m", commitMessage]
-        
+
         // Add author if we have one (either new or inherited)
         if let finalAuthor = finalAuthor {
             commitArgs.append("--author=\(finalAuthor) <\(finalAuthor.lowercased().replacingOccurrences(of: " ", with: ""))@tuzuru.amend>")
         }
-        
+
         // Add date if we have one (either new or inherited)
         if let finalDate = finalDate {
             let formatter = DateFormatter()

@@ -10,7 +10,7 @@ struct BlogConfigurationLoaderTests {
         let fileManager = FileManagerWrapper(workingDirectory: tempDir.path)
         let loader = BlogConfigurationLoader(fileManager: fileManager)
         try fileManager.createDirectory(atPath: FilePath(tempDir.path), withIntermediateDirectories: true)
-        
+
         let fullConfig = """
         {
           "metadata" : {

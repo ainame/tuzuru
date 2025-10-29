@@ -36,10 +36,10 @@ struct BlogGenerator {
     func generate(_ source: Source) throws -> FilePath {
         let blogRoot = FilePath(configuration.output.directory)
         let pageRenderer = PageRenderer(templates: source.templates)
-        
+
         // Initialize integrity manager
         let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
-        
+
         // Load existing manifest and check if cleanup is needed
         let existingManifest = try integrityManager.loadExistingManifest()
         let cleanupNeeded = try integrityManager.isCleanupNeeded()
@@ -59,7 +59,7 @@ struct BlogGenerator {
 
         // Track all generated files for manifest
         var generatedFiles: [FilePath] = []
-        
+
         // Generate index page (first so we can track it)
         try generateListPage(pageRenderer: pageRenderer, posts: listedPosts, years: availableYears, categories: availableCategories, blogRoot: blogRoot)
         generatedFiles.append(blogRoot.appending(configuration.output.indexFileName))
@@ -78,7 +78,7 @@ struct BlogGenerator {
             let outputPath = pathGenerator.generateOutputPath(for: post.path, isUnlisted: post.isUnlisted)
             generatedFiles.append(blogRoot.appending(outputPath))
         }
-        
+
         // Generate sitemap.xml
         let sitemapGenerator = SitemapGenerator(
             pathGenerator: pathGenerator,
@@ -87,18 +87,17 @@ struct BlogGenerator {
         )
         try sitemapGenerator.generateAndSave(from: source, to: blogRoot)
         generatedFiles.append(blogRoot.appending("sitemap.xml"))
-        
+
         // Perform integrity cleanup if needed
         if cleanupNeeded, let manifest = existingManifest {
             try integrityManager.performCleanup(with: manifest, newGeneratedFiles: generatedFiles)
         }
-        
+
         // Save new manifest
         try integrityManager.saveNewManifest(generatedFiles: generatedFiles)
 
         return blogRoot
     }
-
 
     private func generatePostPage(pageRenderer: PageRenderer, post: Post, years: [String], categories: [String], blogRoot: FilePath) throws {
         // Prepare data for post template
@@ -207,7 +206,7 @@ struct BlogGenerator {
         let postsByYear = Dictionary(grouping: posts) { post in
             calendar.component(.year, from: post.publishedAt)
         }
-        
+
         var generatedFiles: [FilePath] = []
 
         // Generate a list page for each year that has posts
@@ -257,7 +256,7 @@ struct BlogGenerator {
             _ = fileManager.createFile(atPath: yearIndexPath, contents: Data(finalHTML.utf8))
             generatedFiles.append(yearIndexPath)
         }
-        
+
         return generatedFiles
     }
 
@@ -341,7 +340,7 @@ struct BlogGenerator {
             _ = fileManager.createFile(atPath: dirIndexPath, contents: Data(finalHTML.utf8))
             generatedFiles.append(dirIndexPath)
         }
-        
+
         return generatedFiles
     }
 
