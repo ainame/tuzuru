@@ -15,14 +15,14 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
         // Should have the same structure
         #expect(newDocument.childCount == document.childCount)
 
         // Get the paragraph and check its text content
-        let paragraph = newDocument.child(at: 1) as! Paragraph
-        let text = paragraph.child(at: 0) as! Text
+        let paragraph = try #require(newDocument.child(at: 1) as? Paragraph)
+        let text = try #require(paragraph.child(at: 0) as? Text)
         #expect(text.string == "This is a paragraph with no URLs in it.")
     }
 
@@ -34,23 +34,23 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 3) // "Visit ", link, " for more info."
 
         // Check text before URL
-        let beforeText = paragraph.child(at: 0) as! Text
+        let beforeText = try #require(paragraph.child(at: 0) as? Text)
         #expect(beforeText.string == "Visit ")
 
         // Check the link
-        let link = paragraph.child(at: 1) as! Link
+        let link = try #require(paragraph.child(at: 1) as? Link)
         #expect(link.destination == "https://example.com")
-        let linkText = link.child(at: 0) as! Text
+        let linkText = try #require(link.child(at: 0) as? Text)
         #expect(linkText.string == "https://example.com")
 
         // Check text after URL
-        let afterText = paragraph.child(at: 2) as! Text
+        let afterText = try #require(paragraph.child(at: 2) as? Text)
         #expect(afterText.string == " for more info.")
     }
 
@@ -62,17 +62,17 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 5) // "Visit ", link1, " and ", link2, " for resources."
 
         // Check first link
-        let link1 = paragraph.child(at: 1) as! Link
+        let link1 = try #require(paragraph.child(at: 1) as? Link)
         #expect(link1.destination == "https://apple.com")
 
-        // Check second link  
-        let link2 = paragraph.child(at: 3) as! Link
+        // Check second link
+        let link2 = try #require(paragraph.child(at: 3) as? Link)
         #expect(link2.destination == "https://developer.apple.com")
     }
 
@@ -84,17 +84,17 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 4) // "Secure: ", link1, " and insecure: ", link2
 
         // Check HTTPS link
-        let httpsLink = paragraph.child(at: 1) as! Link
+        let httpsLink = try #require(paragraph.child(at: 1) as? Link)
         #expect(httpsLink.destination == "https://secure.example.com")
 
         // Check HTTP link
-        let httpLink = paragraph.child(at: 3) as! Link
+        let httpLink = try #require(paragraph.child(at: 3) as? Link)
         #expect(httpLink.destination == "http://insecure.example.com")
     }
 
@@ -106,10 +106,10 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
-        let link = paragraph.child(at: 1) as! Link
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
+        let link = try #require(paragraph.child(at: 1) as? Link)
         #expect(link.destination == "https://github.com/ainame/Tuzuru/issues?state=open")
     }
 
@@ -121,12 +121,12 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 2) // link, " is a great website."
 
-        let link = paragraph.child(at: 0) as! Link
+        let link = try #require(paragraph.child(at: 0) as? Link)
         #expect(link.destination == "https://example.com")
     }
 
@@ -138,12 +138,12 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 2) // "Visit my website at ", link
 
-        let link = paragraph.child(at: 1) as! Link
+        let link = try #require(paragraph.child(at: 1) as? Link)
         #expect(link.destination == "https://example.com")
     }
 
@@ -157,18 +157,18 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
         #expect(newDocument.childCount == 2)
 
         // Check first paragraph
-        let paragraph1 = newDocument.child(at: 0) as! Paragraph
-        let link1 = paragraph1.child(at: 1) as! Link
+        let paragraph1 = try #require(newDocument.child(at: 0) as? Paragraph)
+        let link1 = try #require(paragraph1.child(at: 1) as? Link)
         #expect(link1.destination == "https://first.com")
 
         // Check second paragraph
-        let paragraph2 = newDocument.child(at: 1) as! Paragraph
-        let link2 = paragraph2.child(at: 1) as! Link
+        let paragraph2 = try #require(newDocument.child(at: 1) as? Paragraph)
+        let link2 = try #require(paragraph2.child(at: 1) as? Link)
         #expect(link2.destination == "https://second.com")
     }
 
@@ -182,11 +182,11 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
         // Heading should remain unchanged (URLLinker only processes paragraphs)
-        let heading = newDocument.child(at: 0) as! Heading
-        let headingText = heading.child(at: 0) as! Text
+        let heading = try #require(newDocument.child(at: 0) as? Heading)
+        let headingText = try #require(heading.child(at: 0) as? Text)
         #expect(headingText.string == "Visit https://example.com")
     }
 
@@ -198,21 +198,21 @@ struct URLLinkerTests {
 
         let document = Document(parsing: rawMarkdown)
         var urlLinker = URLLinker()
-        let newDocument = urlLinker.visit(document)! as! Document
+        let newDocument = try #require(urlLinker.visit(document) as? Document)
 
-        let paragraph = newDocument.child(at: 0) as! Paragraph
+        let paragraph = try #require(newDocument.child(at: 0) as? Paragraph)
         #expect(paragraph.childCount == 4) // "Visit ", existing link, " and also ", new link
 
         // First link should remain as original markdown link
-        let existingLink = paragraph.child(at: 1) as! Link
+        let existingLink = try #require(paragraph.child(at: 1) as? Link)
         #expect(existingLink.destination == "https://example.com")
-        let existingLinkText = existingLink.child(at: 0) as! Text
+        let existingLinkText = try #require(existingLink.child(at: 0) as? Text)
         #expect(existingLinkText.string == "my site")
 
         // Second URL should be auto-linked
-        let autoLink = paragraph.child(at: 3) as! Link
+        let autoLink = try #require(paragraph.child(at: 3) as? Link)
         #expect(autoLink.destination == "https://other.com")
-        let autoLinkText = autoLink.child(at: 0) as! Text
+        let autoLinkText = try #require(autoLink.child(at: 0) as? Text)
         #expect(autoLinkText.string == "https://other.com")
     }
 }
