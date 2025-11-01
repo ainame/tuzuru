@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.6.1"),
-        .package(url: "https://github.com/hummingbird-project/swift-mustache.git", from: "2.0.1"),
+        .package(url: "https://github.com/hummingbird-project/swift-mustache.git", from: "2.0.2"),
         // Windows support requires this fix https://github.com/swiftlang/swift-markdown/pull/245 or 0.6.0
         .package(url: "https://github.com/swiftlang/swift-markdown.git", exact: "0.7.3"),
         .package(url: "https://github.com/apple/swift-system.git", from: "1.5.0"),
