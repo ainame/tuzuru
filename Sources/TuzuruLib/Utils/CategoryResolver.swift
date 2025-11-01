@@ -32,9 +32,16 @@ struct CategoryResolver {
     /// Returns nil if the post is in the contents root or the path is invalid
     func extractTopLevelDirectory(from postPath: FilePath) -> String? {
         // Get relative components by removing the base path components
+        // These components include the filename, so we need at least 2 components
+        // to have a directory: [directory, filename]
         let relativeComponents = getRelativeComponents(from: postPath)
 
-        // Return the first component if it exists
+        // Need at least 2 components: directory + filename
+        guard relativeComponents.count >= 2 else {
+            return nil
+        }
+
+        // Return the first component (the directory)
         return relativeComponents.first?.string
     }
 
