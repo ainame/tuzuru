@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "swift": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["swift-version"],
+      "matchPackageNames": ["swift"],
+      "groupName": "Swift version"
+    }
   ]
 }
