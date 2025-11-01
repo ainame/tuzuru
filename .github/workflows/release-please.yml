@@ -13,7 +13,7 @@ permissions:
 jobs:
   release-please:
     if: github.ref == 'refs/heads/main' || github.event_name != 'push'
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     steps:
       - name: Run release-please
         id: release
