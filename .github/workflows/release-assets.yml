@@ -24,6 +24,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.release.tag_name }}
 
+      - name: Set up Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.1.app/Contents/Developer
+
       - name: Determine release version
         id: version
         run: |
