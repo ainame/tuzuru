@@ -11,6 +11,8 @@ permissions:
 env:
   PRODUCT_NAME: tuzuru
   XCODE_VERSION: "26.1"
+  # Static Linux SDK - Copy the full command from https://www.swift.org/install/macos/
+  STATIC_SDK_INSTALL_CMD: "swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378"
 
 jobs:
   build-and-upload:
@@ -60,18 +62,8 @@ jobs:
           swiftly install ${SWIFT_VERSION}
           swiftly use ${SWIFT_VERSION}
 
-          # Download static Linux SDK
-          SDK_URL="https://download.swift.org/swift-${SWIFT_VERSION}-release/static-sdk/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz"
-          echo "Downloading static SDK from: $SDK_URL"
-          curl -L "$SDK_URL" -o static-sdk.tar.gz
-
-          # Calculate checksum
-          CHECKSUM=$(shasum -a 256 static-sdk.tar.gz | cut -d ' ' -f 1)
-          echo "Calculated checksum: $CHECKSUM"
-
-          # Install SDK with calculated checksum
-          swift sdk install static-sdk.tar.gz --checksum "$CHECKSUM"
-          rm static-sdk.tar.gz
+          # Install static Linux SDK
+          ${{ env.STATIC_SDK_INSTALL_CMD }}
 
       - name: Verify host build
         run: |
