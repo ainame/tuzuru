@@ -18,7 +18,7 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-markdown.git", exact: "0.7.3"),
         .package(url: "https://github.com/apple/swift-system.git", from: "1.5.0"),
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", branch: "main"),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "6.1.0"),
+        .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.0"),
         .package(url: "https://github.com/ainame/swift-displaywidth.git", from: "0.0.3"),
     ],
     targets: [
