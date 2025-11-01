@@ -93,7 +93,10 @@ jobs:
 
     - name: Set Swift version from .swift-version
       shell: bash
-      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
+      run: |
+        # As of 2025/11/01 we need to use 6.2-snapshot for macOS but
+        # Windows doesn't need to use it so removing it here as temporary solution
+        echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]' | sed 's/-snapshot$//')" >> $GITHUB_ENV
 
     - name: Restore Swift build cache
       uses: actions/cache@v4
