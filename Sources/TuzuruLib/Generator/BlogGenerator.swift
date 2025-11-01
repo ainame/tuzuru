@@ -232,31 +232,19 @@ struct BlogGenerator {
 
     private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws -> [FilePath] {
         // Group posts by their top-level directory
+        let categoryResolver = CategoryResolver(
+            contentsBasePath: configuration.sourceLayout.contents,
+            importedDirName: configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
+        )
+
         var directoryPosts: [String: [Post]] = [:]
-
         for post in posts where !post.isUnlisted {
-            // Get the relative path within the contents directory
-            let contentsPath = configuration.sourceLayout.contents.string
-            let postPath = post.path.string
-
-            // Remove the contents base path to get the relative path
-            guard postPath.hasPrefix(contentsPath) else { continue }
-            let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
-            let pathComponents = FilePath(relativePath).components
-
-            // Skip posts directly in contents root (no directory)
-            guard let topLevelDirectory = pathComponents.first?.string else { continue }
-
-            // Skip imported directory (based on configuration)
-            let importedDirName = configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
-            if topLevelDirectory == importedDirName {
-                continue
+            if let category = categoryResolver.extractCategory(from: post.path) {
+                if directoryPosts[category] == nil {
+                    directoryPosts[category] = []
+                }
+                directoryPosts[category]?.append(post)
             }
-
-            if directoryPosts[topLevelDirectory] == nil {
-                directoryPosts[topLevelDirectory] = []
-            }
-            directoryPosts[topLevelDirectory]?.append(post)
         }
 
         var generatedFiles: [FilePath] = []

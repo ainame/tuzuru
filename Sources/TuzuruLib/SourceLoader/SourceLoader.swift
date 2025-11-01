@@ -75,28 +75,16 @@ struct SourceLoader: Sendable {
     private func extractCategories(from posts: [RawPost]) -> [String] {
         // Extract top-level directories from listed posts only
         let listedPosts = posts.filter { !$0.isUnlisted }
+        let categoryResolver = CategoryResolver(
+            contentsBasePath: configuration.sourceLayout.contents,
+            importedDirName: configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
+        )
+
         var categorySet = Set<String>()
-
         for post in listedPosts {
-            // Get the relative path within the contents directory
-            let contentsPath = configuration.sourceLayout.contents.string
-            let postPath = post.path.string
-
-            // Remove the contents base path to get the relative path
-            guard postPath.hasPrefix(contentsPath) else { continue }
-            let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
-            let pathComponents = FilePath(relativePath).components
-
-            // Skip posts directly in contents root (no directory)
-            guard let topLevelDirectory = pathComponents.first?.string else { continue }
-
-            // Skip imported directory (based on configuration)
-            let importedDirName = configuration.sourceLayout.imported.lastComponent?.string
-            if topLevelDirectory == importedDirName {
-                continue
+            if let category = categoryResolver.extractCategory(from: post.path) {
+                categorySet.insert(category)
             }
-
-            categorySet.insert(topLevelDirectory)
         }
         return categorySet.sorted()
     }
