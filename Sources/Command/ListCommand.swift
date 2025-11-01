@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
 import DisplayWidth
 
@@ -15,12 +16,15 @@ struct ListCommand: AsyncParsableCommand {
     var config: String?
 
     mutating func run() async throws {
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         // Load configuration
         let blogConfig = try Tuzuru.loadConfiguration(from: config)
 
         // Initialize Tuzuru with configuration
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
-        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig, logger: logger)
 
         // Load and process sources
         let rawSource = try await tuzuru.loadSources(blogConfig.sourceLayout)

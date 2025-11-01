@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 /// IntegrityManager keeps the output directory `blog/` in sync wtih `contents/` by monitoring
 /// timestamps on each source directory. When renaming or deletion of files occur, this will perform cleanup.
@@ -6,11 +7,17 @@ struct IntegrityManager: Sendable {
     private let fileManager: FileManagerWrapper
     private let blogConfiguration: BlogConfiguration
     private let sourceDirectoryProvider: SourceDirectoryProvider
+    private let logger: Logger
 
-    init(fileManager: FileManagerWrapper, blogConfiguration: BlogConfiguration) {
+    init(
+        fileManager: FileManagerWrapper,
+        blogConfiguration: BlogConfiguration,
+        logger: Logger
+    ) {
         self.fileManager = fileManager
         self.blogConfiguration = blogConfiguration
         self.sourceDirectoryProvider = SourceDirectoryProvider(fileManager: fileManager, configuration: blogConfiguration)
+        self.logger = logger
     }
 
     /// Get the path to the manifest file in .build
@@ -53,27 +60,27 @@ struct IntegrityManager: Sendable {
 
             // Safety check: only delete files that look like tuzuru-generated files
             guard isSafeToDelete(filePath: filePath, blogRoot: blogRoot) else {
-                print("Skipping deletion of potentially user-added file: \(orphanedFile)")
+                logger.warning("Skipping deletion of potentially user-added file: \(orphanedFile)")
                 continue
             }
 
             do {
                 if fileManager.fileExists(atPath: filePath) {
                     try fileManager.removeItem(atPath: filePath)
-                    print("Deleted orphaned file: \(orphanedFile)")
+                    logger.info("Deleted orphaned file: \(orphanedFile)")
                     deletedCount += 1
 
                     // Clean up empty directories if possible
                     try cleanupEmptyDirectory(filePath.removingLastComponent(), blogRoot: blogRoot)
                 }
             } catch {
-                print("Error deleting file \(orphanedFile): \(error)")
+                logger.error("Error deleting file \(orphanedFile): \(error)")
                 errorCount += 1
             }
         }
 
         if deletedCount > 0 || errorCount > 0 {
-            print("Integrity cleanup completed: \(deletedCount) files deleted, \(errorCount) errors")
+            logger.info("Integrity cleanup completed: \(deletedCount) files deleted, \(errorCount) errors")
         }
     }
 
@@ -145,7 +152,7 @@ struct IntegrityManager: Sendable {
             let contents = try fileManager.contentsOfDirectory(atPath: directoryPath)
             if contents.isEmpty {
                 try fileManager.removeItem(atPath: directoryPath)
-                print("Removed empty directory: \(directoryPath.string)")
+                logger.info("Removed empty directory: \(directoryPath.string)")
             }
         } catch {
             // If we can't read or remove the directory, that's fine - it might not be empty

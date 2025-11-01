@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 import Mustache
 
 /// Handles template processing and site generation
@@ -10,6 +11,7 @@ struct BlogGenerator {
     private let dateProvider: () -> Date
     private let pathGenerator: PathGenerator
     private let dateFormatter: DateFormatter
+    private let logger: Logger
 
     /// URL parameters for layout templates
     private struct LayoutURLs {
@@ -21,11 +23,13 @@ struct BlogGenerator {
     init(
         configuration: BlogConfiguration,
         fileManager: FileManagerWrapper,
+        logger: Logger,
         calendar: Calendar = .current,
-        dateProvider: @escaping () -> Date = { let now = Date(); return { now } }(),
+        dateProvider: @escaping () -> Date = { let now = Date(); return { now } }()
     ) throws {
         self.configuration = configuration
         self.fileManager = fileManager
+        self.logger = logger
         self.calendar = calendar
         self.dateProvider = dateProvider
         pathGenerator = PathGenerator(
@@ -45,7 +49,11 @@ struct BlogGenerator {
         let pageRenderer = PageRenderer(templates: source.templates)
 
         // Initialize integrity manager
-        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        let integrityManager = IntegrityManager(
+            fileManager: fileManager,
+            blogConfiguration: configuration,
+            logger: logger
+        )
 
         // Load existing manifest and check if cleanup is needed
         let existingManifest = try integrityManager.loadExistingManifest()

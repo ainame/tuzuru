@@ -1,6 +1,7 @@
 import Testing
 @testable import TuzuruLib
 import Foundation
+import Logging
 
 @Suite(.gitRepositoryFixture)
 struct TuzuruIntegrationTests {
@@ -19,9 +20,11 @@ struct TuzuruIntegrationTests {
         let config = try loader.load(from: "tuzuru.json")
 
         // Initialize Tuzuru with the configuration
+        let logger = Logger(label: "com.ainame.tuzuru.test")
         let tuzuru = try Tuzuru(
             fileManager: fixture.fileManager,
-            configuration: config
+            configuration: config,
+            logger: logger
         )
 
         // Phase 1: Load sources (should parse markdown files and git history with raw content)
@@ -82,7 +85,8 @@ struct TuzuruIntegrationTests {
         // Amend a file's metadata
         let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
         let config = try loader.load(from: "tuzuru.json")
-        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config, logger: logger)
 
         let testFilePath = "contents/technology/swift-basics-for-beginners.md"
         try await tuzuru.amendFile(
@@ -143,7 +147,8 @@ struct TuzuruIntegrationTests {
         // Load configuration and create Tuzuru instance
         let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
         let config = try loader.load(from: "tuzuru.json")
-        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config, logger: logger)
 
         // Load sources and process contents (need processed source for path generation)
         let rawSource = try await tuzuru.loadSources(config.sourceLayout)
@@ -166,7 +171,8 @@ struct TuzuruIntegrationTests {
         let fixture = Environment.gitRepositoryFixture!
 
         // Initialize blog in git repository
-        try await Tuzuru.initializeBlog(fileManager: fixture.fileManager)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        try await Tuzuru.initializeBlog(fileManager: fixture.fileManager, logger: logger)
 
         // Verify required files and directories were created
         #expect(fixture.fileManager.fileExists(atPath: FilePath("tuzuru.json")))
@@ -184,7 +190,7 @@ struct TuzuruIntegrationTests {
         try await fixture.createCommit(message: "Initialize blog with Tuzuru")
 
         // Verify we can create a Tuzuru instance with the initialized setup
-        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config, logger: logger)
         let rawSource = try await tuzuru.loadSources(config.sourceLayout)
 
         // Should have no posts initially
@@ -207,7 +213,8 @@ struct TuzuruIntegrationTests {
         // Load configuration and initialize Tuzuru
         let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
         let config = try loader.load(from: "tuzuru.json")
-        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config, logger: logger)
 
         // Build source
         let rawSource = try await tuzuru.loadSources(config.sourceLayout)
@@ -262,7 +269,8 @@ struct TuzuruIntegrationTests {
         // Load configuration and initialize Tuzuru
         let loader = BlogConfigurationLoader(fileManager: fixture.fileManager)
         let config = try loader.load(from: "tuzuru.json")
-        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let tuzuru = try Tuzuru(fileManager: fixture.fileManager, configuration: config, logger: logger)
 
         // Build source and path mapping
         let rawSource = try await tuzuru.loadSources(config.sourceLayout)

@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
 
 struct ImportCommand: AsyncParsableCommand {
@@ -24,6 +25,9 @@ struct ImportCommand: AsyncParsableCommand {
     var config: String?
 
     mutating func run() async throws {
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         // Load configuration
         let blogConfig = try Tuzuru.loadConfiguration(from: config)
 
@@ -31,22 +35,23 @@ struct ImportCommand: AsyncParsableCommand {
 
         // Initialize Tuzuru with configuration
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
-        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig, logger: logger)
         let result = try await tuzuru.importFiles(from: sourcePath, to: destinationPath, dryRun: dryRun)
 
         // Summary
-        print("\n📊 Import Summary:")
-        print("   ✅ Imported: \(result.importedCount) files")
+        logger.info("")
+        logger.info("Import Summary:")
+        logger.info("   Imported: \(result.importedCount) files")
         if result.skippedCount > 0 {
-            print("   ⏭️  Skipped: \(result.skippedCount) files")
+            logger.info("   Skipped: \(result.skippedCount) files")
         }
         if result.errorCount > 0 {
-            print("   ❌ Errors: \(result.errorCount) files")
+            logger.info("   Errors: \(result.errorCount) files")
         }
 
         if !dryRun && result.importedCount > 0 {
-            print("📁 Files imported to: \(destinationPath)")
-            print("🔗 Git commits created with original publication dates")
+            logger.info("Files imported to: \(destinationPath)")
+            logger.info("Git commits created with original publication dates")
         }
     }
 }

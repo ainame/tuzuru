@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 /// Handles importing Hugo/Jekyll markdown files with YAML front matter to Tuzuru format
 struct BlogImporter {
@@ -18,10 +19,12 @@ struct BlogImporter {
     private let transformer = MarkdownTransformer()
     private let shortcodeProcessor = HugoShortcodeProcessor()
     private let gitCommitter: GitCommitter
+    private let logger: Logger
 
-    init(fileManager: FileManagerWrapper) {
+    init(fileManager: FileManagerWrapper, logger: Logger) {
         self.fileManager = fileManager
         self.gitCommitter = GitCommitter(workingDirectory: fileManager.workingDirectory)
+        self.logger = logger
     }
 
     /// Imports markdown files from source directory to destination
@@ -47,14 +50,14 @@ struct BlogImporter {
         let markdownFiles = try findMarkdownFiles(in: sourceDir)
 
         if markdownFiles.isEmpty {
-            print("📝 No markdown files found in \(options.sourcePath)")
+            logger.info("📝 No markdown files found in \(options.sourcePath)")
             return ImportResult(importedCount: 0, skippedCount: 0, errorCount: 0)
         }
 
-        print("🔍 Found \(markdownFiles.count) markdown file(s) to import")
+        logger.info("🔍 Found \(markdownFiles.count) markdown file(s) to import")
 
         if dryRun {
-            print("🔬 DRY RUN - No files will be modified")
+            logger.info("🔬 DRY RUN - No files will be modified")
         }
 
         var importedCount = 0
@@ -78,7 +81,7 @@ struct BlogImporter {
                 }
             } catch {
                 errorCount += 1
-                print("❌ Error processing \(markdownFile.lastComponent?.string ?? markdownFile.string): \(error.localizedDescription)")
+                logger.error("❌ Error processing \(markdownFile.lastComponent?.string ?? markdownFile.string): \(error.localizedDescription)")
             }
         }
 
@@ -117,7 +120,7 @@ struct BlogImporter {
 
         // Validate required metadata
         guard let title = parseResult.metadata.title else {
-            print("⏭️  Skipping \(sourcePath.lastComponent?.string ?? sourcePath.string): No title in front matter")
+            logger.info("⏭️  Skipping \(sourcePath.lastComponent?.string ?? sourcePath.string): No title in front matter")
             return false
         }
 
@@ -126,7 +129,7 @@ struct BlogImporter {
         if let dateString = parseResult.metadata.date {
             publicationDate = parser.parseDate(dateString)
             if publicationDate == nil {
-                print("⚠️  Could not parse date '\(dateString)' for \(title)")
+                logger.warning("⚠️  Could not parse date '\(dateString)' for \(title)")
             }
         }
 
@@ -136,7 +139,7 @@ struct BlogImporter {
 
         // Check if destination file already exists
         if !dryRun && fileManager.fileExists(atPath: destinationPath) {
-            print("⚠️  File already exists: \(destinationPath.string)")
+            logger.warning("⚠️  File already exists: \(destinationPath.string)")
             throw ImportError.destinationFileExists(destinationPath.string)
         }
 
@@ -146,7 +149,7 @@ struct BlogImporter {
 
         if dryRun {
             let dateStr = publicationDate.map { " (\(ISO8601DateFormatter().string(from: $0)))" } ?? ""
-            print("📝 Would import: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
+            logger.info("📝 Would import: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
             return true
         }
 
@@ -169,7 +172,7 @@ struct BlogImporter {
         )
 
         let dateStr = publicationDate.map { " (\(ISO8601DateFormatter().string(from: $0)))" } ?? ""
-        print("✅ Imported: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
+        logger.info("✅ Imported: \(title)\(dateStr) -> \(destinationPath.lastComponent?.string ?? destinationPath.string)")
 
         return true
     }
