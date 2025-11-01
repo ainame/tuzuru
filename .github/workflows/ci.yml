@@ -16,38 +16,8 @@ jobs:
       with:
         strict: true
 
-  test-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v5
-
-    - name: Set Swift version from .swift-version
-      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
-
-    - name: Restore Swift build cache
-      uses: actions/cache@v4
-      with:
-        path: |
-          .build
-          .swiftpm
-        key: ${{ runner.os }}-swift-${{ hashFiles('Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-swift-
-
-    - name: Install Swift toolchain
-      uses: vapor/swiftly-action@v0.2
-      with:
-        toolchain: ${{ env.SWIFT_VERSION }}
-
-    - name: Select Swift toolchain
-      run: swiftly use $(cat .swift-version)
-
-    - name: Run tests
-      run: swift test
-
   test-macos:
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
     - uses: actions/checkout@v5
@@ -80,6 +50,36 @@ jobs:
 
     - name: Run tests
       shell: bash
+      run: swift test
+
+  test-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set Swift version from .swift-version
+      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
+
+    - name: Restore Swift build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .build
+          .swiftpm
+        key: ${{ runner.os }}-swift-${{ hashFiles('Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-swift-
+
+    - name: Install Swift toolchain
+      uses: vapor/swiftly-action@v0.2
+      with:
+        toolchain: ${{ env.SWIFT_VERSION }}
+
+    - name: Select Swift toolchain
+      run: swiftly use $(cat .swift-version)
+
+    - name: Run tests
       run: swift test
 
   test-windows:
