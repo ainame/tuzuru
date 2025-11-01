@@ -60,18 +60,42 @@ jobs:
           swiftly install ${SWIFT_VERSION}
           swiftly use ${SWIFT_VERSION}
 
-          # Download static Linux SDK
-          SDK_URL="https://download.swift.org/swift-${SWIFT_VERSION}-release/static-sdk/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz"
+          # Download static Linux SDK with checksum verification
+          SDK_FILENAME="swift-${SWIFT_VERSION}-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz"
+          SDK_URL="https://download.swift.org/swift-${SWIFT_VERSION}-release/static-sdk/swift-${SWIFT_VERSION}-RELEASE/${SDK_FILENAME}"
+          CHECKSUM_URL="https://download.swift.org/swift-${SWIFT_VERSION}-release/static-sdk/swift-${SWIFT_VERSION}-RELEASE/${SDK_FILENAME}.sha256"
+          
+          echo "Downloading SDK checksum from: $CHECKSUM_URL"
+          if ! curl -f -L "$CHECKSUM_URL" -o expected-checksum.txt; then
+            echo "Error: Failed to download official checksum file. Aborting for security." >&2
+            exit 1
+          fi
+          
+          EXPECTED_CHECKSUM=$(cat expected-checksum.txt | awk '{print $1}')
+          echo "Expected checksum: $EXPECTED_CHECKSUM"
+          
           echo "Downloading static SDK from: $SDK_URL"
-          curl -L "$SDK_URL" -o static-sdk.tar.gz
-
-          # Calculate checksum
-          CHECKSUM=$(shasum -a 256 static-sdk.tar.gz | cut -d ' ' -f 1)
-          echo "Calculated checksum: $CHECKSUM"
-
-          # Install SDK with calculated checksum
-          swift sdk install static-sdk.tar.gz --checksum "$CHECKSUM"
-          rm static-sdk.tar.gz
+          if ! curl -f -L "$SDK_URL" -o static-sdk.tar.gz; then
+            echo "Error: Failed to download SDK. Aborting." >&2
+            exit 1
+          fi
+          
+          # Verify checksum against official value
+          ACTUAL_CHECKSUM=$(shasum -a 256 static-sdk.tar.gz | awk '{print $1}')
+          echo "Actual checksum: $ACTUAL_CHECKSUM"
+          
+          if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+            echo "Error: Checksum mismatch! Expected: $EXPECTED_CHECKSUM, Got: $ACTUAL_CHECKSUM" >&2
+            echo "Possible man-in-the-middle attack or corrupted download. Aborting." >&2
+            rm -f static-sdk.tar.gz expected-checksum.txt
+            exit 1
+          fi
+          
+          echo "Checksum verification successful!"
+          
+          # Install SDK with verified checksum
+          swift sdk install static-sdk.tar.gz --checksum "$ACTUAL_CHECKSUM"
+          rm -f static-sdk.tar.gz expected-checksum.txt
 
       - name: Verify host build
         run: |
