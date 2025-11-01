@@ -158,38 +158,23 @@ struct BlogGenerator {
         case .last(let number):
             Array(posts.prefix(number))
         }
-        let sortedPosts = filteredPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+        let sortedPosts = sortPostsByDate(filteredPosts)
 
         // Prepare posts data for list template
         let list = ListData(
             title: nil, // Let users name title in layout.mustache
-            posts: sortedPosts.map { post in
-                ListItemData(
-                    title: post.title,
-                    author: post.author,
-                    publishedAt: dateFormatter.string(from: post.publishedAt),
-                    excerpt: post.excerpt,
-                    url: pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted),
-                )
-            }
+            posts: createListItems(from: sortedPosts)
         )
 
         // Prepare data for layout template
-        let layoutData = LayoutData(
+        let layoutData = createLayoutData(
             content: list,
             pageTitle: configuration.metadata.blogName,
-            blogName: configuration.metadata.blogName,
-            copyright: configuration.metadata.copyright,
-            description: configuration.metadata.description,
             homeUrl: pathGenerator.generateHomeUrl(),
             currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
             assetsUrl: pathGenerator.generateAssetsUrl(),
-            currentYear: getCurrentYear(),
-            hasYears: !years.isEmpty,
             years: years,
-            hasCategories: !categories.isEmpty,
-            categories: categories,
-            buildVersion: buildVersion,
+            categories: categories
         )
 
         // Render final page
@@ -211,38 +196,23 @@ struct BlogGenerator {
 
         // Generate a list page for each year that has posts
         for (year, yearPosts) in postsByYear {
-            let yearPostsSorted = yearPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+            let sortedPosts = sortPostsByDate(yearPosts)
 
             // Prepare posts data for list template
             let list = ListData(
                 title: String(describing: year),
-                posts: yearPostsSorted.map { post in
-                    ListItemData(
-                        title: post.title,
-                        author: post.author,
-                        publishedAt: dateFormatter.string(from: post.publishedAt),
-                        excerpt: post.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
-                    )
-                }
+                posts: createListItems(from: sortedPosts, urlPrefix: "../")
             )
 
             // Prepare data for layout template
-            let layoutData = LayoutData(
+            let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(year) - \(configuration.metadata.blogName)",
-                blogName: configuration.metadata.blogName,
-                copyright: configuration.metadata.copyright,
-                description: configuration.metadata.description,
                 homeUrl: "../",
                 currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
                 assetsUrl: "../assets/",
-                currentYear: getCurrentYear(),
-                hasYears: !years.isEmpty,
                 years: years,
-                hasCategories: !categories.isEmpty,
-                categories: categories,
-                buildVersion: buildVersion,
+                categories: categories
             )
 
             // Render final page
@@ -293,40 +263,23 @@ struct BlogGenerator {
 
         // Generate a list page for each directory that has posts
         for (directory, dirPosts) in directoryPosts {
-            let dirPostsSorted = dirPosts.sorted {
-                $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title
-            }
+            let sortedPosts = sortPostsByDate(dirPosts)
 
             // Prepare posts data for list template
             let list = ListData(
                 title: directory.capitalized,
-                posts: dirPostsSorted.map { post in
-                    ListItemData(
-                        title: post.title,
-                        author: post.author,
-                        publishedAt: dateFormatter.string(from: post.publishedAt),
-                        excerpt: post.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
-                    )
-                }
+                posts: createListItems(from: sortedPosts, urlPrefix: "../")
             )
 
             // Prepare data for layout template
-            let layoutData = LayoutData(
+            let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(directory.capitalized) - \(configuration.metadata.blogName)",
-                blogName: configuration.metadata.blogName,
-                copyright: configuration.metadata.copyright,
-                description: configuration.metadata.description,
                 homeUrl: "../",
                 currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
                 assetsUrl: "../assets/",
-                currentYear: getCurrentYear(),
-                hasYears: !years.isEmpty,
                 years: years,
-                hasCategories: !categories.isEmpty,
-                categories: categories,
-                buildVersion: buildVersion,
+                categories: categories
             )
 
             // Render final page
@@ -365,5 +318,57 @@ struct BlogGenerator {
 
     private func getCurrentYear() -> String {
         String(describing: calendar.component(.year, from: dateProvider()))
+    }
+
+    // MARK: - Helper Methods
+
+    /// Sort posts by publication date (descending) and title (descending) as tiebreaker
+    private func sortPostsByDate(_ posts: [Post]) -> [Post] {
+        posts.sorted {
+            $0.publishedAt != $1.publishedAt
+                ? $0.publishedAt > $1.publishedAt
+                : $0.title > $1.title
+        }
+    }
+
+    /// Convert posts to list item data with optional URL prefix
+    private func createListItems(from posts: [Post], urlPrefix: String = "") -> [ListItemData] {
+        posts.map { post in
+            ListItemData(
+                title: post.title,
+                author: post.author,
+                publishedAt: dateFormatter.string(from: post.publishedAt),
+                excerpt: post.excerpt,
+                url: urlPrefix + pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
+            )
+        }
+    }
+
+    /// Create layout data with common configuration values
+    private func createLayoutData<Content: PageRendererable>(
+        content: Content,
+        pageTitle: String,
+        homeUrl: String,
+        currentPageUrl: String,
+        assetsUrl: String,
+        years: [String],
+        categories: [String]
+    ) -> LayoutData<Content> {
+        LayoutData(
+            content: content,
+            pageTitle: pageTitle,
+            blogName: configuration.metadata.blogName,
+            copyright: configuration.metadata.copyright,
+            description: configuration.metadata.description,
+            homeUrl: homeUrl,
+            currentPageUrl: currentPageUrl,
+            assetsUrl: assetsUrl,
+            currentYear: getCurrentYear(),
+            hasYears: !years.isEmpty,
+            years: years,
+            hasCategories: !categories.isEmpty,
+            categories: categories,
+            buildVersion: buildVersion
+        )
     }
 }
