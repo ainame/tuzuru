@@ -22,6 +22,9 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
+    - name: Set Swift version from .swift-version
+      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
+
     - name: Restore Swift build cache
       uses: actions/cache@v4
       with:
@@ -35,7 +38,7 @@ jobs:
     - name: Install Swift toolchain
       uses: vapor/swiftly-action@v0.2
       with:
-        toolchain: 6.1.3
+        toolchain: ${{ env.SWIFT_VERSION }}
 
     - name: Select Swift toolchain
       run: swiftly use $(cat .swift-version)
@@ -48,6 +51,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - name: Set Swift version from .swift-version
+      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
 
     - name: Restore Swift build cache
       uses: actions/cache@v4
@@ -62,14 +68,14 @@ jobs:
     - name: Install Swift toolchain
       shell: bash
       run: |
-        curl -L -o swift-toolchain.pkg https://download.swift.org/swift-6.1.3-release/xcode/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-osx.pkg
+        curl -L -o swift-toolchain.pkg https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/xcode/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-osx.pkg
         sudo installer -pkg swift-toolchain.pkg -target /
         rm swift-toolchain.pkg
 
     - name: Select Swift toolchain
       shell: bash
       run: |
-        echo "/Library/Developer/Toolchains/swift-6.1.3-RELEASE.xctoolchain/usr/bin" >> "$GITHUB_PATH"
+        echo "/Library/Developer/Toolchains/swift-${{ env.SWIFT_VERSION }}-RELEASE.xctoolchain/usr/bin" >> "$GITHUB_PATH"
         echo "TOOLCHAINS=swift" >> "$GITHUB_ENV"
 
     - name: Run tests
@@ -81,6 +87,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - name: Set Swift version from .swift-version
+      shell: bash
+      run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
 
     - name: Restore Swift build cache
       uses: actions/cache@v4
@@ -95,8 +105,8 @@ jobs:
     - name: Install Swift toolchain
       uses: compnerd/gha-setup-swift@main
       with:
-        swift-version: swift-6.1.3-release
-        swift-build: 6.1.3-RELEASE
+        swift-version: swift-${{ env.SWIFT_VERSION }}-release
+        swift-build: ${{ env.SWIFT_VERSION }}-RELEASE
 
     - name: Run tests
       shell: pwsh
