@@ -114,6 +114,13 @@ jobs:
         swift-version: swift-${{ env.SWIFT_VERSION }}-release
         swift-build: ${{ env.SWIFT_VERSION }}-RELEASE
 
+    - name: Clean up cached symlinks (Windows workaround)
+      shell: pwsh
+      run: |
+        if (Test-Path .build\debug) {
+          Remove-Item -Path .build\debug -Force -ErrorAction SilentlyContinue
+        }
+
     - name: Run tests
       shell: pwsh
       run: swift test
