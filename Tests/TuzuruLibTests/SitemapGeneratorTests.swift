@@ -38,12 +38,12 @@ struct SitemapGeneratorTests {
         )
     }
 
-    func makeTestSource(posts: [Post], years: [String] = [], categories: [String] = []) -> Source {
+    func makeTestSource(posts: [Post], years: [String] = [], categories: [String] = []) throws -> Source {
         // Create empty templates for testing
         var templates = MustacheLibrary()
-        try! templates.register("", named: "layout")
-        try! templates.register("", named: "list")
-        try! templates.register("", named: "post")
+        try templates.register("", named: "layout")
+        try templates.register("", named: "list")
+        try templates.register("", named: "post")
 
         return Source(
             metadata: BlogMetadata(
@@ -73,7 +73,7 @@ struct SitemapGeneratorTests {
         )
 
         let post = makeTestPost()
-        let source = makeTestSource(posts: [post])
+        let source = try makeTestSource(posts: [post])
 
         let sitemap = try generator.generateSitemap(from: source)
 
@@ -94,7 +94,7 @@ struct SitemapGeneratorTests {
             fileManager: fileManager
         )
 
-        let source = makeTestSource(posts: [])
+        let source = try makeTestSource(posts: [])
 
         let sitemap = try generator.generateSitemap(from: source)
 
@@ -113,7 +113,7 @@ struct SitemapGeneratorTests {
         )
 
         let post = makeTestPost(path: "/blog/contents/my-post.md", title: "My Post")
-        let source = makeTestSource(posts: [post])
+        let source = try makeTestSource(posts: [post])
 
         let sitemap = try generator.generateSitemap(from: source)
 
@@ -135,7 +135,7 @@ struct SitemapGeneratorTests {
             path: "/blog/contents/unlisted/secret.md",
             isUnlisted: true
         )
-        let source = makeTestSource(posts: [unlistedPost])
+        let source = try makeTestSource(posts: [unlistedPost])
 
         let sitemap = try generator.generateSitemap(from: source)
 
@@ -154,7 +154,7 @@ struct SitemapGeneratorTests {
         )
 
         let post = makeTestPost()
-        let source = makeTestSource(posts: [post], years: ["2021", "2022"])
+        let source = try makeTestSource(posts: [post], years: ["2021", "2022"])
 
         let sitemap = try generator.generateSitemap(from: source)
 
@@ -194,7 +194,7 @@ struct SitemapGeneratorTests {
             isUnlisted: false
         )
 
-        let source = makeTestSource(posts: [olderPost, newerPost])
+        let source = try makeTestSource(posts: [olderPost, newerPost])
         let sitemap = try generator.generateSitemap(from: source)
 
         // Newer post should appear before older post in XML

@@ -11,6 +11,13 @@ struct BlogGenerator {
     private let pathGenerator: PathGenerator
     private let dateFormatter: DateFormatter
 
+    /// URL parameters for layout templates
+    private struct LayoutURLs {
+        let homeUrl: String
+        let currentPageUrl: String
+        let assetsUrl: String
+    }
+
     init(
         configuration: BlogConfiguration,
         fileManager: FileManagerWrapper,
@@ -170,9 +177,11 @@ struct BlogGenerator {
         let layoutData = createLayoutData(
             content: list,
             pageTitle: configuration.metadata.blogName,
-            homeUrl: pathGenerator.generateHomeUrl(),
-            currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
-            assetsUrl: pathGenerator.generateAssetsUrl(),
+            urls: LayoutURLs(
+                homeUrl: pathGenerator.generateHomeUrl(),
+                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
+                assetsUrl: pathGenerator.generateAssetsUrl()
+            ),
             years: years,
             categories: categories
         )
@@ -208,9 +217,11 @@ struct BlogGenerator {
             let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(year) - \(configuration.metadata.blogName)",
-                homeUrl: "../",
-                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
-                assetsUrl: "../assets/",
+                urls: LayoutURLs(
+                    homeUrl: "../",
+                    currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
+                    assetsUrl: "../assets/"
+                ),
                 years: years,
                 categories: categories
             )
@@ -263,9 +274,11 @@ struct BlogGenerator {
             let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(directory.capitalized) - \(configuration.metadata.blogName)",
-                homeUrl: "../",
-                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
-                assetsUrl: "../assets/",
+                urls: LayoutURLs(
+                    homeUrl: "../",
+                    currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
+                    assetsUrl: "../assets/"
+                ),
                 years: years,
                 categories: categories
             )
@@ -336,9 +349,7 @@ struct BlogGenerator {
     private func createLayoutData<Content: PageRendererable>(
         content: Content,
         pageTitle: String,
-        homeUrl: String,
-        currentPageUrl: String,
-        assetsUrl: String,
+        urls: LayoutURLs,
         years: [String],
         categories: [String]
     ) -> LayoutData<Content> {
@@ -348,9 +359,9 @@ struct BlogGenerator {
             blogName: configuration.metadata.blogName,
             copyright: configuration.metadata.copyright,
             description: configuration.metadata.description,
-            homeUrl: homeUrl,
-            currentPageUrl: currentPageUrl,
-            assetsUrl: assetsUrl,
+            homeUrl: urls.homeUrl,
+            currentPageUrl: urls.currentPageUrl,
+            assetsUrl: urls.assetsUrl,
             currentYear: getCurrentYear(),
             hasYears: !years.isEmpty,
             years: years,
