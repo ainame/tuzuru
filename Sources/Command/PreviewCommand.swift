@@ -97,6 +97,7 @@ struct PreviewCommand: AsyncParsableCommand {
         let server = ToyHttpServer(
             port: port,
             servePath: servePath.string,
+            logger: logger,
             beforeResponseHook: beforeResponseHook,
             afterResponseHook: afterResponseHook
         )

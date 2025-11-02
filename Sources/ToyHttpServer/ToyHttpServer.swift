@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 #if canImport(Darwin)
 import Darwin
@@ -35,15 +36,18 @@ public class ToyHttpServer: @unchecked Sendable {
     private let servePath: String
     private let beforeResponseHook: RequestHook?
     private let afterResponseHook: ResponseHook?
+    private let logger: Logger
 
     public init(
         port: Int,
         servePath: String,
+        logger: Logger,
         beforeResponseHook: RequestHook? = nil,
         afterResponseHook: ResponseHook? = nil
     ) {
         self.port = port
         self.servePath = servePath
+        self.logger = logger
         self.beforeResponseHook = beforeResponseHook
         self.afterResponseHook = afterResponseHook
     }
@@ -51,11 +55,11 @@ public class ToyHttpServer: @unchecked Sendable {
     public func start() async throws {
         let serverSocket = try Socket.createServerSocket(port: port)
 
-        print("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
-        print("")
-        print("🚀 Starting server on http://localhost:\(port)")
-        print("📂 Serving directory: \(servePath)")
-        print("🛑 Press Ctrl+C to stop")
+        logger.warning("⚠️  This is a basic HTTP server that might have issues. Report me any issues at: https://github.com/ainame/Tuzuru/issues")
+        logger.info("")
+        logger.info("🚀 Starting server on http://localhost:\(port)")
+        logger.info("📂 Serving directory: \(servePath)")
+        logger.info("🛑 Press Ctrl+C to stop")
 
         signal(SIGINT) { _ in exit(0) }
 
@@ -63,10 +67,11 @@ public class ToyHttpServer: @unchecked Sendable {
             while true {
                 guard let clientSocket = Socket.accept(serverSocket) else { continue }
 
-                group.addTask { @Sendable [servePath = self.servePath, beforeHook = self.beforeResponseHook, afterHook = self.afterResponseHook] in
+                group.addTask { @Sendable [servePath = self.servePath, logger = self.logger, beforeHook = self.beforeResponseHook, afterHook = self.afterResponseHook] in
                     await ToyHttpServer.handleClientInstance(
                         clientSocket,
                         servePath: servePath,
+                        logger: logger,
                         beforeHook: beforeHook,
                         afterHook: afterHook,
                     )
@@ -78,6 +83,7 @@ public class ToyHttpServer: @unchecked Sendable {
     private static func handleClientInstance(
         _ clientSocket: Socket,
         servePath: String,
+        logger: Logger,
         beforeHook: RequestHook?,
         afterHook: ResponseHook?,
     ) async {
@@ -106,7 +112,7 @@ public class ToyHttpServer: @unchecked Sendable {
             do {
                 try await beforeHook?(requestContext)
             } catch {
-                print("Error in beforeResponseHook: \(error)")
+                logger.error("Error in beforeResponseHook: \(error)")
             }
 
             let response: HttpResponse
@@ -122,7 +128,7 @@ public class ToyHttpServer: @unchecked Sendable {
             clientSocket.send(response.generateResponseString())
             clientSocket.send(response.data)
 
-            logRequestStatic(httpRequest.method, httpRequest.fullPath, response.statusCode)
+            logRequestStatic(httpRequest.method, httpRequest.fullPath, response.statusCode, logger: logger)
             await afterHook?(requestContext, response.statusCode)
 
             // Check if client wants to close connection
@@ -132,11 +138,11 @@ public class ToyHttpServer: @unchecked Sendable {
         }
     }
 
-    private static func logRequestStatic(_ method: String, _ path: String, _ statusCode: Int) {
+    private static func logRequestStatic(_ method: String, _ path: String, _ statusCode: Int, logger: Logger) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let timestamp = formatter.string(from: Date())
-        print("\(timestamp) \(method) \(path) \(statusCode)")
+        logger.info("\(timestamp) \(method) \(path) \(statusCode)")
     }
 
     private static func serveFile(path: String, servePath: String) -> HttpResponse {
