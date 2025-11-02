@@ -11,6 +11,13 @@ struct BlogGenerator {
     private let pathGenerator: PathGenerator
     private let dateFormatter: DateFormatter
 
+    /// URL parameters for layout templates
+    private struct LayoutURLs {
+        let homeUrl: String
+        let currentPageUrl: String
+        let assetsUrl: String
+    }
+
     init(
         configuration: BlogConfiguration,
         fileManager: FileManagerWrapper,
@@ -158,38 +165,25 @@ struct BlogGenerator {
         case .last(let number):
             Array(posts.prefix(number))
         }
-        let sortedPosts = filteredPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+        let sortedPosts = sortPostsByDate(filteredPosts)
 
         // Prepare posts data for list template
         let list = ListData(
             title: nil, // Let users name title in layout.mustache
-            posts: sortedPosts.map { post in
-                ListItemData(
-                    title: post.title,
-                    author: post.author,
-                    publishedAt: dateFormatter.string(from: post.publishedAt),
-                    excerpt: post.excerpt,
-                    url: pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted),
-                )
-            }
+            posts: createListItems(from: sortedPosts)
         )
 
         // Prepare data for layout template
-        let layoutData = LayoutData(
+        let layoutData = createLayoutData(
             content: list,
             pageTitle: configuration.metadata.blogName,
-            blogName: configuration.metadata.blogName,
-            copyright: configuration.metadata.copyright,
-            description: configuration.metadata.description,
-            homeUrl: pathGenerator.generateHomeUrl(),
-            currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
-            assetsUrl: pathGenerator.generateAssetsUrl(),
-            currentYear: getCurrentYear(),
-            hasYears: !years.isEmpty,
+            urls: LayoutURLs(
+                homeUrl: pathGenerator.generateHomeUrl(),
+                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: ""),
+                assetsUrl: pathGenerator.generateAssetsUrl()
+            ),
             years: years,
-            hasCategories: !categories.isEmpty,
-            categories: categories,
-            buildVersion: buildVersion,
+            categories: categories
         )
 
         // Render final page
@@ -211,38 +205,25 @@ struct BlogGenerator {
 
         // Generate a list page for each year that has posts
         for (year, yearPosts) in postsByYear {
-            let yearPostsSorted = yearPosts.sorted { $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title }
+            let sortedPosts = sortPostsByDate(yearPosts)
 
             // Prepare posts data for list template
             let list = ListData(
                 title: String(describing: year),
-                posts: yearPostsSorted.map { post in
-                    ListItemData(
-                        title: post.title,
-                        author: post.author,
-                        publishedAt: dateFormatter.string(from: post.publishedAt),
-                        excerpt: post.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
-                    )
-                }
+                posts: createListItems(from: sortedPosts, urlPrefix: "../")
             )
 
             // Prepare data for layout template
-            let layoutData = LayoutData(
+            let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(year) - \(configuration.metadata.blogName)",
-                blogName: configuration.metadata.blogName,
-                copyright: configuration.metadata.copyright,
-                description: configuration.metadata.description,
-                homeUrl: "../",
-                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
-                assetsUrl: "../assets/",
-                currentYear: getCurrentYear(),
-                hasYears: !years.isEmpty,
+                urls: LayoutURLs(
+                    homeUrl: "../",
+                    currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(year)/"),
+                    assetsUrl: "../assets/"
+                ),
                 years: years,
-                hasCategories: !categories.isEmpty,
-                categories: categories,
-                buildVersion: buildVersion,
+                categories: categories
             )
 
             // Render final page
@@ -262,71 +243,44 @@ struct BlogGenerator {
 
     private func generateDirectoryListPages(pageRenderer: PageRenderer, posts: [Post], years: [String], categories: [String], blogRoot: FilePath) throws -> [FilePath] {
         // Group posts by their top-level directory
+        let categoryResolver = CategoryResolver(
+            contentsBasePath: configuration.sourceLayout.contents,
+            importedDirName: configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
+        )
+
         var directoryPosts: [String: [Post]] = [:]
-
         for post in posts where !post.isUnlisted {
-            // Get the relative path within the contents directory
-            let contentsPath = configuration.sourceLayout.contents.string
-            let postPath = post.path.string
-
-            // Remove the contents base path to get the relative path
-            guard postPath.hasPrefix(contentsPath) else { continue }
-            let relativePath = String(postPath.dropFirst(contentsPath.count + 1)) // +1 for the trailing slash
-            let pathComponents = FilePath(relativePath).components
-
-            // Skip posts directly in contents root (no directory)
-            guard let topLevelDirectory = pathComponents.first?.string else { continue }
-
-            // Skip imported directory (based on configuration)
-            let importedDirName = configuration.sourceLayout.imported.lastComponent?.string ?? "imported"
-            if topLevelDirectory == importedDirName {
-                continue
+            if let category = categoryResolver.extractCategory(from: post.path) {
+                if directoryPosts[category] == nil {
+                    directoryPosts[category] = []
+                }
+                directoryPosts[category]?.append(post)
             }
-
-            if directoryPosts[topLevelDirectory] == nil {
-                directoryPosts[topLevelDirectory] = []
-            }
-            directoryPosts[topLevelDirectory]?.append(post)
         }
 
         var generatedFiles: [FilePath] = []
 
         // Generate a list page for each directory that has posts
         for (directory, dirPosts) in directoryPosts {
-            let dirPostsSorted = dirPosts.sorted {
-                $0.publishedAt != $1.publishedAt ? $0.publishedAt > $1.publishedAt : $0.title > $1.title
-            }
+            let sortedPosts = sortPostsByDate(dirPosts)
 
             // Prepare posts data for list template
             let list = ListData(
                 title: directory.capitalized,
-                posts: dirPostsSorted.map { post in
-                    ListItemData(
-                        title: post.title,
-                        author: post.author,
-                        publishedAt: dateFormatter.string(from: post.publishedAt),
-                        excerpt: post.excerpt,
-                        url: "../\(pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted))",
-                    )
-                }
+                posts: createListItems(from: sortedPosts, urlPrefix: "../")
             )
 
             // Prepare data for layout template
-            let layoutData = LayoutData(
+            let layoutData = createLayoutData(
                 content: list,
                 pageTitle: "\(directory.capitalized) - \(configuration.metadata.blogName)",
-                blogName: configuration.metadata.blogName,
-                copyright: configuration.metadata.copyright,
-                description: configuration.metadata.description,
-                homeUrl: "../",
-                currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
-                assetsUrl: "../assets/",
-                currentYear: getCurrentYear(),
-                hasYears: !years.isEmpty,
+                urls: LayoutURLs(
+                    homeUrl: "../",
+                    currentPageUrl: pathGenerator.generateAbsoluteUrl(baseUrl: configuration.metadata.baseUrl, relativePath: "\(directory)/"),
+                    assetsUrl: "../assets/"
+                ),
                 years: years,
-                hasCategories: !categories.isEmpty,
-                categories: categories,
-                buildVersion: buildVersion,
+                categories: categories
             )
 
             // Render final page
@@ -365,5 +319,55 @@ struct BlogGenerator {
 
     private func getCurrentYear() -> String {
         String(describing: calendar.component(.year, from: dateProvider()))
+    }
+
+    // MARK: - Helper Methods
+
+    /// Sort posts by publication date (descending) and title (descending) as tiebreaker
+    private func sortPostsByDate(_ posts: [Post]) -> [Post] {
+        posts.sorted {
+            $0.publishedAt != $1.publishedAt
+                ? $0.publishedAt > $1.publishedAt
+                : $0.title > $1.title
+        }
+    }
+
+    /// Convert posts to list item data with optional URL prefix
+    private func createListItems(from posts: [Post], urlPrefix: String = "") -> [ListItemData] {
+        posts.map { post in
+            ListItemData(
+                title: post.title,
+                author: post.author,
+                publishedAt: dateFormatter.string(from: post.publishedAt),
+                excerpt: post.excerpt,
+                url: urlPrefix + pathGenerator.generateUrl(for: post.path, isUnlisted: post.isUnlisted)
+            )
+        }
+    }
+
+    /// Create layout data with common configuration values
+    private func createLayoutData<Content: PageRendererable>(
+        content: Content,
+        pageTitle: String,
+        urls: LayoutURLs,
+        years: [String],
+        categories: [String]
+    ) -> LayoutData<Content> {
+        LayoutData(
+            content: content,
+            pageTitle: pageTitle,
+            blogName: configuration.metadata.blogName,
+            copyright: configuration.metadata.copyright,
+            description: configuration.metadata.description,
+            homeUrl: urls.homeUrl,
+            currentPageUrl: urls.currentPageUrl,
+            assetsUrl: urls.assetsUrl,
+            currentYear: getCurrentYear(),
+            hasYears: !years.isEmpty,
+            years: years,
+            hasCategories: !categories.isEmpty,
+            categories: categories,
+            buildVersion: buildVersion
+        )
     }
 }
