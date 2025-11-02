@@ -10,6 +10,7 @@ struct SimpleLogHandler: LogHandler {
         set { metadata[key] = newValue }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func log(
         level: Logger.Level,
         message: Logger.Message,
