@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
 
 struct GenerateCommand: AsyncParsableCommand {
@@ -12,40 +13,47 @@ struct GenerateCommand: AsyncParsableCommand {
     var config: String?
 
     mutating func run() async throws {
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         // Load configuration
         let blogConfig = try Tuzuru.loadConfiguration(from: config)
 
         // Initialize Tuzuru with configuration
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
-        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig, logger: logger)
 
-        print("🔍 Scanning for markdown files in \(blogConfig.sourceLayout.contents.string)/...")
+        logger.info("Scanning for markdown files", metadata: [
+            "directory": .string(blogConfig.sourceLayout.contents.string)
+        ])
 
         // Phase 1: Load sources (scan markdown files and get git info)
         let rawSource = try await tuzuru.loadSources(blogConfig.sourceLayout)
 
-        print("📝 Found \(rawSource.posts.count) posts")
+        logger.info("Found posts", metadata: ["count": .stringConvertible(rawSource.posts.count)])
 
-        print("🔄 Processing markdown content...")
+        logger.info("Processing markdown content")
 
         // Phase 2: Process contents (convert markdown to HTML)
         let processedSource = try await tuzuru.processContents(rawSource)
 
         for post in processedSource.posts {
-            print("  - \(post.title) by \(post.author)")
+            logger.info("  - \(post.title) by \(post.author)")
         }
 
-        print("🚀 Generating site...")
+        logger.info("Generating site")
 
         // Phase 3: Generate the site
         let outputDirectory = try await tuzuru.generate(processedSource)
 
-        print("✅ Site generated successfully in \(outputDirectory.string)/")
-        print("📄 Generated:")
-        print("  - \(blogConfig.output.indexFileName) (list page)")
+        logger.info("Site generated successfully", metadata: [
+            "outputDirectory": .string(outputDirectory.string)
+        ])
+        logger.info("Generated:")
+        logger.info("  - \(blogConfig.output.indexFileName) (list page)")
         let displayPaths = tuzuru.generateDisplayPaths(for: processedSource)
         for postName in displayPaths {
-            print("  - \(postName)")
+            logger.info("  - \(postName)")
         }
     }
 }

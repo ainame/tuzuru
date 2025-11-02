@@ -1,6 +1,14 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
+
+// Bootstrap logging once before main entry point
+private let bootstrapLogging: Void = {
+    LoggingSystem.bootstrap { _ in
+        SimpleLogHandler()
+    }
+}()
 
 @main
 struct MainCommand: AsyncParsableCommand {
@@ -18,4 +26,9 @@ struct MainCommand: AsyncParsableCommand {
         ],
         defaultSubcommand: GenerateCommand.self,
     )
+
+    init() {
+        // Ensure bootstrap happens before anything else
+        _ = bootstrapLogging
+    }
 }

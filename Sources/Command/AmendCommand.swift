@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
 
 struct AmendCommand: AsyncParsableCommand {
@@ -25,9 +26,12 @@ struct AmendCommand: AsyncParsableCommand {
             throw ValidationError("At least one of --published-at or --author must be provided")
         }
 
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         let blogConfig = try Tuzuru.loadConfiguration(from: config)
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
-        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: blogConfig, logger: logger)
 
         try await tuzuru.amendFile(
             filePath: filePath,

@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import Logging
 import TuzuruLib
 import ToyHttpServer
 
@@ -28,6 +29,9 @@ struct PreviewCommand: AsyncParsableCommand {
     var config: String?
 
     mutating func run() async throws {
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
 
         // Load configuration first to get the output directory
@@ -37,11 +41,11 @@ struct PreviewCommand: AsyncParsableCommand {
 
         // Check if directory exists
         guard fileManager.fileExists(atPath: servePath) else {
-            print("❌ Directory '\(outputDirectory)' does not exist")
-            print("💡 Run 'tuzuru generate' first to create the blog directory")
+            logger.error("Directory '\(outputDirectory)' does not exist")
+            logger.info("Run 'tuzuru generate' first to create the blog directory")
             throw ExitCode.failure
         }
-        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: configuration)
+        let tuzuru = try Tuzuru(fileManager: fileManager, configuration: configuration, logger: logger)
 
         // Generate initial blog to get source and path mapping
         let rawSource = try await tuzuru.loadSources(configuration.sourceLayout)
@@ -51,7 +55,7 @@ struct PreviewCommand: AsyncParsableCommand {
         let pathMapping = tuzuru.createPathMapping(for: currentSource)
         let state = await RegenerationState(source: currentSource, pathMapping: pathMapping)
 
-        print("📋 Auto-regeneration enabled - files will be regenerated on request if modified")
+        logger.info("Auto-regeneration enabled - files will be regenerated on request if modified")
 
         // Create hooks for auto-regeneration
         let beforeResponseHook: RequestHook = { context in
@@ -64,7 +68,9 @@ struct PreviewCommand: AsyncParsableCommand {
             }
 
             if shouldRegenerate {
-                print("🔄 Regenerating blog due to file changes for: \(context.path)")
+                logger.info("Regenerating blog due to file changes", metadata: [
+                    "path": .string(context.path)
+                ])
                 do {
                     let newSource = try await tuzuru.regenerate()
                     let newPathMapping = tuzuru.createPathMapping(for: newSource)
@@ -72,9 +78,9 @@ struct PreviewCommand: AsyncParsableCommand {
                         state.currentSource = newSource
                         state.pathMapping = newPathMapping
                     }
-                    print("✅ Blog regenerated successfully")
+                    logger.info("Blog regenerated successfully")
                 } catch {
-                    print("❌ Error regenerating blog: \(error)")
+                    logger.error("Error regenerating blog: \(error)")
                     throw error
                 }
             }
@@ -91,6 +97,7 @@ struct PreviewCommand: AsyncParsableCommand {
         let server = ToyHttpServer(
             port: port,
             servePath: servePath.string,
+            logger: logger,
             beforeResponseHook: beforeResponseHook,
             afterResponseHook: afterResponseHook
         )

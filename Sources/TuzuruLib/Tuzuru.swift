@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 import Markdown
 import Mustache
 
@@ -7,15 +8,18 @@ public struct Tuzuru: Sendable {
     private let markdownProcessor: MarkdownProcessor
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
+    private let logger: Logger
 
     public init(
         fileManager: FileManagerWrapper,
         configuration: BlogConfiguration,
+        logger: Logger
     ) throws {
         sourceLoader = SourceLoader(configuration: configuration, fileManager: fileManager)
         markdownProcessor = MarkdownProcessor()
         self.configuration = configuration
         self.fileManager = fileManager
+        self.logger = logger
     }
 
     public func loadSources(_: BlogSourceLayout) async throws -> RawSource {
@@ -49,7 +53,11 @@ public struct Tuzuru: Sendable {
     }
 
     public func generate(_ source: Source) async throws -> FilePath {
-        let blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
+        let blogGenerator = try BlogGenerator(
+            configuration: configuration,
+            fileManager: fileManager,
+            logger: logger
+        )
         return try blogGenerator.generate(source)
     }
 
@@ -67,7 +75,10 @@ public struct Tuzuru: Sendable {
 
     // MARK: - Initialization Methods
 
-    public static func initializeBlog(fileManager: FileManagerWrapper) async throws {
+    public static func initializeBlog(
+        fileManager: FileManagerWrapper,
+        logger: Logger
+    ) async throws {
         // Check if tuzuru.json already exists
         let path = fileManager.workingDirectory
         let configPath = path.appending("tuzuru.json")
@@ -100,7 +111,7 @@ public struct Tuzuru: Sendable {
             let existingContent = try String(contentsOf: URL(fileURLWithPath: gitignorePath.string), encoding: .utf8)
             let updatedContent = existingContent + "\n# Added by Tuzuru\n.build/\nblog\n"
             try updatedContent.write(to: URL(fileURLWithPath: gitignorePath.string), atomically: true, encoding: .utf8)
-            print("Updated existing .gitignore")
+            logger.info("Updated existing .gitignore")
         } else {
             // Create new .gitignore with common OS files and Tuzuru-specific ones
             let defaultGitignoreContent = """
@@ -111,7 +122,7 @@ public struct Tuzuru: Sendable {
                 blog/
                 """
             try defaultGitignoreContent.write(to: URL(fileURLWithPath: gitignorePath.string), atomically: true, encoding: .utf8)
-            print("Created .gitignore with common OS files and Tuzuru ignore patterns")
+            logger.info("Created .gitignore with common OS files and Tuzuru ignore patterns")
         }
 
         // Create directory structure
@@ -133,7 +144,7 @@ public struct Tuzuru: Sendable {
             destinationPath: destinationPath
         )
 
-        let importer = BlogImporter(fileManager: fileManager)
+        let importer = BlogImporter(fileManager: fileManager, logger: logger)
         let result = try await importer.importFiles(options: options, dryRun: dryRun)
         return ImportResult(
             importedCount: result.importedCount,
@@ -200,14 +211,18 @@ public struct Tuzuru: Sendable {
         lastRequestTime: Date,
         pathMapping: [String: FilePath]
     ) -> Bool {
-        let changeDetector = ChangeDetector(fileManager: fileManager, configuration: configuration)
+        let changeDetector = ChangeDetector(fileManager: fileManager, configuration: configuration, logger: logger)
         return changeDetector.checkIfChangesMade(at: requestPath, since: lastRequestTime, in: pathMapping)
     }
 
     public func regenerate() async throws -> Source {
         let rawSource = try await loadSources(configuration.sourceLayout)
         let processedSource = try await processContents(rawSource)
-        let blogGenerator = try BlogGenerator(configuration: configuration, fileManager: fileManager)
+        let blogGenerator = try BlogGenerator(
+            configuration: configuration,
+            fileManager: fileManager,
+            logger: logger
+        )
         _ = try blogGenerator.generate(processedSource)
         return processedSource
     }

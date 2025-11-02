@@ -1,14 +1,17 @@
 import Foundation
+import Logging
 
 /// ChangeDetector see if any changes were made in `contents/` from give path for `blog/` since the late request time.
 /// This powers `tuzuru preview` command to trigger regeneration only when needed.
 struct ChangeDetector: Sendable {
     private let fileManager: FileManagerWrapper
     private let sourceDirectoryProvider: SourceDirectoryProvider
+    private let logger: Logger
 
-    init(fileManager: FileManagerWrapper, configuration: BlogConfiguration) {
+    init(fileManager: FileManagerWrapper, configuration: BlogConfiguration, logger: Logger) {
         self.fileManager = fileManager
         self.sourceDirectoryProvider = SourceDirectoryProvider(fileManager: fileManager, configuration: configuration)
+        self.logger = logger
     }
 
     /// Check if regeneration is needed based on file changes
@@ -85,7 +88,7 @@ struct ChangeDetector: Sendable {
                 return true
             }
         } catch {
-            print("Warning: Could not get modification date for directory \(directoryPath): \(error)")
+            logger.warning("Could not get modification date for directory \(directoryPath): \(error)")
         }
 
         // Recursively check all files in the directory

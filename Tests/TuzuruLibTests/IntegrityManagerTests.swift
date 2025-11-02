@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import Logging
 @testable import TuzuruLib
 
 @Suite(.gitRepositoryFixture)
@@ -11,7 +12,8 @@ struct IntegrityManagerTests {
         let fileManager = fixture.fileManager
 
         let configuration = BlogConfiguration.default
-        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration, logger: logger)
 
         let expectedPath = fileManager.workingDirectory.appending(".build/manifest.json")
         #expect(integrityManager.manifestPath == expectedPath)
@@ -23,7 +25,8 @@ struct IntegrityManagerTests {
         let fileManager = fixture.fileManager
 
         let configuration = BlogConfiguration.default
-        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration, logger: logger)
 
         // The default configuration expects these relative paths
         let expectedContentsDir = fileManager.workingDirectory.appending("contents")
@@ -49,7 +52,8 @@ struct IntegrityManagerTests {
         let fileManager = fixture.fileManager
 
         let configuration = BlogConfiguration.default
-        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration, logger: logger)
 
         let manifest = try integrityManager.loadExistingManifest()
         #expect(manifest == nil)
@@ -61,7 +65,8 @@ struct IntegrityManagerTests {
         let fileManager = fixture.fileManager
 
         let configuration = BlogConfiguration.default
-        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration)
+        let logger = Logger(label: "com.ainame.tuzuru.test")
+        let integrityManager = IntegrityManager(fileManager: fileManager, blogConfiguration: configuration, logger: logger)
 
         // Create source directories
         let contentsDir = fileManager.workingDirectory.appending("contents")

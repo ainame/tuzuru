@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import TuzuruLib
 
 struct InitCommand: AsyncParsableCommand {
@@ -9,38 +10,41 @@ struct InitCommand: AsyncParsableCommand {
     )
 
     mutating func run() async throws {
+        // Create logger
+        let logger = Logger(label: "com.ainame.tuzuru")
+
         let fileManager = FileManagerWrapper(workingDirectory: FileManager.default.currentDirectoryPath)
 
-        print("🚀 Initializing new Tuzuru site...")
+        logger.info("Initializing new Tuzuru site")
 
         do {
-            try await Tuzuru.initializeBlog(fileManager: fileManager)
+            try await Tuzuru.initializeBlog(fileManager: fileManager, logger: logger)
 
-            print("⚙️ Generated tuzuru.json")
-            print("  ✅ Created tuzuru.json")
+            logger.info("Generated tuzuru.json")
+            logger.info("  Created tuzuru.json")
 
-            print("📄 Copied template files...")
-            print("  ✅ Copied template files")
+            logger.info("Copied template files")
+            logger.info("  Copied template files")
 
-            print("🎨 Copied asset files...")
-            print("  ✅ Copied main.css to assets/")
+            logger.info("Copied asset files")
+            logger.info("  Copied main.css to assets/")
 
-            print("📁 Created directory structure...")
-            print("  ✅ Created contents/")
-            print("  ✅ Created unlisted/")
+            logger.info("Created directory structure")
+            logger.info("  Created contents/")
+            logger.info("  Created unlisted/")
 
-            print("🎉 Site initialized successfully!")
-            print("📋 Next steps:")
-            print("  1. Add your markdown files to contents/")
-            print("  2. Add unlisted pages (like /about) to contents/unlisted/")
-            print("  3. Customize templates in templates/")
-            print("  4. Run 'tuzuru generate' to build your site")
+            logger.info("Site initialized successfully!")
+            logger.info("Next steps:")
+            logger.info("  1. Add your markdown files to contents/")
+            logger.info("  2. Add unlisted pages (like /about) to contents/unlisted/")
+            logger.info("  3. Customize templates in templates/")
+            logger.info("  4. Run 'tuzuru generate' to build your site")
 
         } catch let error as TuzuruError {
-            print("❌ \(error.localizedDescription)")
+            logger.error("\(error.localizedDescription)")
             return
         } catch {
-            print("⚠️ Warning: Initialization completed with some issues: \(error)")
+            logger.warning("Initialization completed with some issues: \(error)")
         }
     }
 }
