@@ -51,7 +51,10 @@ let package = Package(
             ],
         ),
         .target(
-            name: "ToyHttpServer"
+            name: "ToyHttpServer",
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+            ],
         ),
         .testTarget(
             name: "TuzuruLibTests",
