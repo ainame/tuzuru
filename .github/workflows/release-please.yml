@@ -22,7 +22,7 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
       - name: Remove v prefix from release title
-        if: ${{ steps.release.outputs.release_created }}
+        if: steps.release.outputs.release_created
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
