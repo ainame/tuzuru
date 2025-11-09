@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/ainame/tuzuru/compare/0.4.0...0.5.0) (2025-11-04)
+
+
+### Features
+
+* Windows support ([#71](https://github.com/ainame/tuzuru/issues/71)) ([14ad8da](https://github.com/ainame/tuzuru/commit/14ad8dae2bc79e55bce892d30ffcd565c9733640))
+
 ## [0.4.0](https://github.com/ainame/tuzuru/compare/0.3.4...0.4.0) (2025-09-21)
 
 
