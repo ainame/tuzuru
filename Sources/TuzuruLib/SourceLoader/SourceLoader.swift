@@ -3,9 +3,6 @@ import Mustache
 
 /// Handles loading raw source content from markdown files (without processing)
 struct SourceLoader: Sendable {
-    /// Maximum number of concurrent git subprocess calls to prevent file descriptor exhaustion
-    static let maxConcurrency = 50
-
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
     private let gitLogReader: GitLogReader
@@ -17,19 +14,6 @@ struct SourceLoader: Sendable {
         self.configuration = configuration
         self.fileManager = fileManager
         gitLogReader = GitLogReader(workingDirectory: fileManager.workingDirectory)
-    }
-
-    /// Actor-wrapped iterator for thread-safe consumption across multiple worker tasks
-    private actor SharedIterator<Base: IteratorProtocol> where Base.Element: Sendable {
-        private var base: Base
-
-        init(_ base: Base) {
-            self.base = base
-        }
-
-        func next() -> Base.Element? {
-            base.next()
-        }
     }
 
     @Sendable

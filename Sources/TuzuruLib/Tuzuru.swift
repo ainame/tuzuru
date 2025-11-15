@@ -5,7 +5,7 @@ import Mustache
 
 public struct Tuzuru: Sendable {
     /// Maximum number of concurrent tasks for both git operations and markdown processing
-    /// Set to processor count minus 1 to leave headroom for system processes, but always at least 1
+    /// Limited to processor count minus 1 to leave headroom for system processes
     public static let maxConcurrency = max(1, ProcessInfo.processInfo.activeProcessorCount - 1)
 
     private let sourceLoader: SourceLoader
