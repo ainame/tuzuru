@@ -10,14 +10,22 @@ import Foundation
 /// let items = [1, 2, 3, 4, 5]
 /// let iterator = SharedIterator(items.makeIterator())
 ///
-/// await withThrowingTaskGroup(of: Int.self) { group in
+/// let results = await withThrowingTaskGroup(of: [Int].self) { group in
 ///     for _ in 0..<3 {  // 3 workers
-///         group.addTask {
+///         group.addTask { [iterator] in
+///             var results: [Int] = []
 ///             while let item = await iterator.next() {
-///                 // Process item
+///                 results.append(item * 2)  // Process item
 ///             }
+///             return results
 ///         }
 ///     }
+///
+///     var allResults: [Int] = []
+///     for await workerResults in group {
+///         allResults.append(contentsOf: workerResults)
+///     }
+///     return allResults
 /// }
 /// ```
 actor SharedIterator<Base: IteratorProtocol> where Base.Element: Sendable {
