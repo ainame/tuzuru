@@ -34,7 +34,7 @@ struct SourceLoader: Sendable {
 
         // Spawn worker tasks that consume from shared iterator
         source.posts = try await withThrowingTaskGroup(of: [RawPost].self) { group in
-            for _ in 0..<Tuzuru.maxConcurrency {
+            for _ in 0..<min(Tuzuru.maxConcurrency, pendingFiles.count) {
                 group.addTask { [iterator] in
                     var results: [RawPost] = []
                     while let (markdownPath, isUnlisted) = await iterator.next() {
