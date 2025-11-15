@@ -3,6 +3,9 @@ import Mustache
 
 /// Handles loading raw source content from markdown files (without processing)
 struct SourceLoader: Sendable {
+    /// Maximum number of concurrent git subprocess calls to prevent file descriptor exhaustion
+    static let maxConcurrency = 50
+
     private let configuration: BlogConfiguration
     private let fileManager: FileManagerWrapper
     private let gitLogReader: GitLogReader
@@ -16,6 +19,19 @@ struct SourceLoader: Sendable {
         gitLogReader = GitLogReader(workingDirectory: fileManager.workingDirectory)
     }
 
+    /// Actor-wrapped iterator for thread-safe consumption across multiple worker tasks
+    private actor SharedIterator<Base: IteratorProtocol> where Base.Element: Sendable {
+        private var base: Base
+
+        init(_ base: Base) {
+            self.base = base
+        }
+
+        func next() -> Base.Element? {
+            base.next()
+        }
+    }
+
     @Sendable
     func loadSources() async throws -> RawSource {
         let templates = try loadTemplates(templates: configuration.sourceLayout.templates)
@@ -26,28 +42,32 @@ struct SourceLoader: Sendable {
         // Find markdown files in unlisted directory
         let unlistedFiles = try findMarkdowns(in: configuration.sourceLayout.unlisted)
 
-        source.posts = try await withThrowingTaskGroup(of: RawPost?.self) { group in
-            // Process regular content files
-            for markdownPath in contentsFiles {
-                group.addTask {
-                    try await process(markdownPath: markdownPath, isUnlisted: false)
+        // Collect all files to process with their unlisted flag
+        let pendingFiles = contentsFiles.map { ($0, false) } + unlistedFiles.map { ($0, true) }
+
+        // Create thread-safe iterator wrapped in Actor
+        let iterator = SharedIterator(pendingFiles.makeIterator())
+
+        // Spawn worker tasks that consume from shared iterator
+        source.posts = try await withThrowingTaskGroup(of: [RawPost].self) { group in
+            for _ in 0..<Self.maxConcurrency {
+                group.addTask { [iterator] in
+                    var results: [RawPost] = []
+                    while let (markdownPath, isUnlisted) = await iterator.next() {
+                        if let post = try await process(markdownPath: markdownPath, isUnlisted: isUnlisted) {
+                            results.append(post)
+                        }
+                    }
+                    return results
                 }
             }
 
-            // Process unlisted content files
-            for markdownPath in unlistedFiles {
-                group.addTask {
-                    try await process(markdownPath: markdownPath, isUnlisted: true)
-                }
+            // Collect results from all workers
+            var allPosts: [RawPost] = []
+            for try await workerResults in group {
+                allPosts.append(contentsOf: workerResults)
             }
-
-            var posts = [RawPost]()
-            for try await result in group {
-                if let result {
-                    posts.append(result)
-                }
-            }
-            return posts
+            return allPosts
         }
 
         // Sort pages by publish date (newest first)
