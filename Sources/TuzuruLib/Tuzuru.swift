@@ -37,7 +37,7 @@ public struct Tuzuru: Sendable {
         let iterator = SharedIterator(rawSource.posts.makeIterator())
 
         let processedPosts = try await withThrowingTaskGroup(of: [Post].self) { group in
-            for _ in 0..<Self.maxConcurrency {
+            for _ in 0..<min(Self.maxConcurrency, rawSource.posts.count) {
                 group.addTask { [iterator] in
                     var results: [Post] = []
                     while let rawPost = await iterator.next() {
