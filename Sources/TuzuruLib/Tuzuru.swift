@@ -4,6 +4,10 @@ import Markdown
 import Mustache
 
 public struct Tuzuru: Sendable {
+    /// Maximum number of concurrent tasks for both git operations and markdown processing
+    /// Set to processor count minus 1 to leave headroom for system processes, but always at least 1
+    public static let maxConcurrency = max(1, ProcessInfo.processInfo.activeProcessorCount - 1)
+
     private let sourceLoader: SourceLoader
     private let markdownProcessor: MarkdownProcessor
     private let configuration: BlogConfiguration
@@ -28,18 +32,28 @@ public struct Tuzuru: Sendable {
 
     public func processContents(_ rawSource: RawSource) async throws -> Source {
         let processor = markdownProcessor
-        let processedPosts = try await withThrowingTaskGroup(of: Post.self) { group in
-            for rawPost in rawSource.posts {
-                group.addTask {
-                    try processor.process(rawPost)
+
+        // Use SharedIterator for controlled concurrency (CPU-bound work)
+        let iterator = SharedIterator(rawSource.posts.makeIterator())
+
+        let processedPosts = try await withThrowingTaskGroup(of: [Post].self) { group in
+            for _ in 0..<min(Self.maxConcurrency, rawSource.posts.count) {
+                group.addTask { [iterator] in
+                    var results: [Post] = []
+                    while let rawPost = await iterator.next() {
+                        let post = try processor.process(rawPost)
+                        results.append(post)
+                    }
+                    return results
                 }
             }
 
-            var processedPosts = [Post]()
-            for try await processedPost in group {
-                processedPosts.append(processedPost)
+            // Collect results from all workers
+            var allPosts: [Post] = []
+            for try await workerResults in group {
+                allPosts.append(contentsOf: workerResults)
             }
-            return processedPosts
+            return allPosts
         }
 
         // Create processed Source with the same metadata and templates

@@ -26,28 +26,32 @@ struct SourceLoader: Sendable {
         // Find markdown files in unlisted directory
         let unlistedFiles = try findMarkdowns(in: configuration.sourceLayout.unlisted)
 
-        source.posts = try await withThrowingTaskGroup(of: RawPost?.self) { group in
-            // Process regular content files
-            for markdownPath in contentsFiles {
-                group.addTask {
-                    try await process(markdownPath: markdownPath, isUnlisted: false)
+        // Collect all files to process with their unlisted flag
+        let pendingFiles = contentsFiles.map { ($0, false) } + unlistedFiles.map { ($0, true) }
+
+        // Create thread-safe iterator wrapped in Actor
+        let iterator = SharedIterator(pendingFiles.makeIterator())
+
+        // Spawn worker tasks that consume from shared iterator
+        source.posts = try await withThrowingTaskGroup(of: [RawPost].self) { group in
+            for _ in 0..<min(Tuzuru.maxConcurrency, pendingFiles.count) {
+                group.addTask { [iterator] in
+                    var results: [RawPost] = []
+                    while let (markdownPath, isUnlisted) = await iterator.next() {
+                        if let post = try await process(markdownPath: markdownPath, isUnlisted: isUnlisted) {
+                            results.append(post)
+                        }
+                    }
+                    return results
                 }
             }
 
-            // Process unlisted content files
-            for markdownPath in unlistedFiles {
-                group.addTask {
-                    try await process(markdownPath: markdownPath, isUnlisted: true)
-                }
+            // Collect results from all workers
+            var allPosts: [RawPost] = []
+            for try await workerResults in group {
+                allPosts.append(contentsOf: workerResults)
             }
-
-            var posts = [RawPost]()
-            for try await result in group {
-                if let result {
-                    posts.append(result)
-                }
-            }
-            return posts
+            return allPosts
         }
 
         // Sort pages by publish date (newest first)
