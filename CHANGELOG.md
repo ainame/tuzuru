@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/ainame/tuzuru/compare/0.5.0...0.5.1) (2025-11-24)
+
+
+### Bug Fixes
+
+* Limit max concurrency ([#94](https://github.com/ainame/tuzuru/issues/94)) ([14634a8](https://github.com/ainame/tuzuru/commit/14634a854f974a21fea65c2443a381b80a113189))
+
 ## [0.5.0](https://github.com/ainame/tuzuru/compare/0.4.0...0.5.0) (2025-11-04)
 
 
