@@ -29,7 +29,6 @@ struct SourceLoader: Sendable {
         // Collect all files to process with their unlisted flag
         let pendingFiles = contentsFiles.map { ($0, false) } + unlistedFiles.map { ($0, true) }
 
-        // Create thread-safe iterator wrapped in Actor
         let iterator = SharedIterator(pendingFiles.makeIterator())
 
         // Spawn worker tasks that consume from shared iterator
