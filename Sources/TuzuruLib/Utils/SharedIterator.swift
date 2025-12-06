@@ -21,11 +21,8 @@ import Foundation
 ///         }
 ///     }
 ///
-///     var allResults: [Int] = []
-///     for await workerResults in group {
-///         allResults.append(contentsOf: workerResults)
-///     }
-///     return allResults
+///     // Wait for all tasks to complete
+///     try await group.waitForAll()
 /// }
 /// ```
 actor SharedIterator<Base: IteratorProtocol> where Base.Element: Sendable {
