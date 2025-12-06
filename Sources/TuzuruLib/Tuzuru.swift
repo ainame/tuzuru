@@ -4,7 +4,7 @@ import Markdown
 import Mustache
 
 public struct Tuzuru: Sendable {
-    /// Maximum number of concurrent tasks for both git operations and markdown processing
+    /// Maximum number of concurrent worker tasks for file loading and markdown processing
     /// Limited to processor count minus 1 to leave headroom for system processes
     public static let maxConcurrency = max(1, ProcessInfo.processInfo.activeProcessorCount - 1)
 
