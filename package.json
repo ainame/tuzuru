@@ -1,6 +1,6 @@
 {
   "name": "@ainame/tuzuru",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Tuzuru static blog generator (npm wrapper around prebuilt binaries)",
   "license": "MIT",
   "private": false,
