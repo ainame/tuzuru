@@ -46,7 +46,7 @@ jobs:
         swiftly use ${{ env.SWIFT_VERSION }}
 
     - name: Restore Swift build cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           .build
@@ -68,7 +68,7 @@ jobs:
       run: echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]')" >> $GITHUB_ENV
 
     - name: Restore Swift build cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           .build
@@ -99,7 +99,7 @@ jobs:
         echo "SWIFT_VERSION=$(cat .swift-version | tr -d '[:space:]' | sed 's/-snapshot$//')" >> $GITHUB_ENV
 
     - name: Restore Swift build cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           .build
