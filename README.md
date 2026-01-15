@@ -144,6 +144,22 @@ jobs:
 
 </details>
 
+#### Static Files (public directory)
+
+If you need to include static files that should be copied as-is to your deployed site (e.g., Google Search Console verification HTML, `robots.txt`, or other verification files), create a `public/` directory in your project root:
+
+```
+my-blog/
+├── public/
+│   ├── google1234567890abcdef.html  # → /google1234567890abcdef.html
+│   └── robots.txt                    # → /robots.txt
+├── contents/
+├── templates/
+└── ...
+```
+
+The `tuzuru-deploy` action will automatically copy all files from `public/` to the output directory before deployment. This directory is optional—if it doesn't exist, the step is skipped.
+
 ### Built-in layout
 
 The built-in layout is a great starting point and is easy to customize. It already includes [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) and [highlight.js](https://highlightjs.org/) to make writing tech blog posts a breeze.
