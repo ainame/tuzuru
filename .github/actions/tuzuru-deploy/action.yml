@@ -53,6 +53,7 @@ runs:
         set -euo pipefail
         if [[ -d "public" ]]; then
           echo "Copying contents from public/ to ${{ steps.config.outputs.output-dir }}/"
+          echo "Note: Files in public/ take precedence and will overwrite generated files in ${{ steps.config.outputs.output-dir }} when names conflict."
           cp -r public/. "${{ steps.config.outputs.output-dir }}/"
         else
           echo "No public/ directory found, skipping"
