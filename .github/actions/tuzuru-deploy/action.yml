@@ -47,6 +47,17 @@ runs:
 
         echo "output-dir=$OUTPUT_DIR" >> "$GITHUB_OUTPUT"
 
+    - name: Copy public directory contents
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ -d "public" ]]; then
+          echo "Copying contents from public/ to ${{ steps.config.outputs.output-dir }}/"
+          cp -r public/. "${{ steps.config.outputs.output-dir }}/"
+        else
+          echo "No public/ directory found, skipping"
+        fi
+
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v4
       with:
