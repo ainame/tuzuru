@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/ainame/tuzuru/compare/0.6.0...0.6.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* **ci:** Update static Linux SDK to Swift 6.2.3 ([#109](https://github.com/ainame/tuzuru/issues/109)) ([0960ece](https://github.com/ainame/tuzuru/commit/0960ece37388cabaac811980d55ec54bf0c9253c))
+
 ## [0.6.0](https://github.com/ainame/tuzuru/compare/0.5.0...0.6.0) (2026-01-15)
 
 
