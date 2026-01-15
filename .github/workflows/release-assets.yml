@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 env:
   PRODUCT_NAME: tuzuru
@@ -136,11 +137,10 @@ jobs:
 
       - name: Publish npm package
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           jq '.version = "'"${VERSION}"'"' package.json > package.json.tmp && mv package.json.tmp package.json
-          npm publish --access public
+          npm publish --provenance --access public
 
   update-formula:
     needs: build-and-upload
