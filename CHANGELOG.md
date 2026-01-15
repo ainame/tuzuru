@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/ainame/tuzuru/compare/0.5.0...0.6.0) (2026-01-15)
+
+
+### Features
+
+* **action:** Support public directory for static files ([#106](https://github.com/ainame/tuzuru/issues/106)) ([e906e09](https://github.com/ainame/tuzuru/commit/e906e09f715c617f2f2a49d413b4aec3b35ce4e8))
+* Improve work distribution in TaskGroup ([#98](https://github.com/ainame/tuzuru/issues/98)) ([fbfd926](https://github.com/ainame/tuzuru/commit/fbfd9262d623c1323276e89ab0ed51b03454ec5c))
+
+
+### Bug Fixes
+
+* Limit max concurrency ([#94](https://github.com/ainame/tuzuru/issues/94)) ([14634a8](https://github.com/ainame/tuzuru/commit/14634a854f974a21fea65c2443a381b80a113189))
+
 ## [0.5.0](https://github.com/ainame/tuzuru/compare/0.4.0...0.5.0) (2025-11-04)
 
 
