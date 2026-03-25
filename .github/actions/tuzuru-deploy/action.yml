@@ -65,4 +65,4 @@ runs:
         path: ${{ steps.config.outputs.output-dir }}
 
     - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v5
