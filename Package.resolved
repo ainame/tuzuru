@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ainame/swift-displaywidth.git",
       "state" : {
-        "revision" : "e2bfbdf1469366483451708bca36511f4f48ddb1",
-        "version" : "0.0.3"
+        "revision" : "5493276f6c91fd09d348e6cea70d66346fc7b610",
+        "version" : "0.1.0"
       }
     },
     {
