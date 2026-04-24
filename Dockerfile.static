@@ -1,5 +1,5 @@
 # Lightweight Dockerfile for pre-built static binary
-FROM docker.io/ubuntu:24.04
+FROM docker.io/ubuntu:26.04
 
 # Install minimal dependencies
 RUN apt-get update && apt-get install -y \
