@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/hummingbird-project/swift-mustache.git",
       "state" : {
-        "revision" : "2e2a84698dd8a5fff2fe28857f0f95bb03d21d64",
-        "version" : "2.0.2"
+        "revision" : "745ed99c22ad23aeb1dede7142c6f04ee6b6d5ae",
+        "version" : "2.1.1"
       }
     },
     {
